@@ -15,4 +15,9 @@
     <ProjectReference Include="..\BMS.Application\BMS.Application.csproj" />
     <ProjectReference Include="..\BMS.Infrastructure\BMS.Infrastructure.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Filtering\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
 </Project>
