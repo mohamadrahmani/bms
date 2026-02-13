@@ -1,4 +1,5 @@
-﻿using NModbus;
+﻿using BMS.Application.Enum;
+using NModbus;
 
 
 namespace BMS.Infrastructure.Modbus;

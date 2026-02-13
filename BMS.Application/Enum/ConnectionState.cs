@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BMS.Infrastructure.Modbus;
-
+namespace BMS.Application.Enum;
 public enum ConnectionState
 {
     Unknown = 0,
@@ -13,4 +12,3 @@ public enum ConnectionState
     Offline = 2,
     HalfOpen = 3
 }
-

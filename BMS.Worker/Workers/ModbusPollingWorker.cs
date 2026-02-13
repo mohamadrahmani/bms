@@ -1,4 +1,6 @@
-﻿using BMS.Application.Abstractions;
+﻿using BMS.Application.Abstraction;
+using BMS.Application.Abstractions;
+using BMS.Application.Enum;
 using BMS.Infrastructure.Modbus;
 using BMS.Worker.Abstractions;
 using System.Reflection;
@@ -10,98 +12,93 @@ namespace BMS.Worker.Workers
         private readonly ILogger<ModbusPollingWorker> _logger;
         //private readonly IDeviceClient _deviceClient;
         private readonly IBackendSender _sender;
-        private readonly IModbusConnectionManager _connectionManager;
-        private readonly IEnumerable<IDeviceClient> _deviceClients;
+        //private readonly IModbusConnectionManager _connectionManager;
+        //private readonly IEnumerable<IDeviceClient> _deviceClients;
+        private readonly IEnumerable<IPlcClient> _plcClients;
 
 
         public ModbusPollingWorker(
             ILogger<ModbusPollingWorker> logger,
-            IEnumerable<IDeviceClient> deviceClients,
-            IBackendSender sender,
-            IModbusConnectionManager connectionManager)
+             IEnumerable<IPlcClient> plcClients,
+            IBackendSender sender
+            //IModbusConnectionManager connectionManager
+            )
         {
             _logger = logger;
-            _deviceClients = deviceClients;
+            _plcClients = plcClients;
             _sender = sender;
-            _connectionManager = connectionManager;
+            //_connectionManager = connectionManager;
         }
-
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Modbus Polling Worker started.");
+            _logger.LogInformation("PLC Polling Worker started.");
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                try
+                //foreach (var plc in _plcClients)
+                //{
+                //    var ok = await plc.TestConnectionAsync(stoppingToken);
+
+                //    if (ok)
+                //        _logger.LogInformation("PLC {Name} ONLINE", plc.Name);
+                //    else
+                //        _logger.LogWarning("PLC {Name} OFFLINE", plc.Name);
+                //}
+                foreach (var plc in _plcClients)
                 {
-                    var state = _connectionManager.State;
+                    var ok = await plc.TestConnectionAsync(stoppingToken);
 
-                    switch (state)
+                    if (!ok)
                     {
-                        case ConnectionState.Offline:
-                            _logger.LogWarning(
-                                "Connection is OFFLINE. ConsecutiveFailures={Failures}. Retrying in 30s...",
-                                _connectionManager.ConsecutiveFailures);
-
-                            await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
-                            continue;
-
-                        case ConnectionState.HalfOpen:
-                            _logger.LogInformation("Connection is HALF-OPEN. Testing devices...");
-                            break;
-
-                        case ConnectionState.Online:
-                        case ConnectionState.Unknown:
-                        default:
-                            break;
+                        _logger.LogWarning("PLC {Name} OFFLINE", plc.Name);
+                        continue;
                     }
 
-                    // 🔵 Parallel polling of all devices
-                    var pollingTasks = _deviceClients.Select(async device =>
-                    {
-                        try
-                        {
-                            var snapshot = await device.ReadAsync(stoppingToken);
+                    _logger.LogInformation("PLC {Name} ONLINE", plc.Name);
 
-                            await _sender.SendAsync(snapshot, stoppingToken);
-
-                            _logger.LogDebug(
-                                "Device {DeviceId} polled successfully at {Time}",
-                                snapshot.DeviceId,
-                                snapshot.Timestamp);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            // graceful shutdown
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Device polling failed.");
-                        }
-                    });
-
-                    await Task.WhenAll(pollingTasks);
-
-                    // Normal polling interval when online
-                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                    await plc.TestReadAsync(stoppingToken);
                 }
-                catch (OperationCanceledException)
-                {
-                    _logger.LogInformation("Worker cancellation requested.");
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Unexpected error in polling loop.");
 
-                    // small delay to prevent tight crash loop
-                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
-                }
+                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
             }
-
-            _logger.LogInformation("Modbus Polling Worker stopped.");
         }
+
+        //protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        //{
+        //    _logger.LogInformation("PLC Polling Worker started.");
+
+        //    while (!stoppingToken.IsCancellationRequested)
+        //    {
+        //        var tasks = _plcClients.Select(async plc =>
+        //        {
+        //            try
+        //            {
+        //                if (plc.State == ConnectionState.Offline)
+        //                {
+        //                    _logger.LogWarning("PLC {Name} is offline. Retrying slowly...", plc.Name);
+
+        //                    await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+        //                }
+
+        //                var snapshots = await plc.PollAsync(stoppingToken);
+
+        //                foreach (var snapshot in snapshots)
+        //                {
+        //                    await _sender.SendAsync(snapshot, stoppingToken);
+        //                }
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                _logger.LogError(ex, "PLC {Name} polling failed.", plc.Name);
+        //            }
+        //        });
+
+        //        await Task.WhenAll(tasks);
+
+        //        await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+        //    }
+        //}
 
 
     }

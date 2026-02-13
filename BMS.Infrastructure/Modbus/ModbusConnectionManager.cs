@@ -5,6 +5,7 @@ using Polly.Retry;
 using Polly.Timeout;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
+using BMS.Application.Enum;
 
 namespace BMS.Infrastructure.Modbus;
 
@@ -54,7 +55,7 @@ public class ModbusConnectionManager : IModbusConnectionManager
             .Handle<Exception>()
             .CircuitBreakerAsync(
                 exceptionsAllowedBeforeBreaking: 5,
-                durationOfBreak: TimeSpan.FromSeconds(30),
+                durationOfBreak: TimeSpan.FromSeconds(10),
                 onBreak: (exception, breakDelay) =>
                 {
                     _state = ConnectionState.Offline;
