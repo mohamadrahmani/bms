@@ -1,83 +1,106 @@
-using BMS.Application.Abstraction;
+﻿using BMS.Application.Abstraction;
 using BMS.Application.Abstractions;
 using BMS.Application.Models;
 using BMS.Infrastructure.Modbus;
 using BMS.Worker.Abstractions;
+using BMS.Worker.Devices;
 using BMS.Worker.Transport;
 using BMS.Worker.Workers;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Polly;
 
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
     {
         var configuration = context.Configuration;
-        services.Configure<List<PlcConfig>>(
-        configuration.GetSection("Plcs"));
 
-        services.AddSingleton<IEnumerable<IPlcClient>>(sp =>
+        // ---------------------------
+        // Bind PLC configs
+        // ---------------------------
+        services.Configure<List<PlcConfig>>(
+            configuration.GetSection("Plcs"));
+
+        services.AddSingleton<IPlcStateStore, InMemoryPlcStateStore>();
+        services.AddSingleton<IBackendSender, ConsoleBackendSender>();
+        services.AddSingleton<IPlcCommandDispatcher, PlcCommandDispatcher>();
+
+        // ---------------------------
+        // Multi-PLC Registration
+        // ---------------------------
+        services.AddSingleton<IPlcClient>(sp =>
         {
-            var configs = sp.GetRequiredService<IOptions<List<PlcConfig>>>().Value;
+            var plcConfigs = sp.GetRequiredService<IOptions<List<PlcConfig>>>().Value;
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 
-            return configs.Select(cfg =>
+            if (plcConfigs == null || plcConfigs.Count == 0)
+                throw new InvalidOperationException("No PLC configuration found.");
+
+            var clients = new List<IPlcClient>();
+
+            foreach (var plcConfig in plcConfigs)
             {
                 var connectionManager = new ModbusConnectionManager(
-                    cfg.Ip,
-                    cfg.Port,
-                    loggerFactory.CreateLogger<ModbusConnectionManager>());
+                    plcConfig.Ip,
+                    plcConfig.Port,
+                    loggerFactory.CreateLogger<ModbusConnectionManager>()
+                );
 
-                var deviceClient = new ModbusAhuClient(connectionManager);
+                var deviceClients = plcConfig.Devices
+                    .Select(deviceConfig =>
+                        (IDeviceClient)new ModbusAhuClient(
+                            connectionManager,
+                            deviceConfig))
+                    .ToList();
 
-                return new ModbusPlcClient(
-                    cfg.Name,
+                var plcClient = new ModbusPlcClient(
+                    plcConfig.Name,
                     connectionManager,
-                    new[] { deviceClient }
+                    deviceClients
+                );
+
+                clients.Add(plcClient);
+            }
+
+            // مهم: اینجا فقط اولین PLC را برمی‌گردانیم؟
+            // ❌ نه
+            // چون AddSingleton<IPlcClient> فقط یکی می‌سازد
+
+            throw new InvalidOperationException(
+                "Use AddSingleton<IEnumerable<IPlcClient>>() instead.");
+        });
+
+        // ✅ روش درست برای Multi-PLC
+        services.AddSingleton<IEnumerable<IPlcClient>>(sp =>
+        {
+            var plcConfigs = sp.GetRequiredService<IOptions<List<PlcConfig>>>().Value;
+            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+
+            if (plcConfigs == null || plcConfigs.Count == 0)
+                throw new InvalidOperationException("No PLC configuration found.");
+
+            return plcConfigs.Select(plcConfig =>
+            {
+                var connectionManager = new ModbusConnectionManager(
+                    plcConfig.Ip,
+                    plcConfig.Port,
+                    loggerFactory.CreateLogger<ModbusConnectionManager>()
+                );
+
+                var deviceClients = plcConfig.Devices
+                    .Select(deviceConfig =>
+                        (IDeviceClient)new ModbusAhuClient(
+                            connectionManager,
+                            deviceConfig))
+                    .ToList();
+
+                return (IPlcClient)new ModbusPlcClient(
+                    plcConfig.Name,
+                    connectionManager,
+                    deviceClients
                 );
             }).ToList();
         });
 
-
-        //services.AddSingleton<IModbusConnectionManager>(sp =>
-        //{
-        //    var config = sp.GetRequiredService<IConfiguration>();
-        //    var logger = sp.GetRequiredService<ILogger<ModbusConnectionManager>>();
-
-        //    var ip = config["Modbus:Ip"];
-        //    var port = config.GetValue<int>("Modbus:Port");
-
-        //    return new ModbusConnectionManager(ip!, port, logger);
-        //});
-
-        //services.AddSingleton<IDeviceClient, ModbusAhuClient>();
-
-        //services.AddSingleton<IPlcClient>(sp =>
-        //{
-        //    var connectionManager = sp.GetRequiredService<IModbusConnectionManager>();
-        //    var deviceClient = sp.GetRequiredService<IDeviceClient>();
-
-        //    return new ModbusPlcClient(
-        //        "PLC-1",
-        //        connectionManager,
-        //        new[] { deviceClient }
-        //    );
-        //});
-
-        services.AddSingleton<IBackendSender, ConsoleBackendSender>();
-
         services.AddHostedService<ModbusPollingWorker>();
-        services.AddSingleton<IEnumerable<PlcClient>>(sp =>
-        {
-            var configs = sp.GetRequiredService<IOptions<List<PlcConfig>>>().Value;
-            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-
-            return configs.Select(cfg =>
-                new PlcClient(
-                    cfg,
-                    loggerFactory.CreateLogger<ModbusConnectionManager>())
-            ).ToList();
-        });
     })
     .Build();
 

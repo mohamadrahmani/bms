@@ -10,5 +10,6 @@ public class PlcConfig
     public string Name { get; set; } = default!;
     public string Ip { get; set; } = default!;
     public int Port { get; set; }
-    public byte UnitId { get; set; }
+
+    public List<DeviceConfig> Devices { get; set; } = new();
 }

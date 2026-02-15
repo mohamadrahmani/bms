@@ -2,11 +2,6 @@
 using BMS.Application.Abstractions;
 using BMS.Application.Enum;
 using BMS.Application.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BMS.Infrastructure.Modbus;
 
@@ -55,17 +50,42 @@ public class ModbusPlcClient : IPlcClient
         return results;
     }
 
-    public async Task TestReadAsync(CancellationToken token)
+    public async Task WriteAsync(WritePointCommand command, CancellationToken token)
     {
+        if (command.PlcName != Name)
+            return;
+
         var master = await _connectionManager.GetMasterAsync(token);
 
-        ushort startAddress = 0; // 40001
-        ushort numRegisters = 1;
+        await _connectionManager.ExecuteWithRetryAsync(async () =>
+        {
+            await master.WriteSingleRegisterAsync(
+                command.SlaveId,
+                command.Address,
+                command.Value
+            );
 
-        var registers = await master.ReadHoldingRegistersAsync(1, startAddress, numRegisters);
-
-        Console.WriteLine($"PLC {Name} - 40001 = {registers[0]}");
+            return true;
+        });
     }
 
-}
+    // 👇 این متد فقط برای تست ساده است
+    //public async Task TestReadAsync(CancellationToken token)
+    //{
+    //    foreach (var device in _devices)
+    //    {
+    //        var snapshot = await device.ReadAsync(token);
 
+    //        Console.WriteLine($"PLC: {Name}");
+    //        Console.WriteLine($"Device: {snapshot.DeviceId}");
+    //        Console.WriteLine($"Time: {snapshot.Timestamp}");
+
+    //        foreach (var sensor in snapshot.Sensors)
+    //        {
+    //            Console.WriteLine($"  Sensor: {sensor.SensorId} -> {sensor.Value}");
+    //        }
+
+    //        Console.WriteLine("----------------------------------");
+    //    }
+    //}
+}

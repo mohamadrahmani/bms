@@ -31,14 +31,7 @@ public class PlcClient
     {
         try
         {
-            var master = await _connectionManager.GetMasterAsync(token);
-
-            // فقط یک read تستی
-            await master.ReadHoldingRegistersAsync(
-                _config.UnitId,
-                0,
-                1);
-
+            await _connectionManager.GetMasterAsync(token);
             return true;
         }
         catch

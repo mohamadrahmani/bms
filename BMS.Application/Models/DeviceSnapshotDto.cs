@@ -11,4 +11,5 @@ public class SensorValueDto
 {
     public Guid SensorId { get; set; }
     public double Value { get; set; }
+    public string? Name { get; set; }
 }

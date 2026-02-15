@@ -1,23 +1,19 @@
 ﻿using BMS.Application.Abstractions;
 using BMS.Application.Models;
-using NModbus;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BMS.Infrastructure.Modbus;
 
 public class ModbusAhuClient : IDeviceClient
 {
     private readonly IModbusConnectionManager _connectionManager;
-    private readonly byte _slaveId = 1;
+    private readonly DeviceConfig _deviceConfig;
 
-    public ModbusAhuClient(IModbusConnectionManager connectionManager)
+    public ModbusAhuClient(
+        IModbusConnectionManager connectionManager,
+        DeviceConfig deviceConfig)
     {
         _connectionManager = connectionManager;
+        _deviceConfig = deviceConfig;
     }
 
     public async Task<DeviceSnapshotDto> ReadAsync(CancellationToken cancellationToken)
@@ -25,20 +21,27 @@ public class ModbusAhuClient : IDeviceClient
         var master = await _connectionManager.GetMasterAsync(cancellationToken);
 
         var registers = await _connectionManager.ExecuteWithRetryAsync(() =>
-            master.ReadHoldingRegistersAsync(_slaveId, 0, 2)
+            master.ReadHoldingRegistersAsync(
+                _deviceConfig.SlaveId,
+                _deviceConfig.StartAddress,
+                _deviceConfig.RegisterCount)
         );
 
-
-        return new DeviceSnapshotDto
+        var snapshot = new DeviceSnapshotDto
         {
-            DeviceId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-            Timestamp = DateTime.UtcNow,
-            Sensors =
-            {
-                new() { SensorId = Guid.NewGuid(), Value = registers[0] },
-                new() { SensorId = Guid.NewGuid(), Value = registers[1] }
-            }
+            DeviceId = _deviceConfig.DeviceId,
+            Timestamp = DateTime.UtcNow
         };
+
+        foreach (var sensor in _deviceConfig.Sensors)
+        {
+            snapshot.Sensors.Add(new SensorValueDto
+            {
+                SensorId = sensor.SensorId,
+                Value = registers[sensor.RegisterIndex]
+            });
+        }
+
+        return snapshot;
     }
 }
-
