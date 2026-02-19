@@ -1,4 +1,6 @@
-﻿using WebApi.Realtime.Extensions;
+﻿using WebApi.Domain.Twin.Services;
+using WebApi.Infrastructure.Twin;
+using WebApi.Realtime.Extensions;
 using WebApi.Realtime.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +23,9 @@ builder.Services.AddCors(options =>
               .AllowCredentials();                // اجازه دادن به اعتبارسنجی (اگر نیاز است)
     });
 });
+
+builder.Services.AddSingleton<ITwinRepository, InMemoryTwinRepository>();
+builder.Services.AddScoped<ITwinService, TwinService>();
 
 var app = builder.Build();
 app.UseCors("AllowAngularDev");

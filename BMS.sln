@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BMS.Infrastructure", "BMS.I
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi", "WebApi\WebApi.csproj", "{5BAABE61-3DFC-4A66-8F65-5CAA96A3977C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realtime", "Realtime\Realtime.csproj", "{7891974C-F160-41DA-838B-093EDA4145BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{5BAABE61-3DFC-4A66-8F65-5CAA96A3977C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5BAABE61-3DFC-4A66-8F65-5CAA96A3977C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5BAABE61-3DFC-4A66-8F65-5CAA96A3977C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7891974C-F160-41DA-838B-093EDA4145BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7891974C-F160-41DA-838B-093EDA4145BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7891974C-F160-41DA-838B-093EDA4145BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7891974C-F160-41DA-838B-093EDA4145BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

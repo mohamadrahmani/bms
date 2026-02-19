@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Domain.Twin.Services;
 using WebApi.Realtime.Models;
 using WebApi.Realtime.Services;
 
@@ -17,11 +18,25 @@ namespace WebApi.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
-
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, ITwinRealtimePublisher publisher)
+        private readonly ITwinService _twinService;
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, ITwinRealtimePublisher publisher, ITwinService twinService)
         {
             _logger = logger;
             _publisher = publisher;
+            _twinService = twinService;
+        }
+
+        [HttpPost("{twinId}/update")]
+        public async Task<IActionResult> Update(
+        string twinId,
+        [FromBody] UpdateRequest request)
+        {
+            await _twinService.UpdateAsync(
+                twinId,
+                request.DataPointId,
+                Convert.ToInt32( request.Value.ToString()));
+
+            return Ok();
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
@@ -48,5 +63,10 @@ namespace WebApi.Controllers
             //})
             //.ToArray();
         }
+    }
+    public class UpdateRequest
+    {
+        public string DataPointId { get; set; } = default!;
+        public object? Value { get; set; }
     }
 }
