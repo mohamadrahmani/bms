@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace BMS.Domain.Enums
 {
-    class AlarmSeverity
+    public enum AlarmSeverity
     {
+        Info = 1,
+        Warning = 2,
+        Critical = 3
     }
 }

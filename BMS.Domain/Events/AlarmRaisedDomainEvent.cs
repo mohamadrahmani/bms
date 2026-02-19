@@ -1,12 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace BMS.Domain.Events
+using BMS.Domain.Enums;
+using BMS.Domain.Events;
+
+namespace ScadaLite.Domain.Events
 {
-    class AlarmRaisedDomainEvent
-    {
-    }
+    public record AlarmRaisedDomainEvent(
+        string DeviceId,
+        string PointId,
+        AlarmSeverity Severity,
+        string Message,
+        DateTime RaisedAtUtc
+    ) : IDomainEvent;
 }

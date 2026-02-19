@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BMS.Domain.Events
 {
-    class DataPointUpdatedDomainEvent
-    {
-    }
+    public record DataPointUpdatedDomainEvent(
+        string DeviceId,
+        string PointId,
+        object? Value,
+        DateTime TimestampUtc
+    ) : IDomainEvent;
 }

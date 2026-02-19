@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BMS.Domain.Entities;
 using BMS.Domain.Events;
+using BMS.Domain.Enums;
 using BMS.Domain.Events;
 
 namespace BMS.Domain.Entities
@@ -19,40 +20,36 @@ namespace BMS.Domain.Entities
         public Device(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
-                throw new ArgumentException("Device id cannot be empty.", nameof(id));
+                throw new ArgumentException("Device id cannot be empty.");
 
             Id = id;
         }
 
         // -----------------------------
-        // DataPoint Registration
+        // Register
         // -----------------------------
 
         public void RegisterPoint(
             string pointId,
-            DataType dataType,
+            DataType type,
             object? initialValue = null)
         {
             lock (_sync)
             {
                 if (_points.ContainsKey(pointId))
                     throw new InvalidOperationException(
-                        $"Point '{pointId}' already exists in device '{Id}'.");
+                        $"Point '{pointId}' already exists.");
 
-                var point = new DataPoint(
-                    pointId,
-                    dataType,
-                    initialValue);
-
-                _points.Add(pointId, point);
+                _points.Add(pointId,
+                    new DataPoint(pointId, type, initialValue));
             }
         }
 
         // -----------------------------
-        // Update DataPoint
+        // Update
         // -----------------------------
 
-        public DataPointUpdatedDomainEvent UpdatePoint(
+        public DataPointUpdatedDomainEvent? UpdatePoint(
             string pointId,
             object? value)
         {
@@ -60,46 +57,23 @@ namespace BMS.Domain.Entities
             {
                 if (!_points.TryGetValue(pointId, out var point))
                     throw new KeyNotFoundException(
-                        $"Point '{pointId}' not found in device '{Id}'.");
+                        $"Point '{pointId}' not found.");
 
-                var previous = point.Value;
-
-                // اگر مقدار تغییری نکرده، event تولید نکن
-                if (Equals(previous, value))
-                {
-                    return null!;
-                }
+                if (Equals(point.Value, value))
+                    return null;
 
                 point.Update(value);
 
                 return new DataPointUpdatedDomainEvent(
-                    deviceId: Id,
-                    pointId: pointId,
-                    value: value,
-                    timestamp: point.LastUpdatedUtc
-                );
+                    Id,
+                    pointId,
+                    value,
+                    point.LastUpdatedUtc);
             }
         }
 
         // -----------------------------
-        // Snapshot (برای Cold Start UI)
-        // -----------------------------
-
-        public IReadOnlyCollection<DataPointSnapshot> GetSnapshot()
-        {
-            lock (_sync)
-            {
-                return _points.Values
-                    .Select(p => new DataPointSnapshot(
-                        p.Id,
-                        p.Value,
-                        p.LastUpdatedUtc))
-                    .ToList();
-            }
-        }
-
-        // -----------------------------
-        // Command Execution (Device-centric)
+        // Command
         // -----------------------------
 
         public DeviceCommandExecutedDomainEvent ExecuteCommand(
@@ -108,43 +82,38 @@ namespace BMS.Domain.Entities
         {
             lock (_sync)
             {
-                // در این نسخه، فقط Domain Event تولید می‌کنیم.
-                // Driver واقعی در Application/Infrastructure صدا زده می‌شود.
-
                 return new DeviceCommandExecutedDomainEvent(
-                    deviceId: Id,
-                    commandName: commandName,
-                    payload: payload,
-                    executedAtUtc: DateTime.UtcNow
-                );
+                    Id,
+                    commandName,
+                    payload,
+                    DateTime.UtcNow);
             }
         }
 
         // -----------------------------
-        // Helpers
+        // Snapshot
         // -----------------------------
+
+        public IReadOnlyCollection<DataPointSnapshot> GetSnapshot()
+        {
+            lock (_sync)
+            {
+                return _points.Values
+                    .Select(p =>
+                        new DataPointSnapshot(
+                            p.Id,
+                            p.Value,
+                            p.LastUpdatedUtc))
+                    .ToList();
+            }
+        }
 
         public bool HasPoint(string pointId)
         {
             lock (_sync)
-            {
                 return _points.ContainsKey(pointId);
-            }
-        }
-
-        public DataPoint? GetPoint(string pointId)
-        {
-            lock (_sync)
-            {
-                _points.TryGetValue(pointId, out var point);
-                return point;
-            }
         }
     }
-
-    // -----------------------------
-    // Snapshot DTO (Domain-level)
-    // -----------------------------
 
     public record DataPointSnapshot(
         string PointId,
