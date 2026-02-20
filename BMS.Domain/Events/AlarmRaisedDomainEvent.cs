@@ -3,7 +3,7 @@
 using BMS.Domain.Enums;
 using BMS.Domain.Events;
 
-namespace ScadaLite.Domain.Events
+namespace BMS.Domain.Events
 {
     public record AlarmRaisedDomainEvent(
         string DeviceId,
