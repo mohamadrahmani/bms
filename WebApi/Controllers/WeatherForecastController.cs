@@ -1,4 +1,8 @@
+using BMS.Application.Interfaces;
+using BMS.Application.UseCases;
+using BMS.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using WebApi.Domain.Twin.Services;
 using WebApi.Realtime.Models;
 using WebApi.Realtime.Services;
@@ -10,7 +14,7 @@ namespace WebApi.Controllers
     public class WeatherForecastController : ControllerBase
     {
 
-        private readonly ITwinRealtimePublisher _publisher;
+        //private readonly ITwinRealtimePublisher _publisher;
 
         private static readonly string[] Summaries = new[]
         {
@@ -19,11 +23,21 @@ namespace WebApi.Controllers
 
         private readonly ILogger<WeatherForecastController> _logger;
         private readonly ITwinService _twinService;
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, ITwinRealtimePublisher publisher, ITwinService twinService)
+        private readonly IDeviceStateStore _store;
+        private readonly IEventDispatcher _dispatcher;
+        private readonly UpdateDataPointUseCase _useCase;
+        public WeatherForecastController(ILogger<WeatherForecastController> logger,// ITwinRealtimePublisher publisher, ITwinService twinService,
+            IDeviceStateStore store
+            ,IEventDispatcher dispatcher,
+            UpdateDataPointUseCase useCase
+            )
         {
             _logger = logger;
-            _publisher = publisher;
-            _twinService = twinService;
+            //_publisher = publisher;
+            //_twinService = twinService;
+            _store = store;
+            _dispatcher = dispatcher;
+            _useCase = useCase;
         }
 
         [HttpPost("{twinId}/update")]
@@ -31,10 +45,24 @@ namespace WebApi.Controllers
         string twinId,
         [FromBody] UpdateRequest request)
         {
-            await _twinService.UpdateAsync(
+            //await _twinService.UpdateAsync(
+            //    twinId,
+            //    request.DataPointId,
+            //    Convert.ToInt32( request.Value.ToString()));
+
+            var device = _store.Get(twinId);
+            device.RegisterPoint(request.DataPointId, BMS.Domain.Enums.DataType.Integer);
+            //var domainEvent = device.UpdatePoint(request.DataPointId, Convert.ToInt32(request.Value.ToString()));
+
+            await _useCase.ExecuteAsync(
                 twinId,
                 request.DataPointId,
-                Convert.ToInt32( request.Value.ToString()));
+                Convert.ToInt32(request.Value.ToString()));
+
+            //if (domainEvent == null)
+            //    return;
+
+            //await _dispatcher.DispatchAsync(domainEvent);
 
             return Ok();
         }
@@ -42,16 +70,16 @@ namespace WebApi.Controllers
         [HttpGet(Name = "GetWeatherForecast")]
         public async Task<IActionResult> Get()
         {
-            while (true)
-            {
-                await _publisher.PublishAsync(new RealtimeUpdate
-                {
-                    DatapointId = "ahu1.temp.supply",
-                    Value = Random.Shared.Next(-20, 55),
-                    Quality = "Good"
-                });
-                System.Threading.Thread.Sleep(1000);
-            }
+            //while (true)
+            //{
+            //    await _publisher.PublishAsync(new RealtimeUpdate
+            //    {
+            //        DatapointId = "ahu1.temp.supply",
+            //        Value = Random.Shared.Next(-20, 55),
+            //        Quality = "Good"
+            //    });
+            //    System.Threading.Thread.Sleep(1000);
+            //}
 
             return Ok();
 

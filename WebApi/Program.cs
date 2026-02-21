@@ -1,4 +1,14 @@
-﻿using WebApi.Domain.Twin.Services;
+﻿using BMS.Application.Interfaces;
+using BMS.Application.Models;
+using BMS.Application.UseCases;
+using BMS.Domain.Events;
+using BMS.Infrastructure.Alarm;
+using BMS.Infrastructure.Events;
+using BMS.Infrastructure.Historian;
+using BMS.Infrastructure.Realtime;
+using BMS.Infrastructure.Realtime.Hubs;
+using System.Threading.Channels;
+using WebApi.Domain.Twin.Services;
 using WebApi.Infrastructure.Twin;
 using WebApi.Realtime.Extensions;
 using WebApi.Realtime.Hubs;
@@ -25,11 +35,39 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddSingleton<ITwinRepository, InMemoryTwinRepository>();
-builder.Services.AddScoped<ITwinService, TwinService>();
+//builder.Services.AddScoped<ITwinService, TwinService>();
+builder.Services.AddScoped<IDeviceStateStore, DeviceStateStore >();
+builder.Services.AddScoped<IHistorianWriter, ChannelHistorianWriter>();
+//builder.Services.AddScoped<Channel, ChannelHistorianWriter>();
+//builder.Services.AddScoped<IEventDispatcher, EventDispatcher>();
 
+builder.Services.AddScoped<UpdateDataPointUseCase>();
+
+builder.Services.AddSingleton<IEventDispatcher, EventDispatcher>();
+
+builder.Services.AddScoped<
+    IEventHandler<DataPointUpdatedDomainEvent>,
+    DataPointUpdatedRealtimeHandler>();
+
+var channel = Channel.CreateUnbounded<DataPointDeltaModel>(
+                new UnboundedChannelOptions
+                {
+                    SingleReader = true,
+                    SingleWriter = false
+                });
+
+builder.Services.AddSingleton(channel);
+
+//builder.Services.AddScoped<IEventDispatcher, EventDispatcher>();
+
+builder.Services.AddScoped<IEventHandler<DataPointUpdatedDomainEvent>,
+    DataPointUpdatedHistorianHandler>();
+
+//builder.Services.AddScoped<IEventHandler<DataPointUpdatedDomainEvent>,
+//    DataPointUpdatedAlarmHandler>();
 var app = builder.Build();
 app.UseCors("AllowAngularDev");
-app.MapHub<TwinHub>("/hubs/twin");
+app.MapHub<BMSHub>("/hubs/twin");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

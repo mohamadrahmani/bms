@@ -10,7 +10,7 @@ public static class RealtimeExtensions
     {
         services.AddSignalR();
 
-        services.AddScoped<ITwinRealtimePublisher, TwinRealtimePublisher>();
+        //services.AddScoped<ITwinRealtimePublisher, TwinRealtimePublisher>();
 
         return services;
     }
