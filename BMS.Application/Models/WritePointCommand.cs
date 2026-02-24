@@ -8,8 +8,10 @@ namespace BMS.Application.Models;
 public class WritePointCommand
 {
     public string PlcName { get; set; } = default!;
-    public byte SlaveId { get; set; }
-    public ushort Address { get; set; }
-    public ushort Value { get; set; }
+    public string DeviceName { get; set; } = default!;
+    public Guid DeviceId { get; set; }
+    public string PointCode { get; set; } = default!;
+    public double Value { get; set; }
 }
+
 

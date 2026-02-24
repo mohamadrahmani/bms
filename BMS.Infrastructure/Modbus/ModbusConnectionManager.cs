@@ -140,7 +140,24 @@ public class ModbusConnectionManager : IModbusConnectionManager
             throw;
         }
     }
+    //public async Task ExecuteWithRetryAsync(Func<Task> action)
+    //{
+    //    await _policyWrap.ExecuteAsync(async () =>
+    //    {
+    //        await action();
+    //        return true;
+    //    });
+    //}
+    public Task ExecuteWithRetryAsync(Func<Task> action)
+    {
+        if (action is null) throw new ArgumentNullException(nameof(action));
 
+        return ExecuteWithRetryAsync<object>(async () =>
+        {
+            await action().ConfigureAwait(false);
+            return null!;
+        });
+    }
     public void Dispose()
     {
         _master = null;

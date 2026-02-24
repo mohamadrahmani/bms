@@ -9,7 +9,7 @@ public interface IModbusConnectionManager : IDisposable
     Task<IModbusMaster> GetMasterAsync(CancellationToken cancellationToken);
 
     Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> action);
-
+    Task ExecuteWithRetryAsync(Func<Task> action);
     ConnectionState State { get; }
 
     DateTime? LastSuccessfulRead { get; }

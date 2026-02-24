@@ -31,7 +31,7 @@ namespace BMS.Worker.Workers
             _logger.LogInformation("PLC Polling Worker started.");
 
             // 🔵 تست اولیه Write (فقط یکبار در شروع)
-            await SendStartupTestCommand(stoppingToken);
+            //await SendStartupTestCommand(stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -81,7 +81,10 @@ namespace BMS.Worker.Workers
                     _logger.LogInformation(
                         "Device {DeviceId} updated. Points={Count}",
                         snapshot.DeviceId,
-                        snapshot.Sensors.Count);
+                        snapshot.Sensors.Count,
+                        snapshot.Timestamp,
+                        snapshot.Sensors.First().Value
+                        );
 
                     await _sender.SendAsync(snapshot, token);
                 }
@@ -91,7 +94,7 @@ namespace BMS.Worker.Workers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "PLC {Name} polling failed.", plc.Name);
+                //_logger.LogError(ex, "PLC {Name} polling failed.", plc.Name);
             }
         }
 
@@ -102,8 +105,6 @@ namespace BMS.Worker.Workers
                 await _dispatcher.SendAsync(new WritePointCommand
                 {
                     PlcName = "PLC-1",
-                    SlaveId = 1,
-                    Address = 0,
                     Value = 123
                 }, token);
 

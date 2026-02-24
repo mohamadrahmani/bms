@@ -17,14 +17,19 @@ public class PlcCommandDispatcher : IPlcCommandDispatcher
         _plcs = plcs;
     }
 
-    public async Task SendAsync(WritePointCommand command, CancellationToken token)
+    public async Task<bool> SendAsync(
+        WritePointCommand command,
+        CancellationToken token)
     {
         var plc = _plcs.FirstOrDefault(p => p.Name == command.PlcName);
 
         if (plc == null)
-            throw new InvalidOperationException($"PLC {command.PlcName} not found.");
+            throw new InvalidOperationException("PLC not found.");
 
-        await plc.WriteAsync(command, token);
+         await plc.WriteAsync(command, token); 
+        return true;
+
     }
+
 }
 

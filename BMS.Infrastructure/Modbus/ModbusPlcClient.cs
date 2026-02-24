@@ -55,18 +55,11 @@ public class ModbusPlcClient : IPlcClient
         if (command.PlcName != Name)
             return;
 
-        var master = await _connectionManager.GetMasterAsync(token);
+        var device=_devices.FirstOrDefault(d => d.DeviceId== command.DeviceId);
+        if (device is null)
+            throw new InvalidOperationException($"Device {command.DeviceId} not found in PLC {Name}");
 
-        await _connectionManager.ExecuteWithRetryAsync(async () =>
-        {
-            await master.WriteSingleRegisterAsync(
-                command.SlaveId,
-                command.Address,
-                command.Value
-            );
-
-            return true;
-        });
+        await device.WriteAsync(command.PointCode, command.Value, token);
     }
 
     // 👇 این متد فقط برای تست ساده است

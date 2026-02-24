@@ -8,6 +8,6 @@ using System.Threading.Tasks;
 namespace BMS.Worker.Abstractions;
 public interface IPlcCommandDispatcher
 {
-    Task SendAsync(WritePointCommand command, CancellationToken token);
+    Task<bool> SendAsync(WritePointCommand command, CancellationToken token);
 }
 
