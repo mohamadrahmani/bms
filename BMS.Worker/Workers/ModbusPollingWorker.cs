@@ -1,6 +1,7 @@
 ﻿using BMS.Application.Abstraction;
 using BMS.Application.Models;
 using BMS.Worker.Abstractions;
+using System.Threading.Channels;
 
 namespace BMS.Worker.Workers
 {
@@ -11,19 +12,21 @@ namespace BMS.Worker.Workers
         private readonly IBackendSender _sender;
         private readonly IPlcStateStore _stateStore;
         private readonly IPlcCommandDispatcher _dispatcher;
-
+        private readonly ChannelWriter<TelemetryMessage> _telemetryWriter;
         public ModbusPollingWorker(
             ILogger<ModbusPollingWorker> logger,
             IEnumerable<IPlcClient> plcClients,
             IBackendSender sender,
             IPlcStateStore stateStore,
-            IPlcCommandDispatcher dispatcher)
+            IPlcCommandDispatcher dispatcher,
+            ChannelWriter<TelemetryMessage> telemetryWriter)
         {
             _logger = logger;
             _plcClients = plcClients;
             _sender = sender;
             _stateStore = stateStore;
             _dispatcher = dispatcher;
+            _telemetryWriter = telemetryWriter;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -64,6 +67,18 @@ namespace BMS.Worker.Workers
             {
                 var isOnline = await plc.TestConnectionAsync(token);
 
+                var statusMsg = new TelemetryMessage
+                {
+                    PlcName = plc.Name,
+                    IsOnline = isOnline,
+                    TimestampUtc = DateTime.UtcNow,
+                    DeviceId = null,
+                    Points = new List<TelemetryPoint>()
+                };
+
+                // status همیشه ارسال میشه تا UI وضعیت رو بفهمه
+                _telemetryWriter.TryWrite(statusMsg);
+
                 if (!isOnline)
                 {
                     _logger.LogWarning("PLC {Name} OFFLINE", plc.Name);
@@ -71,23 +86,41 @@ namespace BMS.Worker.Workers
                 }
 
                 _logger.LogDebug("PLC {Name} ONLINE", plc.Name);
-
+                
                 var snapshots = await plc.PollAsync(token);
-
                 foreach (var snapshot in snapshots)
                 {
-                    _stateStore.Update(plc.Name, snapshot);
+                    var msg = new TelemetryMessage
+                    {
+                        PlcName = plc.Name,
+                        IsOnline = true,
+                        TimestampUtc = snapshot.Timestamp,
+                        DeviceId = snapshot.DeviceId,
+                        Points = snapshot.Sensors.Select(s => new TelemetryPoint
+                        {
+                            Id = s.SensorId,      // اگر SensorId ثابت داری عالیه
+                            Code = s.Name,        // اگر داری
+                            Value = s.Value
+                        }).ToList()
+                    };
 
-                    _logger.LogInformation(
-                        "Device {DeviceId} updated. Points={Count}",
-                        snapshot.DeviceId,
-                        snapshot.Sensors.Count,
-                        snapshot.Timestamp,
-                        snapshot.Sensors.First().Value
-                        );
-
-                    await _sender.SendAsync(snapshot, token);
+                    if (!_telemetryWriter.TryWrite(msg))
+                        _logger.LogWarning("Telemetry queue is full. Dropped message for PLC {Plc}", plc.Name);
                 }
+                //foreach (var snapshot in snapshots)
+                //{
+                //    _stateStore.Update(plc.Name, snapshot);
+
+                //    _logger.LogInformation(
+                //        "Device {DeviceId} updated. Points={Count}",
+                //        snapshot.DeviceId,
+                //        snapshot.Sensors.Count,
+                //        snapshot.Timestamp,
+                //        snapshot.Sensors.First().Value
+                //        );
+
+                //    await _sender.SendAsync(snapshot, token);
+                //}
             }
             catch (OperationCanceledException)
             {

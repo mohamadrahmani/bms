@@ -7,6 +7,7 @@ using BMS.Worker.Devices;
 using BMS.Worker.Transport;
 using BMS.Worker.Workers;
 using Microsoft.Extensions.Options;
+using System.Threading.Channels;
 
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
@@ -101,6 +102,23 @@ IHost host = Host.CreateDefaultBuilder(args)
         });
 
         services.AddHostedService<ModbusPollingWorker>();
+        services.AddSingleton(sp =>
+        {
+            var options = new BoundedChannelOptions(capacity: 500)
+            {
+                SingleReader = true,
+                SingleWriter = false,
+                // برای دمو بهتره Polling گیر نکنه:
+                FullMode = BoundedChannelFullMode.DropOldest
+            };
+
+            return Channel.CreateBounded<TelemetryMessage>(options);
+        });
+        services.AddSingleton(sp => sp.GetRequiredService<Channel<TelemetryMessage>>().Writer);
+        services.AddSingleton(sp => sp.GetRequiredService<Channel<TelemetryMessage>>().Reader);
+
+        services.AddHttpClient("UiSink");
+        services.AddHostedService<TelemetryForwarderWorker>();
     })
     .Build();
 
