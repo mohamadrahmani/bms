@@ -11,7 +11,7 @@ namespace WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class PointController : ControllerBase
     {
 
         //private readonly ITwinRealtimePublisher _publisher;
@@ -21,12 +21,12 @@ namespace WebApi.Controllers
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        private readonly ILogger<WeatherForecastController> _logger;
+        private readonly ILogger<PointController> _logger;
         private readonly ITwinService _twinService;
         private readonly IDeviceStateStore _store;
         private readonly IEventDispatcher _dispatcher;
         private readonly UpdateDataPointUseCase _useCase;
-        public WeatherForecastController(ILogger<WeatherForecastController> logger,// ITwinRealtimePublisher publisher, ITwinService twinService,
+        public PointController(ILogger<PointController> logger,// ITwinRealtimePublisher publisher, ITwinService twinService,
             IDeviceStateStore store
             ,IEventDispatcher dispatcher,
             UpdateDataPointUseCase useCase

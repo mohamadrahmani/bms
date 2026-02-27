@@ -3,6 +3,7 @@ using BMS.Application.Models;
 using BMS.Application.UseCases;
 using BMS.Domain.Events;
 using BMS.Infrastructure.Alarm;
+using BMS.Infrastructure;
 using BMS.Infrastructure.Events;
 using BMS.Infrastructure.Historian;
 using BMS.Infrastructure.Realtime;
@@ -12,6 +13,8 @@ using WebApi.Domain.Twin.Services;
 using WebApi.Infrastructure.Twin;
 using WebApi.Realtime.Extensions;
 using WebApi.Realtime.Hubs;
+
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +47,7 @@ builder.Services.AddScoped<IHistorianWriter, ChannelHistorianWriter>();
 builder.Services.AddScoped<UpdateDataPointUseCase>();
 
 builder.Services.AddSingleton<IEventDispatcher, EventDispatcher>();
-
+builder.Services.AddScoped<ExecuteCommandUseCase>();
 builder.Services.AddScoped<
     IEventHandler<DataPointUpdatedDomainEvent>,
     DataPointUpdatedRealtimeHandler>();
@@ -59,6 +62,8 @@ var channel = Channel.CreateUnbounded<DataPointDeltaModel>(
 builder.Services.AddSingleton(channel);
 
 //builder.Services.AddScoped<IEventDispatcher, EventDispatcher>();
+
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<IEventHandler<DataPointUpdatedDomainEvent>,
     DataPointUpdatedHistorianHandler>();
