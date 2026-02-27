@@ -11,7 +11,7 @@ public interface IPlcClient
 
     Task<IEnumerable<DeviceSnapshotDto>> PollAsync(CancellationToken cancellationToken);
     Task<bool> TestConnectionAsync(CancellationToken token);
-    Task WriteAsync(WritePointCommand command, CancellationToken token);
+    Task<bool> WriteAsync(WritePointCommand command, CancellationToken token);
 
 }
 

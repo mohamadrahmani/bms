@@ -3,6 +3,7 @@
 public class DeviceSnapshotDto
 {
     public Guid DeviceId { get; set; }
+    public string DeviceName { get; set; } = default!;
     public DateTime Timestamp { get; set; }
     public List<SensorValueDto> Sensors { get; set; } = new();
 }

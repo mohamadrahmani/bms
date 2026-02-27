@@ -1,0 +1,579 @@
+diff --git a/BMS.Application/Abstraction/IPlcClient.cs b/BMS.Application/Abstraction/IPlcClient.cs
+index 49255d3..574a6a0 100644
+--- a/BMS.Application/Abstraction/IPlcClient.cs
++++ b/BMS.Application/Abstraction/IPlcClient.cs
+@@ -11,7 +11,7 @@ public interface IPlcClient
+ 
+     Task<IEnumerable<DeviceSnapshotDto>> PollAsync(CancellationToken cancellationToken);
+     Task<bool> TestConnectionAsync(CancellationToken token);
+-    Task WriteAsync(WritePointCommand command, CancellationToken token);
++    Task<bool> WriteAsync(WritePointCommand command, CancellationToken token);
+ 
+ }
+ 
+diff --git a/BMS.Application/Models/DeviceSnapshotDto.cs b/BMS.Application/Models/DeviceSnapshotDto.cs
+index bf14677..22edd28 100644
+--- a/BMS.Application/Models/DeviceSnapshotDto.cs
++++ b/BMS.Application/Models/DeviceSnapshotDto.cs
+@@ -3,6 +3,7 @@
+ public class DeviceSnapshotDto
+ {
+     public Guid DeviceId { get; set; }
++    public string DeviceName { get; set; } = default!;
+     public DateTime Timestamp { get; set; }
+     public List<SensorValueDto> Sensors { get; set; } = new();
+ }
+diff --git a/BMS.Application/Models/TelemetryMessage.cs b/BMS.Application/Models/TelemetryMessage.cs
+index cdcd07c..406adea 100644
+--- a/BMS.Application/Models/TelemetryMessage.cs
++++ b/BMS.Application/Models/TelemetryMessage.cs
+@@ -2,6 +2,14 @@
+ 
+ public sealed class TelemetryMessage
+ {
++    /// <summary>
++    /// Message kind.
++    /// telemetry: normal device points
++    /// plcStatus: PLC online/offline heartbeat
++    /// commandResult: write command acknowledgement/result
++    /// </summary>
++    public string Type { get; set; } = "telemetry";
++
+     public string PlcName { get; set; } = default!;
+     public bool IsOnline { get; set; }
+     public DateTime TimestampUtc { get; set; }
+@@ -9,6 +17,13 @@ public sealed class TelemetryMessage
+     // اگر پیام status-only بود DeviceId می‌تونه null باشه
+     public Guid? DeviceId { get; set; }
+ 
++    // برای UI و دموی بهتر
++    public string? DeviceName { get; set; }
++
++    // فقط برای commandResult (اختیاری)
++    public bool? Success { get; set; }
++    public string? Error { get; set; }
++
+     public List<TelemetryPoint> Points { get; set; } = new();
+ }
+ 
+diff --git a/BMS.Infrastructure/Modbus/ModbusAhuClient.cs b/BMS.Infrastructure/Modbus/ModbusAhuClient.cs
+index ed69912..1ed2f31 100644
+--- a/BMS.Infrastructure/Modbus/ModbusAhuClient.cs
++++ b/BMS.Infrastructure/Modbus/ModbusAhuClient.cs
+@@ -1,5 +1,6 @@
+ ﻿using BMS.Application.Abstractions;
+ using BMS.Application.Models;
++using BMS.Application.Utilities;
+ 
+ namespace BMS.Infrastructure.Modbus;
+ 
+@@ -7,16 +8,23 @@ public class ModbusAhuClient : IDeviceClient
+ {
+     private readonly IModbusConnectionManager _connectionManager;
+     private readonly DeviceConfig _config;
++    private readonly string _plcName;
++    private readonly Guid _deviceId;
+ 
+     public ModbusAhuClient(
++        string plcName,
+         IModbusConnectionManager connectionManager,
+         DeviceConfig config)
+     {
++        _plcName = plcName;
+         _connectionManager = connectionManager;
+         _config = config;
++
++        // Stable, deterministic identity per PLC+Device
++        _deviceId = DeterministicGuid.FromString($"bms|plc:{_plcName}|device:{_config.Name}");
+     }
+ 
+-    public Guid DeviceId => throw new NotImplementedException();
++    public Guid DeviceId => _deviceId;
+ 
+     public async Task<DeviceSnapshotDto> ReadAsync(
+         CancellationToken cancellationToken)
+@@ -25,7 +33,8 @@ public class ModbusAhuClient : IDeviceClient
+ 
+         var snapshot = new DeviceSnapshotDto
+         {
+-            DeviceId = Guid.NewGuid(),
++            DeviceId = DeviceId,
++            DeviceName = _config.Name,
+             Timestamp = DateTime.UtcNow
+         };
+ 
+@@ -41,6 +50,7 @@ public class ModbusAhuClient : IDeviceClient
+ 
+             snapshot.Sensors.Add(new SensorValueDto
+             {
++                SensorId = DeterministicGuid.FromString($"bms|plc:{_plcName}|device:{_config.Name}|point:{point.Code}"),
+                 Name = point.Code,
+                 Value = value
+             });
+@@ -60,7 +70,8 @@ public class ModbusAhuClient : IDeviceClient
+         if (point == null)
+             throw new InvalidOperationException($"Point {pointCode} not found.");
+ 
+-        if (!point.IsWritable)
++        // برای دمو: اگر CommandAddress ست شده باشد، حتی اگر IsWritable فراموش شده باشد اجازه می‌دهیم.
++        if (!point.IsWritable && point.CommandAddress is null)
+             throw new InvalidOperationException($"Point {pointCode} is not writable.");
+ 
+         var master = await _connectionManager.GetMasterAsync(token);
+@@ -69,13 +80,29 @@ public class ModbusAhuClient : IDeviceClient
+             engineeringValue,
+             point);
+ 
++        var commandAddress = point.CommandAddress ?? point.Address;
++        var feedbackAddress = point.FeedbackAddress ?? commandAddress;
++        var readLength = (ushort)Math.Max(point.Length, registers.Length);
++
+         // 1️⃣ Write
+-        await _connectionManager.ExecuteWithRetryAsync(() =>
+-            master.WriteSingleRegisterAsync(
+-                _config.SlaveId,
+-                point.CommandAddress!.Value,
+-                registers[0])
+-        );
++        if (registers.Length == 1)
++        {
++            await _connectionManager.ExecuteWithRetryAsync(() =>
++                master.WriteSingleRegisterAsync(
++                    _config.SlaveId,
++                    commandAddress,
++                    registers[0])
++            );
++        }
++        else
++        {
++            await _connectionManager.ExecuteWithRetryAsync(() =>
++                master.WriteMultipleRegistersAsync(
++                    _config.SlaveId,
++                    commandAddress,
++                    registers)
++            );
++        }
+ 
+ 
+         // 2️⃣ Validate
+@@ -87,8 +114,8 @@ public class ModbusAhuClient : IDeviceClient
+                 await _connectionManager.ExecuteWithRetryAsync(() =>
+                     master.ReadHoldingRegistersAsync(
+                         _config.SlaveId,
+-                        point.FeedbackAddress!.Value,
+-                        point.Length));
++                        feedbackAddress,
++                        readLength));
+ 
+             var feedbackValue =
+                 ModbusValueParser.Parse(feedbackRegisters, point);
+diff --git a/BMS.Infrastructure/Modbus/ModbusPlcClient.cs b/BMS.Infrastructure/Modbus/ModbusPlcClient.cs
+index c55f4fe..85de95f 100644
+--- a/BMS.Infrastructure/Modbus/ModbusPlcClient.cs
++++ b/BMS.Infrastructure/Modbus/ModbusPlcClient.cs
+@@ -50,16 +50,16 @@ public class ModbusPlcClient : IPlcClient
+         return results;
+     }
+ 
+-    public async Task WriteAsync(WritePointCommand command, CancellationToken token)
++    public async Task<bool> WriteAsync(WritePointCommand command, CancellationToken token)
+     {
+         if (command.PlcName != Name)
+-            return;
++            return false;
+ 
+         var device=_devices.FirstOrDefault(d => d.DeviceId== command.DeviceId);
+         if (device is null)
+             throw new InvalidOperationException($"Device {command.DeviceId} not found in PLC {Name}");
+ 
+-        await device.WriteAsync(command.PointCode, command.Value, token);
++        return await device.WriteAsync(command.PointCode, command.Value, token);
+     }
+ 
+     // 👇 این متد فقط برای تست ساده است
+diff --git a/BMS.Worker/BMS.Worker.csproj b/BMS.Worker/BMS.Worker.csproj
+index 5a4eaea..dd0aeb7 100644
+--- a/BMS.Worker/BMS.Worker.csproj
++++ b/BMS.Worker/BMS.Worker.csproj
+@@ -12,6 +12,10 @@
+     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
+   </ItemGroup>
+ 
++  <ItemGroup>
++    <FrameworkReference Include="Microsoft.AspNetCore.App" />
++  </ItemGroup>
++
+   <ItemGroup>
+     <ProjectReference Include="..\BMS.Application\BMS.Application.csproj" />
+     <ProjectReference Include="..\BMS.Infrastructure\BMS.Infrastructure.csproj" />
+diff --git a/BMS.Worker/Devices/PlcCommandDispatcher.cs b/BMS.Worker/Devices/PlcCommandDispatcher.cs
+index 0244a79..172f31c 100644
+--- a/BMS.Worker/Devices/PlcCommandDispatcher.cs
++++ b/BMS.Worker/Devices/PlcCommandDispatcher.cs
+@@ -26,8 +26,7 @@ public class PlcCommandDispatcher : IPlcCommandDispatcher
+         if (plc == null)
+             throw new InvalidOperationException("PLC not found.");
+ 
+-         await plc.WriteAsync(command, token); 
+-        return true;
++        return await plc.WriteAsync(command, token);
+ 
+     }
+ 
+diff --git a/BMS.Worker/Program.cs b/BMS.Worker/Program.cs
+index 52c84e6..2af2c92 100644
+--- a/BMS.Worker/Program.cs
++++ b/BMS.Worker/Program.cs
+@@ -1,125 +1,181 @@
+-﻿using BMS.Application.Abstraction;
+-using BMS.Application.Abstractions;
++using System.Threading.Channels;
++using BMS.Application.Abstraction;
+ using BMS.Application.Models;
++using BMS.Application.Utilities;
+ using BMS.Infrastructure.Modbus;
+ using BMS.Worker.Abstractions;
+ using BMS.Worker.Devices;
+ using BMS.Worker.Transport;
+ using BMS.Worker.Workers;
++using Microsoft.AspNetCore.Builder;
++using Microsoft.AspNetCore.Http;
+ using Microsoft.Extensions.Options;
+-using System.Threading.Channels;
+ 
+-IHost host = Host.CreateDefaultBuilder(args)
+-    .ConfigureServices((context, services) =>
++var builder = WebApplication.CreateBuilder(args);
++
++var configuration = builder.Configuration;
++
++// ---------------------------
++// Config
++// ---------------------------
++builder.Services.Configure<List<PlcConfig>>(configuration.GetSection("Plcs"));
++
++// ---------------------------
++// Demo-friendly CORS (UI calls Worker directly)
++// ---------------------------
++builder.Services.AddCors(options =>
++{
++    options.AddDefaultPolicy(policy =>
++        policy.AllowAnyOrigin()
++              .AllowAnyHeader()
++              .AllowAnyMethod());
++});
++
++// ---------------------------
++// Core services
++// ---------------------------
++builder.Services.AddSingleton<IPlcStateStore, InMemoryPlcStateStore>();
++builder.Services.AddSingleton<IBackendSender, ConsoleBackendSender>();
++builder.Services.AddSingleton<IPlcCommandDispatcher, PlcCommandDispatcher>();
++
++// ---------------------------
++// Multi-PLC registration
++// ---------------------------
++builder.Services.AddSingleton<IEnumerable<IPlcClient>>(sp =>
++{
++    var plcConfigs = sp.GetRequiredService<IOptions<List<PlcConfig>>>().Value;
++    var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
++
++    if (plcConfigs == null || plcConfigs.Count == 0)
++        throw new InvalidOperationException("No PLC configuration found.");
++
++    return plcConfigs.Select(plcConfig =>
+     {
+-        var configuration = context.Configuration;
+-
+-        // ---------------------------
+-        // Bind PLC configs
+-        // ---------------------------
+-        services.Configure<List<PlcConfig>>(
+-            configuration.GetSection("Plcs"));
+-
+-        services.AddSingleton<IPlcStateStore, InMemoryPlcStateStore>();
+-        services.AddSingleton<IBackendSender, ConsoleBackendSender>();
+-        services.AddSingleton<IPlcCommandDispatcher, PlcCommandDispatcher>();
+-
+-        // ---------------------------
+-        // Multi-PLC Registration
+-        // ---------------------------
+-        services.AddSingleton<IPlcClient>(sp =>
+-        {
+-            var plcConfigs = sp.GetRequiredService<IOptions<List<PlcConfig>>>().Value;
+-            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+-
+-            if (plcConfigs == null || plcConfigs.Count == 0)
+-                throw new InvalidOperationException("No PLC configuration found.");
+-
+-            var clients = new List<IPlcClient>();
+-
+-            foreach (var plcConfig in plcConfigs)
+-            {
+-                var connectionManager = new ModbusConnectionManager(
+-                    plcConfig.Ip,
+-                    plcConfig.Port,
+-                    loggerFactory.CreateLogger<ModbusConnectionManager>()
+-                );
+-
+-                var deviceClients = plcConfig.Devices
+-                    .Select(deviceConfig =>
+-                        (IDeviceClient)new ModbusAhuClient(
+-                            connectionManager,
+-                            deviceConfig))
+-                    .ToList();
+-
+-                var plcClient = new ModbusPlcClient(
++        var connectionManager = new ModbusConnectionManager(
++            plcConfig.Ip,
++            plcConfig.Port,
++            loggerFactory.CreateLogger<ModbusConnectionManager>()
++        );
++
++        var deviceClients = plcConfig.Devices
++            .Select(deviceConfig =>
++                (IDeviceClient)new ModbusAhuClient(
+                     plcConfig.Name,
+                     connectionManager,
+-                    deviceClients
+-                );
+-
+-                clients.Add(plcClient);
+-            }
+-
+-            // مهم: اینجا فقط اولین PLC را برمی‌گردانیم؟
+-            // ❌ نه
+-            // چون AddSingleton<IPlcClient> فقط یکی می‌سازد
+-
+-            throw new InvalidOperationException(
+-                "Use AddSingleton<IEnumerable<IPlcClient>>() instead.");
+-        });
+-
+-        // ✅ روش درست برای Multi-PLC
+-        services.AddSingleton<IEnumerable<IPlcClient>>(sp =>
++                    deviceConfig))
++            .ToList();
++
++        return (IPlcClient)new ModbusPlcClient(
++            plcConfig.Name,
++            connectionManager,
++            deviceClients
++        );
++    }).ToList();
++});
++
++// ---------------------------
++// Telemetry queue
++// ---------------------------
++builder.Services.AddSingleton(sp =>
++{
++    var options = new BoundedChannelOptions(capacity: 500)
++    {
++        SingleReader = true,
++        SingleWriter = false,
++        // برای دمو بهتره Polling گیر نکنه:
++        FullMode = BoundedChannelFullMode.DropOldest
++    };
++
++    return Channel.CreateBounded<TelemetryMessage>(options);
++});
++builder.Services.AddSingleton(sp => sp.GetRequiredService<Channel<TelemetryMessage>>().Writer);
++builder.Services.AddSingleton(sp => sp.GetRequiredService<Channel<TelemetryMessage>>().Reader);
++
++builder.Services.AddHttpClient("UiSink");
++
++// ---------------------------
++// Hosted services
++// ---------------------------
++builder.Services.AddHostedService<ModbusPollingWorker>();
++builder.Services.AddHostedService<TelemetryForwarderWorker>();
++
++// ---------------------------
++// Worker Command API URL
++// ---------------------------
++var commandUrl = configuration["CommandApi:Url"];
++builder.WebHost.UseUrls(string.IsNullOrWhiteSpace(commandUrl) ? "http://localhost:5055" : commandUrl);
++
++var app = builder.Build();
++
++app.UseCors();
++
++app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
++
++// -------------------------------------------------
++// Command ingress (demo): UI -> Worker -> PLC
++// -------------------------------------------------
++app.MapPost("/api/commands/write-point",
++    async (
++        WritePointCommand command,
++        IPlcCommandDispatcher dispatcher,
++        ChannelWriter<TelemetryMessage> telemetryWriter,
++        CancellationToken token) =>
++    {
++        // Basic validation
++        if (string.IsNullOrWhiteSpace(command.PlcName))
++            return Results.BadRequest(new { error = "PlcName is required." });
++        if (string.IsNullOrWhiteSpace(command.DeviceName))
++            return Results.BadRequest(new { error = "DeviceName is required." });
++        if (string.IsNullOrWhiteSpace(command.PointCode))
++            return Results.BadRequest(new { error = "PointCode is required." });
++
++        // Ensure stable routing key
++        if (command.DeviceId == Guid.Empty)
++            command.DeviceId = DeterministicGuid.FromString($"bms|plc:{command.PlcName}|device:{command.DeviceName}");
++
++        var pointId = DeterministicGuid.FromString($"bms|plc:{command.PlcName}|device:{command.DeviceName}|point:{command.PointCode}");
++
++        bool success;
++        string? error = null;
++        try
+         {
+-            var plcConfigs = sp.GetRequiredService<IOptions<List<PlcConfig>>>().Value;
+-            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+-
+-            if (plcConfigs == null || plcConfigs.Count == 0)
+-                throw new InvalidOperationException("No PLC configuration found.");
++            success = await dispatcher.SendAsync(command, token);
++        }
++        catch (Exception ex)
++        {
++            success = false;
++            error = ex.Message;
++        }
+ 
+-            return plcConfigs.Select(plcConfig =>
++        // Push a commandResult message to UI sink (best-effort)
++        telemetryWriter.TryWrite(new TelemetryMessage
++        {
++            Type = "commandResult",
++            PlcName = command.PlcName,
++            IsOnline = true,
++            TimestampUtc = DateTime.UtcNow,
++            DeviceId = command.DeviceId,
++            DeviceName = command.DeviceName,
++            Success = success,
++            Error = error,
++            Points = new List<TelemetryPoint>
+             {
+-                var connectionManager = new ModbusConnectionManager(
+-                    plcConfig.Ip,
+-                    plcConfig.Port,
+-                    loggerFactory.CreateLogger<ModbusConnectionManager>()
+-                );
+-
+-                var deviceClients = plcConfig.Devices
+-                    .Select(deviceConfig =>
+-                        (IDeviceClient)new ModbusAhuClient(
+-                            connectionManager,
+-                            deviceConfig))
+-                    .ToList();
+-
+-                return (IPlcClient)new ModbusPlcClient(
+-                    plcConfig.Name,
+-                    connectionManager,
+-                    deviceClients
+-                );
+-            }).ToList();
++                new()
++                {
++                    Id = pointId,
++                    Code = command.PointCode,
++                    Value = command.Value
++                }
++            }
+         });
+ 
+-        services.AddHostedService<ModbusPollingWorker>();
+-        services.AddSingleton(sp =>
++        return Results.Ok(new
+         {
+-            var options = new BoundedChannelOptions(capacity: 500)
+-            {
+-                SingleReader = true,
+-                SingleWriter = false,
+-                // برای دمو بهتره Polling گیر نکنه:
+-                FullMode = BoundedChannelFullMode.DropOldest
+-            };
+-
+-            return Channel.CreateBounded<TelemetryMessage>(options);
++            success,
++            error,
++            deviceId = command.DeviceId,
++            pointId
+         });
+-        services.AddSingleton(sp => sp.GetRequiredService<Channel<TelemetryMessage>>().Writer);
+-        services.AddSingleton(sp => sp.GetRequiredService<Channel<TelemetryMessage>>().Reader);
+-
+-        services.AddHttpClient("UiSink");
+-        services.AddHostedService<TelemetryForwarderWorker>();
+-    })
+-    .Build();
++    });
+ 
+-await host.RunAsync();
++await app.RunAsync();
+diff --git a/BMS.Worker/Workers/ModbusPollingWorker.cs b/BMS.Worker/Workers/ModbusPollingWorker.cs
+index dbe480c..babc00e 100644
+--- a/BMS.Worker/Workers/ModbusPollingWorker.cs
++++ b/BMS.Worker/Workers/ModbusPollingWorker.cs
+@@ -69,6 +69,7 @@ namespace BMS.Worker.Workers
+ 
+                 var statusMsg = new TelemetryMessage
+                 {
++                    Type = "plcStatus",
+                     PlcName = plc.Name,
+                     IsOnline = isOnline,
+                     TimestampUtc = DateTime.UtcNow,
+@@ -92,10 +93,12 @@ namespace BMS.Worker.Workers
+                 {
+                     var msg = new TelemetryMessage
+                     {
++                        Type = "telemetry",
+                         PlcName = plc.Name,
+                         IsOnline = true,
+                         TimestampUtc = snapshot.Timestamp,
+                         DeviceId = snapshot.DeviceId,
++                        DeviceName = snapshot.DeviceName,
+                         Points = snapshot.Sensors.Select(s => new TelemetryPoint
+                         {
+                             Id = s.SensorId,      // اگر SensorId ثابت داری عالیه
+@@ -131,22 +134,6 @@ namespace BMS.Worker.Workers
+             }
+         }
+ 
+-        private async Task SendStartupTestCommand(CancellationToken token)
+-        {
+-            try
+-            {
+-                await _dispatcher.SendAsync(new WritePointCommand
+-                {
+-                    PlcName = "PLC-1",
+-                    Value = 123
+-                }, token);
+-
+-                _logger.LogInformation("Startup test write sent.");
+-            }
+-            catch (Exception ex)
+-            {
+-                _logger.LogWarning(ex, "Startup write failed.");
+-            }
+-        }
++        // Startup test command removed for demo stability.
+     }
+ }
+diff --git a/BMS.Worker/appsettings.json b/BMS.Worker/appsettings.json
+index a121e3a..364c1ab 100644
+--- a/BMS.Worker/appsettings.json
++++ b/BMS.Worker/appsettings.json
+@@ -36,8 +36,8 @@
+   ],
+   "UiSink": {
+     "Url": "http://localhost:4200/api/telemetry"
++  },
++  "CommandApi": {
++    "Url": "http://localhost:5055"
+   }
+-
+-
+-
+ }

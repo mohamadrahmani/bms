@@ -69,6 +69,7 @@ namespace BMS.Worker.Workers
 
                 var statusMsg = new TelemetryMessage
                 {
+                    Type = "plcStatus",
                     PlcName = plc.Name,
                     IsOnline = isOnline,
                     TimestampUtc = DateTime.UtcNow,
@@ -92,10 +93,12 @@ namespace BMS.Worker.Workers
                 {
                     var msg = new TelemetryMessage
                     {
+                        Type = "telemetry",
                         PlcName = plc.Name,
                         IsOnline = true,
                         TimestampUtc = snapshot.Timestamp,
                         DeviceId = snapshot.DeviceId,
+                        DeviceName = snapshot.DeviceName,
                         Points = snapshot.Sensors.Select(s => new TelemetryPoint
                         {
                             Id = s.SensorId,      // اگر SensorId ثابت داری عالیه
@@ -131,22 +134,6 @@ namespace BMS.Worker.Workers
             }
         }
 
-        private async Task SendStartupTestCommand(CancellationToken token)
-        {
-            try
-            {
-                await _dispatcher.SendAsync(new WritePointCommand
-                {
-                    PlcName = "PLC-1",
-                    Value = 123
-                }, token);
-
-                _logger.LogInformation("Startup test write sent.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Startup write failed.");
-            }
-        }
+        // Startup test command removed for demo stability.
     }
 }

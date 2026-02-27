@@ -26,8 +26,7 @@ public class PlcCommandDispatcher : IPlcCommandDispatcher
         if (plc == null)
             throw new InvalidOperationException("PLC not found.");
 
-         await plc.WriteAsync(command, token); 
-        return true;
+        return await plc.WriteAsync(command, token);
 
     }
 

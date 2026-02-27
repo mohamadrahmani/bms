@@ -1,5 +1,6 @@
 ﻿using BMS.Application.Abstractions;
 using BMS.Application.Models;
+using BMS.Application.Utilities;
 
 namespace BMS.Infrastructure.Modbus;
 
@@ -7,16 +8,23 @@ public class ModbusAhuClient : IDeviceClient
 {
     private readonly IModbusConnectionManager _connectionManager;
     private readonly DeviceConfig _config;
+    private readonly string _plcName;
+    private readonly Guid _deviceId;
 
     public ModbusAhuClient(
+        string plcName,
         IModbusConnectionManager connectionManager,
         DeviceConfig config)
     {
+        _plcName = plcName;
         _connectionManager = connectionManager;
         _config = config;
+
+        // Stable, deterministic identity per PLC+Device
+        _deviceId = DeterministicGuid.FromString($"bms|plc:{_plcName}|device:{_config.Name}");
     }
 
-    public Guid DeviceId => throw new NotImplementedException();
+    public Guid DeviceId => _deviceId;
 
     public async Task<DeviceSnapshotDto> ReadAsync(
         CancellationToken cancellationToken)
@@ -25,7 +33,8 @@ public class ModbusAhuClient : IDeviceClient
 
         var snapshot = new DeviceSnapshotDto
         {
-            DeviceId = Guid.NewGuid(),
+            DeviceId = DeviceId,
+            DeviceName = _config.Name,
             Timestamp = DateTime.UtcNow
         };
 
@@ -41,6 +50,7 @@ public class ModbusAhuClient : IDeviceClient
 
             snapshot.Sensors.Add(new SensorValueDto
             {
+                SensorId = DeterministicGuid.FromString($"bms|plc:{_plcName}|device:{_config.Name}|point:{point.Code}"),
                 Name = point.Code,
                 Value = value
             });
@@ -60,7 +70,8 @@ public class ModbusAhuClient : IDeviceClient
         if (point == null)
             throw new InvalidOperationException($"Point {pointCode} not found.");
 
-        if (!point.IsWritable)
+        // برای دمو: اگر CommandAddress ست شده باشد، حتی اگر IsWritable فراموش شده باشد اجازه می‌دهیم.
+        if (!point.IsWritable && point.CommandAddress is null)
             throw new InvalidOperationException($"Point {pointCode} is not writable.");
 
         var master = await _connectionManager.GetMasterAsync(token);
@@ -69,13 +80,29 @@ public class ModbusAhuClient : IDeviceClient
             engineeringValue,
             point);
 
+        var commandAddress = point.CommandAddress ?? point.Address;
+        var feedbackAddress = point.FeedbackAddress ?? commandAddress;
+        var readLength = (ushort)Math.Max(point.Length, registers.Length);
+
         // 1️⃣ Write
-        await _connectionManager.ExecuteWithRetryAsync(() =>
-            master.WriteSingleRegisterAsync(
-                _config.SlaveId,
-                point.CommandAddress!.Value,
-                registers[0])
-        );
+        if (registers.Length == 1)
+        {
+            await _connectionManager.ExecuteWithRetryAsync(() =>
+                master.WriteSingleRegisterAsync(
+                    _config.SlaveId,
+                    commandAddress,
+                    registers[0])
+            );
+        }
+        else
+        {
+            await _connectionManager.ExecuteWithRetryAsync(() =>
+                master.WriteMultipleRegistersAsync(
+                    _config.SlaveId,
+                    commandAddress,
+                    registers)
+            );
+        }
 
 
         // 2️⃣ Validate
@@ -87,8 +114,8 @@ public class ModbusAhuClient : IDeviceClient
                 await _connectionManager.ExecuteWithRetryAsync(() =>
                     master.ReadHoldingRegistersAsync(
                         _config.SlaveId,
-                        point.FeedbackAddress!.Value,
-                        point.Length));
+                        feedbackAddress,
+                        readLength));
 
             var feedbackValue =
                 ModbusValueParser.Parse(feedbackRegisters, point);
