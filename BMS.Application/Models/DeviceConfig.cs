@@ -11,10 +11,12 @@ public class DeviceConfig
 
     public byte SlaveId { get; set; }
 
-    public ushort StartAddress { get; set; }
+    //public ushort StartAddress { get; set; }
 
-    public ushort RegisterCount { get; set; }
+    //public ushort RegisterCount { get; set; }
 
-    public List<SensorConfig> Sensors { get; set; } = new();
+    //public List<SensorConfig> Sensors { get; set; } = new();
+    public string Name { get; set; } = default!;
+    public List<PointConfig> Points { get; set; } = new();
 }
 
