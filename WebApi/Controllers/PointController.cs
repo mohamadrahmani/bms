@@ -1,6 +1,7 @@
 using BMS.Application.Interfaces;
 using BMS.Application.UseCases;
 using BMS.Domain.Entities;
+using BMS.Domain.Entities.BMS;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using WebApi.Domain.Twin.Services;
@@ -42,7 +43,7 @@ namespace WebApi.Controllers
 
         [HttpPost("{twinId}/update")]
         public async Task<IActionResult> Update(
-        string twinId,
+        Guid twinId,
         [FromBody] UpdateRequest request)
         {
             //await _twinService.UpdateAsync(
@@ -51,7 +52,7 @@ namespace WebApi.Controllers
             //    Convert.ToInt32( request.Value.ToString()));
 
             var device = _store.Get(twinId);
-            device.RegisterPoint(request.DataPointId, BMS.Domain.Enums.DataType.Integer);
+            device.RegisterPoint(request.DataPointId, PointDataType.Int32);
             //var domainEvent = device.UpdatePoint(request.DataPointId, Convert.ToInt32(request.Value.ToString()));
 
             await _useCase.ExecuteAsync(
@@ -94,7 +95,7 @@ namespace WebApi.Controllers
     }
     public class UpdateRequest
     {
-        public string DataPointId { get; set; } = default!;
+        public Guid DataPointId { get; set; } = default!;
         public object? Value { get; set; }
     }
 }

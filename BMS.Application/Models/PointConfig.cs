@@ -4,15 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BMS.Domain.Entities.BMS;
 
 namespace BMS.Application.Models;
-public class PointConfig
+public class PointConfig : Point
 {
     public string Code { get; set; } = default!;
 
     public ushort Address { get; set; }
     public ushort Length { get; set; } = 1;
-    public ModbusDataType DataType { get; set; }
+    public PointDataType DataType { get; set; }
     public double Scale { get; set; } = 1;
     public double Offset { get; set; } = 0;
 

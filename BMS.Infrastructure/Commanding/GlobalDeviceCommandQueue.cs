@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BMS.Application.Abstraction;
 using BMS.Domain.Entities;
 using System.Threading.Channels;
+using BMS.Domain.Entities.BMS;
 
 namespace BMS.Infrastructure.Commanding
 {

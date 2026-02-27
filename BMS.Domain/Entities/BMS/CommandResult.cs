@@ -1,4 +1,4 @@
-﻿namespace BMS.Domain.Entities
+﻿namespace BMS.Domain.Entities.BMS
 {
     public class CommandResult
     {

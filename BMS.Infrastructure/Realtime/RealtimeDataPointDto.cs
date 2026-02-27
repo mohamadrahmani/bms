@@ -3,8 +3,8 @@
 namespace BMS.Infrastructure.Realtime
 {
     public record RealtimeDataPointDto(
-        string DeviceId,
-        string PointId,
+        Guid DeviceId,
+        Guid PointId,
         object? Value,
         DateTime TimestampUtc);
 }   

@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 using System.Threading.Tasks;
 using BMS.Application.Interfaces;
 using BMS.Domain.Entities;
+using BMS.Domain.Entities.BMS;
 
 
-    namespace BMS.Infrastructure.Devices
+namespace BMS.Infrastructure.Devices
     {
         public class SimulatedDeviceGateway : IDeviceCommandGateway
         {

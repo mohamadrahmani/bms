@@ -1,5 +1,6 @@
 ﻿using BMS.Application.Enum;
 using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
 
 namespace BMS.Infrastructure.Modbus;
 
@@ -8,26 +9,26 @@ public static class ModbusValueParser
     // -------------------------------
     // READ → Raw → Engineering
     // -------------------------------
-    public static double Parse(ushort[] registers, PointConfig config)
+    public static double Parse(ushort[] registers, Point config)
     {
         double raw = config.DataType switch
         {
-            ModbusDataType.UInt16 =>
+            PointDataType.UInt16 =>
                 registers[0],
 
-            ModbusDataType.Int16 =>
+            PointDataType.Int16 =>
                 (short)registers[0],
 
-            ModbusDataType.UInt32 =>
+            PointDataType.UInt32 =>
                 (uint)((registers[0] << 16) | registers[1]),
 
-            ModbusDataType.Int32 =>
+            PointDataType.Int32 =>
                 (int)((registers[0] << 16) | registers[1]),
 
-            ModbusDataType.Float32 =>
+            PointDataType.Float32 =>
                 ParseFloat(registers),
 
-            ModbusDataType.Boolean =>
+            PointDataType.Boolean =>
                 registers[0] == 1 ? 1 : 0,
 
             _ => throw new NotSupportedException(
@@ -56,37 +57,37 @@ public static class ModbusValueParser
     // -------------------------------
     public static ushort[] BuildWriteRegisters(
         double engineeringValue,
-        PointConfig config)
+        Point config)
     {
         var rawValue =
             (engineeringValue - config.Offset) / config.Scale;
 
         return config.DataType switch
         {
-            ModbusDataType.UInt16 =>
+            PointDataType.UInt16 =>
                 new[] { (ushort)rawValue },
 
-            ModbusDataType.Int16 =>
+            PointDataType.Int16 =>
                 new[] { (ushort)(short)rawValue },
 
-            ModbusDataType.UInt32 =>
+            PointDataType.UInt32 =>
                 new[]
                 {
                     (ushort)((uint)rawValue >> 16),
                     (ushort)((uint)rawValue & 0xFFFF)
                 },
 
-            ModbusDataType.Int32 =>
+            PointDataType.Int32 =>
                 new[]
                 {
                     (ushort)((int)rawValue >> 16),
                     (ushort)((int)rawValue & 0xFFFF)
                 },
 
-            ModbusDataType.Float32 =>
+            PointDataType.Float32 =>
                 BuildFloatRegisters((float)engineeringValue),
 
-            ModbusDataType.Boolean =>
+            PointDataType.Boolean =>
                 new[] { engineeringValue > 0 ? (ushort)1 : (ushort)0 },
 
             _ => throw new NotSupportedException(

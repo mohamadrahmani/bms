@@ -18,8 +18,8 @@ namespace BMS.Application.UseCases
         }
 
         public async Task ExecuteAsync(
-            string deviceId,
-            string pointId,
+            Guid deviceId,
+            Guid pointId,
             object? value)
         {
             var device = _store.Get(deviceId);

@@ -1,6 +1,6 @@
 ﻿using BMS.Application.Abstractions;
 using BMS.Application.Models;
-using BMS.Application.Utilities;
+// using BMS.Application.Utilities;
 
 namespace BMS.Infrastructure.Modbus;
 
@@ -21,7 +21,7 @@ public class ModbusAhuClient : IDeviceClient
         _config = config;
 
         // Stable, deterministic identity per PLC+Device
-        _deviceId = DeterministicGuid.FromString($"bms|plc:{_plcName}|device:{_config.Name}");
+       // _deviceId = DeterministicGuid.FromString($"bms|plc:{_plcName}|device:{_config.Name}");
     }
 
     public Guid DeviceId => _deviceId;
@@ -38,19 +38,19 @@ public class ModbusAhuClient : IDeviceClient
             Timestamp = DateTime.UtcNow
         };
 
-        foreach (var point in _config.Points)
+        foreach (var point in _config.DevicePoints)
         {
             var registers = await _connectionManager.ExecuteWithRetryAsync(() =>
                 master.ReadHoldingRegistersAsync(
-                    _config.SlaveId,
-                    point.Address,
+                    1,
+                    point.Address.Value,
                     point.Length));
 
             var value = ModbusValueParser.Parse(registers, point);
 
             snapshot.Sensors.Add(new SensorValueDto
             {
-                SensorId = DeterministicGuid.FromString($"bms|plc:{_plcName}|device:{_config.Name}|point:{point.Code}"),
+                //SensorId = DeterministicGuid.FromString($"bms|plc:{_plcName}|device:{_config.Name}|point:{point.Code}"),
                 Name = point.Code,
                 Value = value
             });
@@ -64,8 +64,8 @@ public class ModbusAhuClient : IDeviceClient
     double engineeringValue,
     CancellationToken token)
     {
-        var point = _config.Points
-            .FirstOrDefault(p => p.Code == pointCode);
+        var point = _config.DevicePoints
+            .First(p => p.Code == pointCode);
 
         if (point == null)
             throw new InvalidOperationException($"Point {pointCode} not found.");
@@ -89,8 +89,8 @@ public class ModbusAhuClient : IDeviceClient
         {
             await _connectionManager.ExecuteWithRetryAsync(() =>
                 master.WriteSingleRegisterAsync(
-                    _config.SlaveId,
-                    commandAddress,
+                    1,
+                    commandAddress.Value,
                     registers[0])
             );
         }
@@ -98,8 +98,8 @@ public class ModbusAhuClient : IDeviceClient
         {
             await _connectionManager.ExecuteWithRetryAsync(() =>
                 master.WriteMultipleRegistersAsync(
-                    _config.SlaveId,
-                    commandAddress,
+                    1,
+                    commandAddress.Value,
                     registers)
             );
         }
@@ -113,8 +113,8 @@ public class ModbusAhuClient : IDeviceClient
             var feedbackRegisters =
                 await _connectionManager.ExecuteWithRetryAsync(() =>
                     master.ReadHoldingRegistersAsync(
-                        _config.SlaveId,
-                        feedbackAddress,
+                        1,
+                        feedbackAddress.Value,
                         readLength));
 
             var feedbackValue =

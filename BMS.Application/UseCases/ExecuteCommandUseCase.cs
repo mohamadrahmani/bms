@@ -1,5 +1,6 @@
 ﻿using BMS.Application.Abstraction;
 using BMS.Domain.Entities;
+using BMS.Domain.Entities.BMS;
 using System;
 using System.Collections.Generic;
 using System.Linq;

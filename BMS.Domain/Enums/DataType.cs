@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace BMS.Domain.Enums
 {
-    public enum DataType
-    {
-        Boolean = 1,
-        Integer = 2,
-        Double = 3,
-        String = 4
-    }
+    //public enum DataType
+    //{
+    //    Boolean = 1,
+    //    Integer = 2,
+    //    Double = 3,
+    //    String = 4
+    //}
 }

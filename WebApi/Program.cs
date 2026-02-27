@@ -15,6 +15,7 @@ using WebApi.Realtime.Extensions;
 using WebApi.Realtime.Hubs;
 
 using Microsoft.Extensions.DependencyInjection;
+using BMS.Infrastructure.State;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +40,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSingleton<ITwinRepository, InMemoryTwinRepository>();
 //builder.Services.AddScoped<ITwinService, TwinService>();
-builder.Services.AddScoped<IDeviceStateStore, DeviceStateStore >();
+//builder.Services.AddScoped<IDeviceStateStore, DeviceStateStore >();
+builder.Services.AddSingleton<IDeviceStateStore, InMemoryDeviceStateStore>();
 builder.Services.AddScoped<IHistorianWriter, ChannelHistorianWriter>();
 //builder.Services.AddScoped<Channel, ChannelHistorianWriter>();
 //builder.Services.AddScoped<IEventDispatcher, EventDispatcher>();

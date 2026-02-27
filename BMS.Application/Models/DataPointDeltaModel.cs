@@ -3,8 +3,8 @@
 namespace BMS.Application.Models
 {
     public record DataPointDeltaModel(
-        string DeviceId,
-        string PointId,
+        Guid DeviceId,
+        Guid PointId,
         object? Value,
         DateTime TimestampUtc);
 }

@@ -10,4 +10,8 @@
     <ProjectReference Include="..\BMS.Domain\BMS.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\BMS\" />
+  </ItemGroup>
+
 </Project>

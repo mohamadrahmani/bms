@@ -3,8 +3,8 @@
 namespace BMS.Domain.Events
 {
     public record DataPointUpdatedDomainEvent(
-        string DeviceId,
-        string PointId,
+        Guid DeviceId,
+        Guid PointId,
         object? Value,
         DateTime TimestampUtc
     ) : IDomainEvent;

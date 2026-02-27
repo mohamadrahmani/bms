@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BMS.Domain.Entities
+namespace BMS.Domain.Entities.BMS
 {
     public class DeviceCommand
     {
