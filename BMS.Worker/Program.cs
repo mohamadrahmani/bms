@@ -32,8 +32,12 @@ IHost host = Host.CreateDefaultBuilder(args)
             var plcConfigs = sp.GetRequiredService<IOptions<List<PlcConfig>>>().Value;
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 
-            if (plcConfigs == null || plcConfigs.Count == 0)
-                throw new InvalidOperationException("No PLC configuration found.");
+// ---------------------------
+// Core services
+// ---------------------------
+builder.Services.AddSingleton<IPlcStateStore, InMemoryPlcStateStore>();
+builder.Services.AddSingleton<IBackendSender, ConsoleBackendSender>();
+builder.Services.AddSingleton<IPlcCommandDispatcher, PlcCommandDispatcher>();
 
             var clients = new List<IPlcClient>();
 
