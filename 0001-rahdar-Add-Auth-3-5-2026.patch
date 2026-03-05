@@ -1,0 +1,3081 @@
+From a0f17686e561033d1829480ad58831104072b4fa Mon Sep 17 00:00:00 2001
+From: Amini <mahmoud.aminiarjmand@gmail.com>
+Date: Thu, 5 Mar 2026 22:04:06 +0330
+Subject: [PATCH] rahdar: Add Auth 3/5/2026
+
+---
+ .../Auth/Commands/Login/LoginCommand.cs       |   8 +
+ .../Commands/Login/LoginCommandHandler.cs     |  85 +++++++
+ .../Auth/Commands/Login/LoginResponse.cs      |   8 +
+ BMS.Application/BMS.Application.csproj        |   7 +
+ .../Common/Behaviors/ValidationBehavior.cs    |  43 ++++
+ .../Exceptions/BusinessRuleException.cs       |  16 ++
+ .../Common/Exceptions/NotFoundException.cs    |  14 ++
+ .../Common/Interfaces/IJwtProvider.cs         |  14 ++
+ .../Common/Interfaces/IJwtTokenGenerator.cs   |   9 +
+ .../Common/Interfaces/IPasswordHasher.cs      |  11 +
+ .../Common/Interfaces/IPermissionResolver.cs  |  16 ++
+ .../Common/Interfaces/IPersonRepository.cs    |  11 +
+ .../Common/Interfaces/IUnitOfWork.cs          |   9 +
+ .../Common/Interfaces/IUserRepository.cs      |  43 ++++
+ .../Common/Settings/JwtSettings.cs            |  17 ++
+ .../Persons/Commands/CreatePersonCommand.cs   |  17 ++
+ .../Persons/Commands/UpdatePersonCommand.cs   |  11 +
+ .../Handlers/CreatePersonCommandHandler.cs    |  51 ++++
+ .../Handlers/UpdatePersonCommandHandler.cs    |  59 +++++
+ .../UpdatePersonCommandValidator.cs           |  35 +++
+ .../Users/Commands/ChangePasswordCommand.cs   |   8 +
+ .../Users/Commands/CreateUserCommand.cs       |  15 ++
+ .../Users/Commands/UpdateUserCommand.cs       |  13 ++
+ BMS.Application/Users/Dtos/UserDto.cs         |  19 ++
+ .../Handlers/ChangePasswordCommandHandler.cs  |  40 ++++
+ .../Handlers/CreateUserCommandHandler.cs      |  85 +++++++
+ .../Handlers/GetUsersListQueryHandler.cs      |  38 +++
+ .../Handlers/UpdateUserCommandHandler.cs      |  57 +++++
+ .../Users/Queries/GetUsersListQuery.cs        |   9 +
+ .../Validators/CreateUserCommandValidator.cs  |  29 +++
+ BMS.Domain/Entities/Permission.cs             |  43 ++++
+ BMS.Domain/Entities/Person.cs                 |  78 +++++++
+ BMS.Domain/Entities/Role.cs                   |  41 ++++
+ BMS.Domain/Entities/RolePermission.cs         |  30 +++
+ BMS.Domain/Entities/User.cs                   | 217 ++++++++++++++++++
+ BMS.Domain/Entities/UserPermission.cs         |  41 ++++
+ BMS.Domain/Entities/UserRole.cs               |  53 +++++
+ BMS.Domain/Exceptions/BmsDomainException.cs   |  15 ++
+ BMS.Domain/Exceptions/DomainException.cs      |  15 ++
+ BMS.Domain/Exceptions/UserDomainException.cs  |  15 ++
+ BMS.Infrastructure/BMS.Infrastructure.csproj  |   1 +
+ .../Common/DeterministicGuid.cs               |  20 ++
+ BMS.Infrastructure/DependencyInjection.cs     |  59 +++--
+ .../Persistence/BMSDbContext.cs               |  34 ++-
+ .../Configurations/BaseEntityConfiguration.cs |  38 +++
+ .../Configurations/PermissionConfiguration.cs |  39 ++++
+ .../Configurations/PersonConfiguration.cs     |  38 +++
+ .../Configurations/RoleConfiguration.cs       |  61 +++++
+ .../RolePermissionConfiguration.cs            |  44 ++++
+ .../Configurations/UserConfiguration.cs       |  53 +++++
+ .../UserPermissionConfiguration.cs            |  38 +++
+ .../Configurations/UserRoleConfiguration.cs   |  50 ++++
+ BMS.Infrastructure/Persistence/UnitOfWork.cs  |  19 ++
+ .../Repositories/PersonRepository.cs          |  40 ++++
+ .../Repositories/UserRepository.cs            |  92 ++++++++
+ BMS.Infrastructure/Security/JwtProvider.cs    |  63 +++++
+ BMS.Infrastructure/Security/PasswordHasher.cs |  21 ++
+ .../Security/PermissionResolver.cs            |  64 ++++++
+ BMS.Infrastructure/Seeds/PermissionKeys.cs    |  54 +++++
+ BMS.Infrastructure/Seeds/PermissionSeed.cs    |  47 ++++
+ .../Seeds/RolePermissionSeed.cs               |  56 +++++
+ BMS.Infrastructure/Seeds/RoleSeed.cs          |  22 ++
+ .../Services/PermissionResolver.cs            |  34 +++
+ WebApi/Controllers/AuthController.cs          |  22 ++
+ WebApi/Controllers/PersonsController.cs       |  39 ++++
+ WebApi/Controllers/UsersController.cs         |  68 ++++++
+ WebApi/WebApi.csproj                          |   1 +
+ 67 files changed, 2430 insertions(+), 32 deletions(-)
+ create mode 100644 BMS.Application/Auth/Commands/Login/LoginCommand.cs
+ create mode 100644 BMS.Application/Auth/Commands/Login/LoginCommandHandler.cs
+ create mode 100644 BMS.Application/Auth/Commands/Login/LoginResponse.cs
+ create mode 100644 BMS.Application/Common/Behaviors/ValidationBehavior.cs
+ create mode 100644 BMS.Application/Common/Exceptions/BusinessRuleException.cs
+ create mode 100644 BMS.Application/Common/Exceptions/NotFoundException.cs
+ create mode 100644 BMS.Application/Common/Interfaces/IJwtProvider.cs
+ create mode 100644 BMS.Application/Common/Interfaces/IJwtTokenGenerator.cs
+ create mode 100644 BMS.Application/Common/Interfaces/IPasswordHasher.cs
+ create mode 100644 BMS.Application/Common/Interfaces/IPermissionResolver.cs
+ create mode 100644 BMS.Application/Common/Interfaces/IPersonRepository.cs
+ create mode 100644 BMS.Application/Common/Interfaces/IUnitOfWork.cs
+ create mode 100644 BMS.Application/Common/Interfaces/IUserRepository.cs
+ create mode 100644 BMS.Application/Common/Settings/JwtSettings.cs
+ create mode 100644 BMS.Application/Persons/Commands/CreatePersonCommand.cs
+ create mode 100644 BMS.Application/Persons/Commands/UpdatePersonCommand.cs
+ create mode 100644 BMS.Application/Persons/Handlers/CreatePersonCommandHandler.cs
+ create mode 100644 BMS.Application/Persons/Handlers/UpdatePersonCommandHandler.cs
+ create mode 100644 BMS.Application/Persons/Validators/UpdatePersonCommandValidator.cs
+ create mode 100644 BMS.Application/Users/Commands/ChangePasswordCommand.cs
+ create mode 100644 BMS.Application/Users/Commands/CreateUserCommand.cs
+ create mode 100644 BMS.Application/Users/Commands/UpdateUserCommand.cs
+ create mode 100644 BMS.Application/Users/Dtos/UserDto.cs
+ create mode 100644 BMS.Application/Users/Handlers/ChangePasswordCommandHandler.cs
+ create mode 100644 BMS.Application/Users/Handlers/CreateUserCommandHandler.cs
+ create mode 100644 BMS.Application/Users/Handlers/GetUsersListQueryHandler.cs
+ create mode 100644 BMS.Application/Users/Handlers/UpdateUserCommandHandler.cs
+ create mode 100644 BMS.Application/Users/Queries/GetUsersListQuery.cs
+ create mode 100644 BMS.Application/Users/Validators/CreateUserCommandValidator.cs
+ create mode 100644 BMS.Domain/Entities/Permission.cs
+ create mode 100644 BMS.Domain/Entities/Person.cs
+ create mode 100644 BMS.Domain/Entities/Role.cs
+ create mode 100644 BMS.Domain/Entities/RolePermission.cs
+ create mode 100644 BMS.Domain/Entities/User.cs
+ create mode 100644 BMS.Domain/Entities/UserPermission.cs
+ create mode 100644 BMS.Domain/Entities/UserRole.cs
+ create mode 100644 BMS.Domain/Exceptions/BmsDomainException.cs
+ create mode 100644 BMS.Domain/Exceptions/DomainException.cs
+ create mode 100644 BMS.Domain/Exceptions/UserDomainException.cs
+ create mode 100644 BMS.Infrastructure/Common/DeterministicGuid.cs
+ create mode 100644 BMS.Infrastructure/Persistence/Configurations/BaseEntityConfiguration.cs
+ create mode 100644 BMS.Infrastructure/Persistence/Configurations/PermissionConfiguration.cs
+ create mode 100644 BMS.Infrastructure/Persistence/Configurations/PersonConfiguration.cs
+ create mode 100644 BMS.Infrastructure/Persistence/Configurations/RoleConfiguration.cs
+ create mode 100644 BMS.Infrastructure/Persistence/Configurations/RolePermissionConfiguration.cs
+ create mode 100644 BMS.Infrastructure/Persistence/Configurations/UserConfiguration.cs
+ create mode 100644 BMS.Infrastructure/Persistence/Configurations/UserPermissionConfiguration.cs
+ create mode 100644 BMS.Infrastructure/Persistence/Configurations/UserRoleConfiguration.cs
+ create mode 100644 BMS.Infrastructure/Persistence/UnitOfWork.cs
+ create mode 100644 BMS.Infrastructure/Repositories/PersonRepository.cs
+ create mode 100644 BMS.Infrastructure/Repositories/UserRepository.cs
+ create mode 100644 BMS.Infrastructure/Security/JwtProvider.cs
+ create mode 100644 BMS.Infrastructure/Security/PasswordHasher.cs
+ create mode 100644 BMS.Infrastructure/Security/PermissionResolver.cs
+ create mode 100644 BMS.Infrastructure/Seeds/PermissionKeys.cs
+ create mode 100644 BMS.Infrastructure/Seeds/PermissionSeed.cs
+ create mode 100644 BMS.Infrastructure/Seeds/RolePermissionSeed.cs
+ create mode 100644 BMS.Infrastructure/Seeds/RoleSeed.cs
+ create mode 100644 BMS.Infrastructure/Services/PermissionResolver.cs
+ create mode 100644 WebApi/Controllers/AuthController.cs
+ create mode 100644 WebApi/Controllers/PersonsController.cs
+ create mode 100644 WebApi/Controllers/UsersController.cs
+
+diff --git a/BMS.Application/Auth/Commands/Login/LoginCommand.cs b/BMS.Application/Auth/Commands/Login/LoginCommand.cs
+new file mode 100644
+index 0000000..e3e4cef
+--- /dev/null
++++ b/BMS.Application/Auth/Commands/Login/LoginCommand.cs
+@@ -0,0 +1,8 @@
++﻿using MediatR;
++
++namespace BMS.Application.Auth.Commands.Login;
++
++public sealed record LoginCommand(
++    string UserName,
++    string Password
++) : IRequest<LoginResponse>;
+diff --git a/BMS.Application/Auth/Commands/Login/LoginCommandHandler.cs b/BMS.Application/Auth/Commands/Login/LoginCommandHandler.cs
+new file mode 100644
+index 0000000..1ac3591
+--- /dev/null
++++ b/BMS.Application/Auth/Commands/Login/LoginCommandHandler.cs
+@@ -0,0 +1,85 @@
++﻿using System;
++using System.Threading;
++using System.Threading.Tasks;
++using MediatR;
++using BMS.Application.Common.Interfaces;
++using BMS.Application.Common.Exceptions;
++using BMS.Domain.Exceptions;
++
++namespace BMS.Application.Auth.Commands.Login
++{
++    public sealed class LoginCommandHandler
++        : IRequestHandler<LoginCommand, LoginResponse>
++    {
++        private readonly IUserRepository _userRepository;
++        private readonly IPasswordHasher _passwordHasher;
++        private readonly IJwtProvider _jwtProvider;
++        private readonly IUnitOfWork _unitOfWork;
++        private readonly IPermissionResolver _permissionResolver;
++
++        public LoginCommandHandler(
++            IUserRepository userRepository,
++            IPasswordHasher passwordHasher,
++            IJwtProvider jwtProvider,
++            IUnitOfWork unitOfWork,
++            IPermissionResolver permissionResolver)
++        {
++            _userRepository = userRepository;
++            _passwordHasher = passwordHasher;
++            _jwtProvider = jwtProvider;
++            _unitOfWork = unitOfWork;
++            _permissionResolver = permissionResolver;
++        }
++
++        public async Task<LoginResponse> Handle(
++            LoginCommand request,
++            CancellationToken cancellationToken)
++        {
++            var normalizedUserName = request.UserName
++                .Trim()
++                .ToLowerInvariant();
++
++            var user = await _userRepository
++                .GetActiveByUserNameAsync(normalizedUserName, cancellationToken);
++
++            if (user is null)
++                throw new BusinessRuleException("Invalid credentials.");
++
++            try
++            {
++                // بررسی وضعیت اکانت (Active + Lock)
++                user.EnsureCanLogin();
++
++                var isValid = _passwordHasher
++                    .Verify(request.Password, user.PasswordHash);
++
++                // در صورت اشتباه بودن پسورد Exception می‌اندازد
++                user.RegisterLoginResult(isValid);
++
++                await _unitOfWork.SaveChangesAsync(cancellationToken);
++            }
++            catch (UserDomainException)
++            {
++                // حتی در صورت خطا باید state ذخیره شود
++                await _unitOfWork.SaveChangesAsync(cancellationToken);
++                throw;
++            }
++
++            // 🔐 Resolve permissions (از Infrastructure)
++            var permissions = await _permissionResolver
++                .ResolveAsync(user.Id, cancellationToken);
++
++            // 🎟 Generate JWT with permissions + PermissionVersion
++            var (token, expiresAt) = _jwtProvider.GenerateToken(
++                user,
++                permissions,
++                user.PermissionVersion);
++
++            return new LoginResponse(
++                user.Id,
++                user.UserName,
++                token,
++                expiresAt);
++        }
++    }
++}
+diff --git a/BMS.Application/Auth/Commands/Login/LoginResponse.cs b/BMS.Application/Auth/Commands/Login/LoginResponse.cs
+new file mode 100644
+index 0000000..1581219
+--- /dev/null
++++ b/BMS.Application/Auth/Commands/Login/LoginResponse.cs
+@@ -0,0 +1,8 @@
++﻿namespace BMS.Application.Auth.Commands.Login;
++
++public sealed record LoginResponse(
++    Guid UserId,
++    string UserName,
++    string Token,
++    DateTime ExpiresAt
++);
+diff --git a/BMS.Application/BMS.Application.csproj b/BMS.Application/BMS.Application.csproj
+index 4faad48..779c708 100644
+--- a/BMS.Application/BMS.Application.csproj
++++ b/BMS.Application/BMS.Application.csproj
+@@ -11,7 +11,14 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
++    <Folder Include="Auth\Persons\" />
+     <Folder Include="Models\BMS\" />
+   </ItemGroup>
+ 
++  <ItemGroup>
++    <PackageReference Include="FluentValidation" Version="12.1.1" />
++    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
++    <PackageReference Include="MediatR" Version="11.1.0" />
++  </ItemGroup>
++
+ </Project>
+diff --git a/BMS.Application/Common/Behaviors/ValidationBehavior.cs b/BMS.Application/Common/Behaviors/ValidationBehavior.cs
+new file mode 100644
+index 0000000..5c6d2be
+--- /dev/null
++++ b/BMS.Application/Common/Behaviors/ValidationBehavior.cs
+@@ -0,0 +1,43 @@
++﻿using FluentValidation;
++using MediatR;
++using System.ComponentModel.DataAnnotations;
++using ValidationException = FluentValidation.ValidationException;
++
++namespace BMS.Application.Common.Behaviors;
++
++public sealed class ValidationBehavior<TRequest, TResponse>
++    : IPipelineBehavior<TRequest, TResponse>
++    where TRequest : IRequest<TResponse>
++{
++    private readonly IEnumerable<IValidator<TRequest>> _validators;
++
++    public ValidationBehavior(IEnumerable<IValidator<TRequest>> validators)
++    {
++        _validators = validators;
++    }
++
++    public async Task<TResponse> Handle(
++        TRequest request,
++        RequestHandlerDelegate<TResponse> next,
++        CancellationToken cancellationToken)
++    {
++        if (_validators.Any())
++        {
++            var context = new ValidationContext<TRequest>(request);
++
++            var validationResults = await Task.WhenAll(
++                _validators.Select(v =>
++                    v.ValidateAsync(context, cancellationToken)));
++
++            var failures = validationResults
++                .SelectMany(r => r.Errors)
++                .Where(f => f != null)
++                .ToList();
++
++            if (failures.Count != 0)
++                throw new ValidationException(failures);
++        }
++
++        return await next();
++    }
++}
+diff --git a/BMS.Application/Common/Exceptions/BusinessRuleException.cs b/BMS.Application/Common/Exceptions/BusinessRuleException.cs
+new file mode 100644
+index 0000000..e457f43
+--- /dev/null
++++ b/BMS.Application/Common/Exceptions/BusinessRuleException.cs
+@@ -0,0 +1,16 @@
++﻿using System;
++
++namespace BMS.Application.Common.Exceptions;
++
++
++
++/// <summary>
++/// خطای نقض قوانین تجاری (Business Rules)
++/// </summary>
++public sealed class BusinessRuleException : Exception
++{
++    public BusinessRuleException(string message)
++        : base(message)
++    {
++    }
++}
+diff --git a/BMS.Application/Common/Exceptions/NotFoundException.cs b/BMS.Application/Common/Exceptions/NotFoundException.cs
+new file mode 100644
+index 0000000..d9e23e8
+--- /dev/null
++++ b/BMS.Application/Common/Exceptions/NotFoundException.cs
+@@ -0,0 +1,14 @@
++﻿using System;
++
++namespace BMS.Application.Common.Exceptions;
++
++/// <summary>
++/// خطای عدم یافتن موجودیت مورد نظر
++/// </summary>
++public sealed class NotFoundException : Exception
++{
++    public NotFoundException(string message)
++        : base(message)
++    {
++    }
++}
+diff --git a/BMS.Application/Common/Interfaces/IJwtProvider.cs b/BMS.Application/Common/Interfaces/IJwtProvider.cs
+new file mode 100644
+index 0000000..0711e7b
+--- /dev/null
++++ b/BMS.Application/Common/Interfaces/IJwtProvider.cs
+@@ -0,0 +1,14 @@
++﻿using BMS.Domain.Entities;
++using System;
++using System.Collections.Generic;
++
++namespace BMS.Application.Common.Interfaces
++{
++    public interface IJwtProvider
++    {
++        (string token, DateTime expiresAt) GenerateToken(
++            User user,
++            IReadOnlyList<string> permissions,
++            int permissionVersion);
++    }
++}
+\ No newline at end of file
+diff --git a/BMS.Application/Common/Interfaces/IJwtTokenGenerator.cs b/BMS.Application/Common/Interfaces/IJwtTokenGenerator.cs
+new file mode 100644
+index 0000000..1570582
+--- /dev/null
++++ b/BMS.Application/Common/Interfaces/IJwtTokenGenerator.cs
+@@ -0,0 +1,9 @@
++﻿using BMS.Domain.Entities;
++using BMS.Domain.Entities;
++
++namespace BMS.Application.Common.Interfaces;
++
++public interface IJwtTokenGenerator
++{
++    string Generate(User user, IEnumerable<string> roles);
++}
+diff --git a/BMS.Application/Common/Interfaces/IPasswordHasher.cs b/BMS.Application/Common/Interfaces/IPasswordHasher.cs
+new file mode 100644
+index 0000000..8e6f996
+--- /dev/null
++++ b/BMS.Application/Common/Interfaces/IPasswordHasher.cs
+@@ -0,0 +1,11 @@
++﻿namespace BMS.Application.Common.Interfaces;
++
++/// <summary>
++/// سرویس هش کردن رمز عبور
++/// </summary>
++public interface IPasswordHasher
++{
++    string Hash(string password);
++
++    bool Verify(string password, string passwordHash);
++}
+diff --git a/BMS.Application/Common/Interfaces/IPermissionResolver.cs b/BMS.Application/Common/Interfaces/IPermissionResolver.cs
+new file mode 100644
+index 0000000..4be4c4a
+--- /dev/null
++++ b/BMS.Application/Common/Interfaces/IPermissionResolver.cs
+@@ -0,0 +1,16 @@
++﻿using System;
++using System.Collections.Generic;
++using System.Linq;
++using System.Text;
++using System.Threading.Tasks;
++
++namespace BMS.Application.Common.Interfaces
++{
++    public interface IPermissionResolver
++    {
++        Task<IReadOnlyList<string>> ResolveAsync(
++            Guid userId,
++            CancellationToken cancellationToken);
++    }
++
++}
+diff --git a/BMS.Application/Common/Interfaces/IPersonRepository.cs b/BMS.Application/Common/Interfaces/IPersonRepository.cs
+new file mode 100644
+index 0000000..27973ae
+--- /dev/null
++++ b/BMS.Application/Common/Interfaces/IPersonRepository.cs
+@@ -0,0 +1,11 @@
++﻿using BMS.Domain.Entities;
++
++namespace BMS.Application.Common.Interfaces;
++
++public interface IPersonRepository
++{
++    Task<Person?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
++    Task AddAsync(Person person, CancellationToken cancellationToken);
++
++    Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken);
++}
+diff --git a/BMS.Application/Common/Interfaces/IUnitOfWork.cs b/BMS.Application/Common/Interfaces/IUnitOfWork.cs
+new file mode 100644
+index 0000000..f2788ba
+--- /dev/null
++++ b/BMS.Application/Common/Interfaces/IUnitOfWork.cs
+@@ -0,0 +1,9 @@
++﻿namespace BMS.Application.Common.Interfaces;
++
++/// <summary>
++/// مدیریت تراکنش و ذخیره تغییرات
++/// </summary>
++public interface IUnitOfWork
++{
++    Task<int> SaveChangesAsync(CancellationToken cancellationToken);
++}
+diff --git a/BMS.Application/Common/Interfaces/IUserRepository.cs b/BMS.Application/Common/Interfaces/IUserRepository.cs
+new file mode 100644
+index 0000000..b3c081e
+--- /dev/null
++++ b/BMS.Application/Common/Interfaces/IUserRepository.cs
+@@ -0,0 +1,43 @@
++﻿using BMS.Domain.Entities;
++
++namespace BMS.Application.Common.Interfaces;
++
++public interface IUserRepository
++{
++    Task<User?> GetByIdAsync(
++        Guid id,
++        CancellationToken cancellationToken);
++
++    Task<User?> GetByUserNameAsync(
++        string userName,
++        CancellationToken cancellationToken);
++
++    Task<User?> GetByIdWithRolesAsync(
++        Guid userId,
++        CancellationToken cancellationToken);
++
++    Task AddAsync(
++        User user,
++        CancellationToken cancellationToken);
++
++    Task<bool> ExistsByUserNameAsync(
++        string userName,
++        CancellationToken cancellationToken);
++    Task<List<User>> GetAllWithRolesAsync(
++    CancellationToken cancellationToken);
++
++    Task<bool> ExistsByUserNameAsync(
++    string username,
++    CancellationToken cancellationToken,
++    Guid? excludeUserId = null);
++
++    Task<bool> ExistsByPersonIdAsync(
++    Guid personId,
++    CancellationToken cancellationToken);
++
++    Task<User?> GetActiveByUserNameAsync(
++    string userName,
++    CancellationToken cancellationToken);
++
++
++}
+diff --git a/BMS.Application/Common/Settings/JwtSettings.cs b/BMS.Application/Common/Settings/JwtSettings.cs
+new file mode 100644
+index 0000000..286311a
+--- /dev/null
++++ b/BMS.Application/Common/Settings/JwtSettings.cs
+@@ -0,0 +1,17 @@
++﻿using System;
++using System.Collections.Generic;
++using System.Linq;
++using System.Text;
++using System.Threading.Tasks;
++
++
++namespace BMS.Application.Common.Settings
++{
++    public sealed class JwtSettings
++    {
++        public string Key { get; init; } = default!;
++        public string Issuer { get; init; } = default!;
++        public string Audience { get; init; } = default!;
++        public int ExpiryMinutes { get; init; }
++    }
++}
+diff --git a/BMS.Application/Persons/Commands/CreatePersonCommand.cs b/BMS.Application/Persons/Commands/CreatePersonCommand.cs
+new file mode 100644
+index 0000000..8872247
+--- /dev/null
++++ b/BMS.Application/Persons/Commands/CreatePersonCommand.cs
+@@ -0,0 +1,17 @@
++﻿using MediatR;
++using System;
++using System.Collections.Generic;
++using System.Linq;
++using System.Text;
++using System.Threading.Tasks;
++
++namespace BMS.Application.Persons.Commands
++{
++    public sealed record CreatePersonCommand(
++    string FirstName,
++    string LastName,
++    string? Email,
++    string? Mobile
++) : IRequest<Guid>;
++
++}
+diff --git a/BMS.Application/Persons/Commands/UpdatePersonCommand.cs b/BMS.Application/Persons/Commands/UpdatePersonCommand.cs
+new file mode 100644
+index 0000000..656e741
+--- /dev/null
++++ b/BMS.Application/Persons/Commands/UpdatePersonCommand.cs
+@@ -0,0 +1,11 @@
++﻿using MediatR;
++
++namespace BMS.Application.Persons.Commands;
++
++public sealed record UpdatePersonCommand(
++    Guid Id,
++    string FirstName,
++    string LastName,
++    string? Email,
++    string? Mobile
++) : IRequest;
+diff --git a/BMS.Application/Persons/Handlers/CreatePersonCommandHandler.cs b/BMS.Application/Persons/Handlers/CreatePersonCommandHandler.cs
+new file mode 100644
+index 0000000..c7d3e16
+--- /dev/null
++++ b/BMS.Application/Persons/Handlers/CreatePersonCommandHandler.cs
+@@ -0,0 +1,51 @@
++﻿using MediatR;
++using BMS.Application.Common.Interfaces;
++using BMS.Domain.Entities;
++using BMS.Application.Common.Exceptions;
++using BMS.Application.Persons.Commands;
++using BMS.Domain.Exceptions;
++using BMS.Domain.Entities;
++
++
++namespace BMS.Application.Persons.Handlers;
++
++public sealed class CreatePersonCommandHandler
++    : IRequestHandler<CreatePersonCommand, Guid>
++{
++    private readonly IPersonRepository _repository;
++    private readonly IUnitOfWork _unitOfWork;
++
++    public CreatePersonCommandHandler(
++        IPersonRepository repository,
++        IUnitOfWork unitOfWork)
++    {
++        _repository = repository;
++        _unitOfWork = unitOfWork;
++    }
++
++    public async Task<Guid> Handle(
++     CreatePersonCommand request,
++     CancellationToken cancellationToken)
++    {
++        if (!string.IsNullOrWhiteSpace(request.Email))
++        {
++            var exists = await _repository
++                .ExistsByEmailAsync(request.Email, cancellationToken);
++
++            if (exists)
++                throw new BusinessRuleException("Email already exists.");
++        }
++
++        var person = new Person(
++            request.FirstName,
++            request.LastName,
++            request.Email,
++            request.Mobile);
++
++        await _repository.AddAsync(person, cancellationToken);
++        await _unitOfWork.SaveChangesAsync(cancellationToken);
++
++        return person.Id;
++    }
++
++}
+diff --git a/BMS.Application/Persons/Handlers/UpdatePersonCommandHandler.cs b/BMS.Application/Persons/Handlers/UpdatePersonCommandHandler.cs
+new file mode 100644
+index 0000000..e1d82a7
+--- /dev/null
++++ b/BMS.Application/Persons/Handlers/UpdatePersonCommandHandler.cs
+@@ -0,0 +1,59 @@
++﻿using MediatR;
++using BMS.Application.Common.Exceptions;
++using BMS.Application.Common.Interfaces;
++using BMS.Domain.Exceptions;
++using BMS.Application.Persons.Commands;
++
++namespace BMS.Application.Persons.Handlers;
++
++
++public sealed class UpdatePersonCommandHandler
++    : IRequestHandler<UpdatePersonCommand, Unit>
++{
++    private readonly IPersonRepository _personRepository;
++    private readonly IUnitOfWork _unitOfWork;
++
++    public UpdatePersonCommandHandler(
++        IPersonRepository personRepository,
++        IUnitOfWork unitOfWork)
++    {
++        _personRepository = personRepository;
++        _unitOfWork = unitOfWork;
++    }
++
++    public async Task<Unit> Handle(
++        UpdatePersonCommand request,
++        CancellationToken cancellationToken)
++    {
++        var person = await _personRepository
++            .GetByIdAsync(request.Id, cancellationToken);
++
++        if (person is null)
++            throw new NotFoundException(
++                $"Person with id '{request.Id}' not found.");
++
++        if (!string.IsNullOrWhiteSpace(request.Email))
++        {
++            var exists = await _personRepository
++                .ExistsByEmailAsync(request.Email.Trim(), cancellationToken);
++
++            if (exists && !string.Equals(
++                    person.Email,
++                    request.Email.Trim(),
++                    StringComparison.OrdinalIgnoreCase))
++            {
++                throw new BusinessRuleException("Email already exists.");
++            }
++        }
++
++        person.Update(
++            request.FirstName,
++            request.LastName,
++            request.Email,
++            request.Mobile);
++
++        await _unitOfWork.SaveChangesAsync(cancellationToken);
++
++        return Unit.Value;   // 👈 خیلی مهم
++    }
++}
+diff --git a/BMS.Application/Persons/Validators/UpdatePersonCommandValidator.cs b/BMS.Application/Persons/Validators/UpdatePersonCommandValidator.cs
+new file mode 100644
+index 0000000..09eab49
+--- /dev/null
++++ b/BMS.Application/Persons/Validators/UpdatePersonCommandValidator.cs
+@@ -0,0 +1,35 @@
++﻿using FluentValidation;
++using System;
++using System.Collections.Generic;
++using System.Linq;
++using System.Text;
++using System.Threading.Tasks;
++
++
++
++namespace BMS.Application.Persons.Commands;
++
++public sealed class UpdatePersonCommandValidator
++    : AbstractValidator<UpdatePersonCommand>
++{
++    public UpdatePersonCommandValidator()
++    {
++        RuleFor(x => x.Id)
++            .NotEmpty();
++
++        RuleFor(x => x.FirstName)
++            .NotEmpty()
++            .MaximumLength(100);
++
++        RuleFor(x => x.LastName)
++            .NotEmpty()
++            .MaximumLength(100);
++
++        RuleFor(x => x.Email)
++            .MaximumLength(200);
++
++        RuleFor(x => x.Mobile)
++            .MaximumLength(20);
++    }
++}
++
+diff --git a/BMS.Application/Users/Commands/ChangePasswordCommand.cs b/BMS.Application/Users/Commands/ChangePasswordCommand.cs
+new file mode 100644
+index 0000000..a348e2b
+--- /dev/null
++++ b/BMS.Application/Users/Commands/ChangePasswordCommand.cs
+@@ -0,0 +1,8 @@
++﻿using MediatR;
++
++public sealed class ChangePasswordCommand : IRequest
++{
++    public Guid UserId { get; set; }
++
++    public string NewPassword { get; set; } = null!;
++}
+diff --git a/BMS.Application/Users/Commands/CreateUserCommand.cs b/BMS.Application/Users/Commands/CreateUserCommand.cs
+new file mode 100644
+index 0000000..331594c
+--- /dev/null
++++ b/BMS.Application/Users/Commands/CreateUserCommand.cs
+@@ -0,0 +1,15 @@
++﻿using MediatR;
++
++
++namespace BMS.Application.Users.Commands;
++
++/// <summary>
++/// دستور (Command) CQRS برای ایجاد حساب کاربری جدید
++/// برای یک شخص (Person) موجود در سیستم.
++/// </summary>
++public sealed record CreateUserCommand(
++    Guid PersonId,                     // شناسه شخص موجود
++    string UserName,                   // نام کاربری
++    string Password,                   // رمز عبور خام (در Handler هش می‌شود)
++    IReadOnlyCollection<int>? RoleIds   // 🔥 اصلاح شد: int به جای Guid
++) : IRequest<Guid>;
+diff --git a/BMS.Application/Users/Commands/UpdateUserCommand.cs b/BMS.Application/Users/Commands/UpdateUserCommand.cs
+new file mode 100644
+index 0000000..61968e6
+--- /dev/null
++++ b/BMS.Application/Users/Commands/UpdateUserCommand.cs
+@@ -0,0 +1,13 @@
++﻿using MediatR;
++
++public sealed class UpdateUserCommand : IRequest
++{
++    public Guid UserId { get; set; }
++
++    public string UserName { get; set; } = null!;
++
++    public bool IsActive { get; set; }
++
++    public IReadOnlyCollection<int> RoleIds { get; set; }
++        = Array.Empty<int>();
++}
+diff --git a/BMS.Application/Users/Dtos/UserDto.cs b/BMS.Application/Users/Dtos/UserDto.cs
+new file mode 100644
+index 0000000..bc81e18
+--- /dev/null
++++ b/BMS.Application/Users/Dtos/UserDto.cs
+@@ -0,0 +1,19 @@
++﻿using System;
++using System.Collections.Generic;
++using System.Linq;
++using System.Text;
++using System.Threading.Tasks;
++
++namespace BMS.Application.Users.Dtos;
++
++public class UserDto
++{
++    public Guid Id { get; set; }
++
++    public string UserName { get; set; } = string.Empty;
++
++    public bool IsActive { get; set; }
++
++    public List<int> RoleIds { get; set; } = new();
++}
++
+diff --git a/BMS.Application/Users/Handlers/ChangePasswordCommandHandler.cs b/BMS.Application/Users/Handlers/ChangePasswordCommandHandler.cs
+new file mode 100644
+index 0000000..d0d97fe
+--- /dev/null
++++ b/BMS.Application/Users/Handlers/ChangePasswordCommandHandler.cs
+@@ -0,0 +1,40 @@
++﻿using MediatR;
++using BMS.Application.Common.Interfaces;
++using BMS.Application.Common.Exceptions;
++
++public sealed class ChangePasswordCommandHandler
++    : IRequestHandler<ChangePasswordCommand, Unit>
++{
++    private readonly IUserRepository _userRepository;
++    private readonly IPasswordHasher _passwordHasher;
++    private readonly IUnitOfWork _unitOfWork;
++
++    public ChangePasswordCommandHandler(
++        IUserRepository userRepository,
++        IPasswordHasher passwordHasher,
++        IUnitOfWork unitOfWork)
++    {
++        _userRepository = userRepository;
++        _passwordHasher = passwordHasher;
++        _unitOfWork = unitOfWork;
++    }
++
++    public async Task<Unit> Handle(
++        ChangePasswordCommand request,
++        CancellationToken cancellationToken)
++    {
++        var user = await _userRepository
++            .GetByIdAsync(request.UserId, cancellationToken);
++
++        if (user is null)
++            throw new BusinessRuleException("User not found.");
++
++        var newHash = _passwordHasher.Hash(request.NewPassword);
++
++        user.ChangePassword(newHash);
++
++        await _unitOfWork.SaveChangesAsync(cancellationToken);
++
++        return Unit.Value;
++    }
++}
+diff --git a/BMS.Application/Users/Handlers/CreateUserCommandHandler.cs b/BMS.Application/Users/Handlers/CreateUserCommandHandler.cs
+new file mode 100644
+index 0000000..adb1603
+--- /dev/null
++++ b/BMS.Application/Users/Handlers/CreateUserCommandHandler.cs
+@@ -0,0 +1,85 @@
++﻿using MediatR;
++using BMS.Application.Users.Commands;
++using BMS.Application.Common.Interfaces;
++using BMS.Domain.Entities;
++using BMS.Application.Common.Exceptions;
++using BMS.Domain.Entities;
++
++
++namespace BMS.Application.Users.Handlers;
++
++public sealed class CreateUserCommandHandler
++    : IRequestHandler<CreateUserCommand, Guid>
++{
++    private readonly IUserRepository _userRepository;
++    private readonly IPersonRepository _personRepository;
++    private readonly IPasswordHasher _passwordHasher;
++    private readonly IUnitOfWork _unitOfWork;
++
++    public CreateUserCommandHandler(
++        IUserRepository userRepository,
++        IPersonRepository personRepository,
++        IPasswordHasher passwordHasher,
++        IUnitOfWork unitOfWork)
++    {
++        _userRepository = userRepository;
++        _personRepository = personRepository;
++        _passwordHasher = passwordHasher;
++        _unitOfWork = unitOfWork;
++    }
++
++    public async Task<Guid> Handle(
++        CreateUserCommand request,
++        CancellationToken cancellationToken)
++    {
++        // 1️⃣ Check Person exists
++        var person = await _personRepository
++            .GetByIdAsync(request.PersonId, cancellationToken);
++
++        if (person is null)
++            throw new NotFoundException(
++                $"Person with id '{request.PersonId}' not found.");
++
++        // 2️⃣ Prevent duplicate user for Person
++        var userExistsForPerson = await _userRepository
++            .ExistsByPersonIdAsync(request.PersonId, cancellationToken);
++
++        if (userExistsForPerson)
++            throw new BusinessRuleException(
++                "This person already has a user account.");
++
++
++        // 3️⃣ Normalize username (same rule used in Domain)
++        var normalizedUserName = request.UserName
++            .Trim()
++            .ToLowerInvariant();
++
++        // 4️⃣ Prevent duplicate Username
++        var usernameExists = await _userRepository
++            .ExistsByUserNameAsync(
++                normalizedUserName,
++                cancellationToken);
++
++        if (usernameExists)
++            throw new BusinessRuleException(
++                "Username already exists.");
++
++        // 5️⃣ Hash password
++        var passwordHash = _passwordHasher.Hash(request.Password);
++
++        // 6️⃣ Create User (Domain handles normalization again safely)
++        var user = new User(
++            request.PersonId,
++            request.UserName,
++            passwordHash);
++
++        // 7️⃣ Assign roles atomically (Domain-controlled)
++        user.SyncRoles(request.RoleIds ?? Array.Empty<int>());
++
++        // 8️⃣ Persist
++        await _userRepository.AddAsync(user, cancellationToken);
++        await _unitOfWork.SaveChangesAsync(cancellationToken);
++
++        return user.Id;
++    }
++}
+diff --git a/BMS.Application/Users/Handlers/GetUsersListQueryHandler.cs b/BMS.Application/Users/Handlers/GetUsersListQueryHandler.cs
+new file mode 100644
+index 0000000..ce6823e
+--- /dev/null
++++ b/BMS.Application/Users/Handlers/GetUsersListQueryHandler.cs
+@@ -0,0 +1,38 @@
++﻿using MediatR;
++using BMS.Application.Common.Interfaces;
++using BMS.Application.Users.Dtos;
++using BMS.Application.Users.Queries;
++using System.Linq;
++
++namespace BMS.Application.Users.Handlers;
++
++public sealed class GetUsersListQueryHandler
++    : IRequestHandler<GetUsersListQuery, List<UserDto>>
++{
++    private readonly IUserRepository _userRepository;
++
++    public GetUsersListQueryHandler(IUserRepository userRepository)
++    {
++        _userRepository = userRepository;
++    }
++
++    public async Task<List<UserDto>> Handle(
++        GetUsersListQuery request,
++        CancellationToken cancellationToken)
++    {
++        var users = await _userRepository
++            .GetAllWithRolesAsync(cancellationToken);
++
++        return users
++            .Select(u => new UserDto
++            {
++                Id = u.Id,
++                UserName = u.UserName,
++                IsActive = u.IsActive,
++                RoleIds = u.UserRoles
++                    .Select(r => r.RoleId)
++                    .ToList()
++            })
++            .ToList();
++    }
++}
+diff --git a/BMS.Application/Users/Handlers/UpdateUserCommandHandler.cs b/BMS.Application/Users/Handlers/UpdateUserCommandHandler.cs
+new file mode 100644
+index 0000000..9b3a1ae
+--- /dev/null
++++ b/BMS.Application/Users/Handlers/UpdateUserCommandHandler.cs
+@@ -0,0 +1,57 @@
++﻿using MediatR;
++using BMS.Application.Common.Interfaces;
++using BMS.Application.Common.Exceptions;
++using BMS.Domain.Exceptions;
++
++
++namespace BMS.Application.Users.Commands
++{
++    public sealed class UpdateUserCommandHandler
++        : IRequestHandler<UpdateUserCommand>
++    {
++        private readonly IUserRepository _userRepository;
++        private readonly IUnitOfWork _unitOfWork;
++
++        public UpdateUserCommandHandler(
++            IUserRepository userRepository,
++            IUnitOfWork unitOfWork)
++        {
++            _userRepository = userRepository;
++            _unitOfWork = unitOfWork;
++        }
++
++        public async Task<Unit> Handle(
++            UpdateUserCommand request,
++            CancellationToken cancellationToken)
++        {
++            var user = await _userRepository
++                .GetByIdWithRolesAsync(request.UserId, cancellationToken);
++
++            if (user is null)
++                throw new NotFoundException(
++                    $"User with id '{request.UserId}' not found.");
++
++            var normalizedUserName = request.UserName
++                .Trim()
++                .ToLowerInvariant();
++
++            var exists = await _userRepository
++                .ExistsByUserNameAsync(
++                    normalizedUserName,
++                    cancellationToken,
++                    request.UserId);
++
++            if (exists)
++                throw new BusinessRuleException("Username already exists.");
++
++            user.UpdateProfile(request.UserName, request.IsActive);
++
++            // ✅ FIXED
++            user.SyncRoles(request.RoleIds ?? Enumerable.Empty<int>());
++
++            await _unitOfWork.SaveChangesAsync(cancellationToken);
++
++            return Unit.Value;
++        }
++    }
++}
+diff --git a/BMS.Application/Users/Queries/GetUsersListQuery.cs b/BMS.Application/Users/Queries/GetUsersListQuery.cs
+new file mode 100644
+index 0000000..3471e4c
+--- /dev/null
++++ b/BMS.Application/Users/Queries/GetUsersListQuery.cs
+@@ -0,0 +1,9 @@
++﻿using MediatR;
++using BMS.Application.Users.Dtos;
++
++
++namespace BMS.Application.Users.Queries;
++
++public sealed class GetUsersListQuery : IRequest<List<UserDto>>
++{
++}
+diff --git a/BMS.Application/Users/Validators/CreateUserCommandValidator.cs b/BMS.Application/Users/Validators/CreateUserCommandValidator.cs
+new file mode 100644
+index 0000000..605b1ef
+--- /dev/null
++++ b/BMS.Application/Users/Validators/CreateUserCommandValidator.cs
+@@ -0,0 +1,29 @@
++﻿using BMS.Application.Users.Commands;
++using FluentValidation;
++
++namespace BMS.Application.Users.Validators;
++
++public sealed class CreateUserCommandValidator
++    : AbstractValidator<CreateUserCommand>
++{
++    public CreateUserCommandValidator()
++    {
++        RuleFor(x => x.PersonId)
++            .NotEmpty()
++            .WithMessage("PersonId is required.");
++
++        RuleFor(x => x.UserName)
++            .NotEmpty()
++            .MaximumLength(100);
++
++        RuleFor(x => x.Password)
++            .NotEmpty()
++            .MinimumLength(8)
++            .Matches("[A-Z]").WithMessage("Password must contain at least one uppercase letter.")
++            .Matches("[a-z]").WithMessage("Password must contain at least one lowercase letter.")
++            .Matches("[0-9]").WithMessage("Password must contain at least one number.");
++
++        RuleForEach(x => x.RoleIds)
++            .GreaterThan(0);
++    }
++}
+diff --git a/BMS.Domain/Entities/Permission.cs b/BMS.Domain/Entities/Permission.cs
+new file mode 100644
+index 0000000..5a38eaa
+--- /dev/null
++++ b/BMS.Domain/Entities/Permission.cs
+@@ -0,0 +1,43 @@
++﻿using System;
++using System.Collections.Generic;
++
++namespace BMS.Domain.Entities
++{
++    public class Permission : BaseEntity<int>
++    {
++        public string Key { get; private set; } = default!;
++        public string Title { get; private set; } = default!;
++        public string Module { get; private set; } = default!;
++        public int RiskLevel { get; private set; }
++
++        private readonly List<RolePermission> _rolePermissions = new();
++        public IReadOnlyCollection<RolePermission> RolePermissions => _rolePermissions;
++
++        private Permission() { } // For EF
++
++        // Constructor for normal usage (runtime)
++        public Permission(string key, string title, string module, int riskLevel)
++        {
++            if (string.IsNullOrWhiteSpace(key))
++                throw new ArgumentException("Key is required");
++
++            if (string.IsNullOrWhiteSpace(title))
++                throw new ArgumentException("Title is required");
++
++            if (string.IsNullOrWhiteSpace(module))
++                throw new ArgumentException("Module is required");
++
++            Key = key;
++            Title = title;
++            Module = module;
++            RiskLevel = riskLevel;
++        }
++
++        // Constructor ONLY for seeding
++        public Permission(int id, string key, string title, string module, int riskLevel)
++            : this(key, title, module, riskLevel)
++        {
++            Id = id;
++        }
++    }
++}
+diff --git a/BMS.Domain/Entities/Person.cs b/BMS.Domain/Entities/Person.cs
+new file mode 100644
+index 0000000..56d151d
+--- /dev/null
++++ b/BMS.Domain/Entities/Person.cs
+@@ -0,0 +1,78 @@
++﻿using System;
++
++
++namespace BMS.Domain.Entities
++{
++    public class Person : BaseEntity<Guid>
++    {
++        public string FirstName { get; private set; } = default!;
++        public string LastName { get; private set; } = default!;
++
++        public string? Email { get; private set; }
++        public string? Mobile { get; private set; }
++
++        public bool IsActive { get; private set; }
++
++        public User? User { get; private set; }
++
++        private Person() { } // For EF
++
++        public Person(
++            string firstName,
++            string lastName,
++            string? email,
++            string? mobile)
++        {
++            if (string.IsNullOrWhiteSpace(firstName))
++                throw new ArgumentException("First name is required");
++
++            if (string.IsNullOrWhiteSpace(lastName))
++                throw new ArgumentException("Last name is required");
++
++            FirstName = firstName.Trim();
++            LastName = lastName.Trim();
++            Email = email?.Trim();
++            Mobile = mobile?.Trim();
++
++            IsActive = true;
++        }
++
++        public void Update(
++            string firstName,
++            string lastName,
++            string? email,
++            string? mobile)
++        {
++            if (string.IsNullOrWhiteSpace(firstName))
++                throw new ArgumentException("First name is required");
++
++            if (string.IsNullOrWhiteSpace(lastName))
++                throw new ArgumentException("Last name is required");
++
++            FirstName = firstName.Trim();
++            LastName = lastName.Trim();
++            Email = email?.Trim();
++            Mobile = mobile?.Trim();
++
++            SetUpdated();
++        }
++
++        public void Deactivate()
++        {
++            if (!IsActive)
++                return;
++
++            IsActive = false;
++            SetUpdated();
++        }
++
++        public void Activate()
++        {
++            if (IsActive)
++                return;
++
++            IsActive = true;
++            SetUpdated();
++        }
++    }
++}
+diff --git a/BMS.Domain/Entities/Role.cs b/BMS.Domain/Entities/Role.cs
+new file mode 100644
+index 0000000..ec492f4
+--- /dev/null
++++ b/BMS.Domain/Entities/Role.cs
+@@ -0,0 +1,41 @@
++﻿using System.Collections.Generic;
++
++namespace BMS.Domain.Entities
++{
++    public class Role : BaseEntity<int>
++    {
++        public string Name { get; private set; } = default!;
++        public string? Description { get; private set; }
++        public bool IsActive { get; private set; }
++
++        // ================================
++        // UserRoles (Existing)
++        // ================================
++        private readonly List<UserRole> _userRoles = new();
++        public IReadOnlyCollection<UserRole> UserRoles => _userRoles;
++
++        // ================================
++        // RolePermissions (NEW - Fixed)
++        // ================================
++        private readonly List<RolePermission> _rolePermissions = new();
++        public IReadOnlyCollection<RolePermission> RolePermissions => _rolePermissions;
++
++        public Role() { } // For EF
++
++        public Role(string name, string? description)
++        {
++            Name = name;
++            Description = description;
++            IsActive = true;
++        }
++
++        // For Seeding / Internal Usage
++        public Role(int id, string name, string? description, bool isActive)
++        {
++            Id = id;
++            Name = name;
++            Description = description;
++            IsActive = isActive;
++        }
++    }
++}
+diff --git a/BMS.Domain/Entities/RolePermission.cs b/BMS.Domain/Entities/RolePermission.cs
+new file mode 100644
+index 0000000..6b9842e
+--- /dev/null
++++ b/BMS.Domain/Entities/RolePermission.cs
+@@ -0,0 +1,30 @@
++﻿using System;
++
++
++namespace BMS.Domain.Entities
++{
++    public class RolePermission : BaseEntity<Guid>
++    {
++        public int RoleId { get; private set; }
++        public Role Role { get; private set; } = default!;
++
++        public int PermissionId { get; private set; }
++        public Permission Permission { get; private set; } = default!;
++
++        public RolePermission() { } // EF
++
++        public RolePermission(int roleId, int permissionId)
++        {
++            RoleId = roleId;
++            PermissionId = permissionId;
++        }
++
++        // 👇 مخصوص Seed
++        public RolePermission(Guid id, int roleId, int permissionId)
++        {
++            Id = id;
++            RoleId = roleId;
++            PermissionId = permissionId;
++        }
++    }
++}
+diff --git a/BMS.Domain/Entities/User.cs b/BMS.Domain/Entities/User.cs
+new file mode 100644
+index 0000000..19fa7b9
+--- /dev/null
++++ b/BMS.Domain/Entities/User.cs
+@@ -0,0 +1,217 @@
++﻿using System;
++using System.Collections.Generic;
++using System.Linq;
++using BMS.Domain.Exceptions;
++
++namespace BMS.Domain.Entities
++{
++    public class User : BaseEntity<Guid>
++    {
++        // ========================
++        // Security Constants
++        // ========================
++        private const int MaxFailedAttempts = 5;
++        private static readonly TimeSpan LockoutDuration = TimeSpan.FromMinutes(15);
++
++        // ========================
++        // Properties
++        // ========================
++        public Guid PersonId { get; private set; }
++        public Person Person { get; private set; } = default!;
++
++        public string UserName { get; private set; } = default!;
++        public string PasswordHash { get; private set; } = default!;
++
++        public bool IsActive { get; private set; }
++        public DateTime? LastLoginAtUtc { get; private set; }
++
++        public int FailedLoginAttempts { get; private set; }
++        public DateTime? LockoutUntilUtc { get; private set; }
++
++        // 🔐 Permission Version (for JWT invalidation)
++        public int PermissionVersion { get; private set; } = 1;
++
++        public bool IsLocked =>
++            LockoutUntilUtc.HasValue &&
++            LockoutUntilUtc.Value > DateTime.UtcNow;
++
++        private readonly List<UserRole> _userRoles = new();
++        public IReadOnlyCollection<UserRole> UserRoles => _userRoles.AsReadOnly();
++
++        private readonly List<UserPermission> _userPermissions = new();
++        public IReadOnlyCollection<UserPermission> UserPermissions => _userPermissions.AsReadOnly();
++
++        // ========================
++        // Constructors
++        // ========================
++        private User() { } // For EF
++
++        public User(Guid personId, string userName, string passwordHash)
++        {
++            if (personId == Guid.Empty)
++                throw new UserDomainException("PersonId is required.");
++
++            PersonId = personId;
++
++            SetUserName(userName);
++            SetPasswordHash(passwordHash);
++
++            IsActive = true;
++            FailedLoginAttempts = 0;
++            PermissionVersion = 1;
++        }
++
++        // ========================
++        // Permission Version Logic
++        // ========================
++        public void IncrementPermissionVersion()
++        {
++            PermissionVersion++;
++        }
++
++        // ========================
++        // Authentication Behavior
++        // ========================
++        public void EnsureCanLogin()
++        {
++            if (!IsActive)
++                throw new UserDomainException("Invalid credentials.");
++
++            if (IsLocked)
++                throw new UserDomainException("Account is temporarily locked.");
++        }
++
++        public void RegisterLoginResult(bool isPasswordValid)
++        {
++            if (!isPasswordValid)
++            {
++                RegisterFailedLogin();
++                throw new UserDomainException("Invalid credentials.");
++            }
++
++            RegisterSuccessfulLogin();
++        }
++
++        private void RegisterFailedLogin()
++        {
++            FailedLoginAttempts++;
++
++            if (FailedLoginAttempts >= MaxFailedAttempts)
++            {
++                Lock();
++            }
++        }
++
++        private void RegisterSuccessfulLogin()
++        {
++            FailedLoginAttempts = 0;
++            Unlock();
++            LastLoginAtUtc = DateTime.UtcNow;
++        }
++
++        public void Lock()
++        {
++            LockoutUntilUtc = DateTime.UtcNow.Add(LockoutDuration);
++            FailedLoginAttempts = 0;
++        }
++
++        public void Unlock()
++        {
++            LockoutUntilUtc = null;
++        }
++
++        // ========================
++        // Profile Behavior
++        // ========================
++        public void UpdateProfile(string userName, bool isActive)
++        {
++            SetUserName(userName);
++
++            if (isActive)
++                Activate();
++            else
++                Deactivate();
++        }
++
++        public void ChangePassword(string newPasswordHash)
++        {
++            SetPasswordHash(newPasswordHash);
++        }
++
++        public void Activate() => IsActive = true;
++
++        public void Deactivate() => IsActive = false;
++
++        // ========================
++        // Roles
++        // ========================
++        public void AssignRole(int roleId)
++        {
++            if (roleId <= 0)
++                throw new UserDomainException("Invalid role id.");
++
++            if (_userRoles.Any(r => r.RoleId == roleId))
++                return;
++
++            _userRoles.Add(new UserRole(Id, roleId));
++
++            // 🔐 Permission state changed
++            IncrementPermissionVersion();
++        }
++
++        public void SyncRoles(IEnumerable<int> roleIds)
++        {
++            if (roleIds is null)
++                throw new UserDomainException("RoleIds cannot be null.");
++
++            _userRoles.Clear();
++
++            foreach (var roleId in roleIds.Distinct())
++            {
++                if (roleId <= 0)
++                    throw new UserDomainException("Invalid role id.");
++
++                _userRoles.Add(new UserRole(Id, roleId));
++            }
++
++            // 🔐 Permission state changed
++            IncrementPermissionVersion();
++        }
++
++        // ========================
++        // Permissions
++        // ========================
++        public void AssignPermission(int permissionId)
++        {
++            if (permissionId <= 0)
++                throw new UserDomainException("Invalid permission id.");
++
++            if (_userPermissions.Any(p => p.PermissionId == permissionId))
++                return;
++
++            _userPermissions.Add(new UserPermission(Id, permissionId));
++
++            // 🔐 Permission state changed
++            IncrementPermissionVersion();
++        }
++
++        // ========================
++        // Private Invariants
++        // ========================
++        private void SetUserName(string userName)
++        {
++            if (string.IsNullOrWhiteSpace(userName))
++                throw new UserDomainException("Username is required.");
++
++            UserName = userName.Trim().ToLowerInvariant();
++        }
++
++        private void SetPasswordHash(string passwordHash)
++        {
++            if (string.IsNullOrWhiteSpace(passwordHash))
++                throw new UserDomainException("Password hash is required.");
++
++            PasswordHash = passwordHash;
++        }
++    }
++}
+diff --git a/BMS.Domain/Entities/UserPermission.cs b/BMS.Domain/Entities/UserPermission.cs
+new file mode 100644
+index 0000000..8b8d93d
+--- /dev/null
++++ b/BMS.Domain/Entities/UserPermission.cs
+@@ -0,0 +1,41 @@
++﻿using System;
++
++
++namespace BMS.Domain.Entities
++{
++    public class UserPermission : BaseEntity<Guid>
++    {
++        public Guid UserId { get; private set; }
++        public User User { get; private set; } = default!;
++
++        public int PermissionId { get; private set; }
++        public Permission Permission { get; private set; } = default!;
++
++        public bool IsGranted { get; private set; } = true;
++
++        private UserPermission() { } // For EF
++
++        public UserPermission(Guid userId, int permissionId, bool isGranted = true)
++        {
++            if (userId == Guid.Empty)
++                throw new ArgumentException("UserId is required");
++
++            if (permissionId <= 0)
++                throw new ArgumentException("PermissionId is invalid");
++
++            UserId = userId;
++            PermissionId = permissionId;
++            IsGranted = isGranted;
++        }
++
++        public void Grant()
++        {
++            IsGranted = true;
++        }
++
++        public void Deny()
++        {
++            IsGranted = false;
++        }
++    }
++}
+diff --git a/BMS.Domain/Entities/UserRole.cs b/BMS.Domain/Entities/UserRole.cs
+new file mode 100644
+index 0000000..fcf3c5c
+--- /dev/null
++++ b/BMS.Domain/Entities/UserRole.cs
+@@ -0,0 +1,53 @@
++﻿using System;
++
++
++namespace BMS.Domain.Entities
++{
++    public class UserRole : BaseEntity<Guid>
++    {
++        // =========================
++        // Properties
++        // =========================
++
++        public Guid UserId { get; private set; }
++        public User User { get; private set; } = default!;
++
++        public int RoleId { get; private set; }
++        public Role Role { get; private set; } = default!;
++
++        public bool IsActive { get; private set; } = true;
++
++        // =========================
++        // Constructors
++        // =========================
++
++        private UserRole() { } // For EF
++
++        public UserRole(Guid userId, int roleId)
++        {
++            if (userId == Guid.Empty)
++                throw new ArgumentException("UserId is required");
++
++            if (roleId <= 0)
++                throw new ArgumentException("RoleId is invalid");
++
++            UserId = userId;
++            RoleId = roleId;
++            IsActive = true;
++        }
++
++        // =========================
++        // Behavior
++        // =========================
++
++        public void Deactivate()
++        {
++            IsActive = false;
++        }
++
++        public void Activate()
++        {
++            IsActive = true;
++        }
++    }
++}
+diff --git a/BMS.Domain/Exceptions/BmsDomainException.cs b/BMS.Domain/Exceptions/BmsDomainException.cs
+new file mode 100644
+index 0000000..02366a2
+--- /dev/null
++++ b/BMS.Domain/Exceptions/BmsDomainException.cs
+@@ -0,0 +1,15 @@
++﻿using System;
++using System.Collections.Generic;
++using System.Linq;
++using System.Text;
++using System.Threading.Tasks;
++
++namespace BMS.Domain.Exceptions
++{
++    public sealed class BmsDomainException : DomainException
++    {
++        public BmsDomainException(string message) : base(message)
++        {
++        }
++    }
++}
+diff --git a/BMS.Domain/Exceptions/DomainException.cs b/BMS.Domain/Exceptions/DomainException.cs
+new file mode 100644
+index 0000000..f028d6c
+--- /dev/null
++++ b/BMS.Domain/Exceptions/DomainException.cs
+@@ -0,0 +1,15 @@
++﻿using System;
++using System.Collections.Generic;
++using System.Linq;
++using System.Text;
++using System.Threading.Tasks;
++
++namespace BMS.Domain.Exceptions;
++
++public abstract class DomainException : Exception
++{
++    protected DomainException(string message)
++        : base(message)
++    {
++    }
++}
+\ No newline at end of file
+diff --git a/BMS.Domain/Exceptions/UserDomainException.cs b/BMS.Domain/Exceptions/UserDomainException.cs
+new file mode 100644
+index 0000000..6492d00
+--- /dev/null
++++ b/BMS.Domain/Exceptions/UserDomainException.cs
+@@ -0,0 +1,15 @@
++﻿using System;
++using System.Collections.Generic;
++using System.Linq;
++using System.Text;
++using System.Threading.Tasks;
++
++namespace BMS.Domain.Exceptions;
++
++public sealed class UserDomainException : DomainException
++{
++    public UserDomainException(string message)
++        : base(message)
++    {
++    }
++}
+diff --git a/BMS.Infrastructure/BMS.Infrastructure.csproj b/BMS.Infrastructure/BMS.Infrastructure.csproj
+index 18e9f8f..6f36985 100644
+--- a/BMS.Infrastructure/BMS.Infrastructure.csproj
++++ b/BMS.Infrastructure/BMS.Infrastructure.csproj
+@@ -7,6 +7,7 @@
+   </PropertyGroup>
+ 
+   <ItemGroup>
++    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.9" />
+     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+diff --git a/BMS.Infrastructure/Common/DeterministicGuid.cs b/BMS.Infrastructure/Common/DeterministicGuid.cs
+new file mode 100644
+index 0000000..20b5c37
+--- /dev/null
++++ b/BMS.Infrastructure/Common/DeterministicGuid.cs
+@@ -0,0 +1,20 @@
++﻿using System;
++using System.Collections.Generic;
++using System.Linq;
++using System.Security.Cryptography;
++using System.Text;
++using System.Threading.Tasks;
++
++namespace BMS.Infrastructure.Common
++{
++    public static class DeterministicGuid
++    {
++        public static Guid Create(int roleId, int permissionId)
++        {
++            using var md5 = MD5.Create();
++            var input = $"ROLE_PERMISSION_{roleId}_{permissionId}";
++            var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
++            return new Guid(hash);
++        }
++    }
++}
+diff --git a/BMS.Infrastructure/DependencyInjection.cs b/BMS.Infrastructure/DependencyInjection.cs
+index 9a8ed25..1347794 100644
+--- a/BMS.Infrastructure/DependencyInjection.cs
++++ b/BMS.Infrastructure/DependencyInjection.cs
+@@ -1,8 +1,5 @@
+-﻿//using BMS.Application.Interfaces;
+-//using BMS.Application.Models;
+-//using BMS.Infrastructure.Persistence;
+-//using Microsoft.EntityFrameworkCore;
+-using BMS.Application.Abstraction;
++﻿using BMS.Application.Abstraction;
++using BMS.Application.Common.Interfaces;
+ using BMS.Application.Interfaces;
+ using BMS.Application.Models;
+ using BMS.Domain.Events;
+@@ -11,27 +8,46 @@ using BMS.Infrastructure.Devices;
+ using BMS.Infrastructure.Historian;
+ using BMS.Infrastructure.Persistence;
+ using BMS.Infrastructure.Realtime;
++using BMS.Infrastructure.Repositories;
++using BMS.Infrastructure.Security;
++using BMS.Infrastructure.Services;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.Extensions.Configuration;
+-
+-//using BMS.Infrastructure.Historian;
+-//using System.Threading.Channels;
+-//using BMS.Application.Abstraction;
+-//using BMS.Infrastructure.Commanding;
+-//using BMS.Infrastructure.Devices;
+ using Microsoft.Extensions.DependencyInjection;
+ using System.Threading.Channels;
++using PermissionResolver = BMS.Infrastructure.Services.PermissionResolver;
+ 
+ namespace BMS.Infrastructure
+ {
+     public static class DependencyInjection
+     {
+-        public static IServiceCollection AddInfrastructure( this IServiceCollection services, IConfiguration configuration)
++        public static IServiceCollection AddInfrastructure(
++            this IServiceCollection services,
++            IConfiguration configuration)
+         {
++            // =======================
++            // DbContext
++            // =======================
+             services.AddDbContext<BMSDbContext>(options =>
+                 options.UseSqlServer(
+                     configuration.GetConnectionString("Default")));
+ 
++            // =======================
++            // Repositories & UoW
++            // =======================
++            services.AddScoped<IPersonRepository, PersonRepository>();
++            services.AddScoped<IUserRepository, UserRepository>();
++            services.AddScoped<IUnitOfWork, UnitOfWork>();
++
++            // =======================
++            // Security
++            // =======================
++            services.AddScoped<IPasswordHasher, PasswordHasher>();
++            services.AddScoped<IPermissionResolver, PermissionResolver>();
++
++            // =======================
++            // Historian (Channel-based)
++            // =======================
+             var channel = Channel.CreateUnbounded<DataPointDeltaModel>(
+                 new UnboundedChannelOptions
+                 {
+@@ -46,6 +62,9 @@ namespace BMS.Infrastructure
+ 
+             services.AddHostedService<HistorianBackgroundService>();
+ 
++            // =======================
++            // Device Commanding
++            // =======================
+             services.AddSingleton<GlobalDeviceCommandQueue>();
+ 
+             services.AddSingleton<IDeviceCommandQueue>(
+@@ -57,17 +76,9 @@ namespace BMS.Infrastructure
+             services.AddSingleton<IDeviceCommandGateway,
+                 SimulatedDeviceGateway>();
+ 
+-            services.AddSingleton<GlobalDeviceCommandQueue>();
+-
+-            services.AddSingleton<IDeviceCommandQueue>(
+-                sp => sp.GetRequiredService<GlobalDeviceCommandQueue>());
+-
+-            services.AddHostedService<
+-                CommandProcessorBackgroundService>();
+-
+-            services.AddSingleton<IDeviceCommandGateway,
+-                SimulatedDeviceGateway>();
+-
++            // =======================
++            // Domain Events → Realtime
++            // =======================
+             services.AddScoped<
+                 IEventHandler<DeviceCommandCompletedDomainEvent>,
+                 CommandCompletedRealtimeHandler>();
+@@ -75,4 +86,4 @@ namespace BMS.Infrastructure
+             return services;
+         }
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/BMS.Infrastructure/Persistence/BMSDbContext.cs b/BMS.Infrastructure/Persistence/BMSDbContext.cs
+index e543df1..31d1106 100644
+--- a/BMS.Infrastructure/Persistence/BMSDbContext.cs
++++ b/BMS.Infrastructure/Persistence/BMSDbContext.cs
+@@ -1,25 +1,43 @@
+-﻿using BMS.Infrastructure.Persistence.Entities;
+-using Microsoft.EntityFrameworkCore;
+-using Polly;
++﻿using Bms.Infrastructure.Seeds;
++using BMS.Domain.Entities;
+ using BMS.Infrastructure.Persistence.Entities;
+-using System.Collections.Generic;
+-using System.Reflection.Emit;
++using Microsoft.EntityFrameworkCore;
++using System.Security;
+ 
+ namespace BMS.Infrastructure.Persistence
+ {
+     public class BMSDbContext : DbContext
+     {
+-        public DbSet<DataPointHistoryEntity> DataPointHistory =>
+-            Set<DataPointHistoryEntity>();
+         public BMSDbContext(DbContextOptions<BMSDbContext> options)
+             : base(options)
+         {
+         }
+ 
++        // ===== Identity / Security =====
++        public DbSet<User> Users { get; set; }
++        public DbSet<Person> Persons { get; set; }
++        public DbSet<Role> Roles { get; set; }
++        public DbSet<UserRole> UserRoles { get; set; }
++        public DbSet<Permission> Permissions { get; set; }
++        public DbSet<RolePermission> RolePermissions { get; set; }
++        public DbSet<UserPermission> UserPermissions { get; set; }
++
++        // ===== BMS Entities =====
++        public DbSet<DataPointHistoryEntity> DataPointHistory =>
++            Set<DataPointHistoryEntity>();
++
+         protected override void OnModelCreating(ModelBuilder modelBuilder)
+         {
++            // Apply all IEntityTypeConfiguration<T>
+             modelBuilder.ApplyConfigurationsFromAssembly(
+                 typeof(BMSDbContext).Assembly);
++
++            // ===== Seeds =====
++            PermissionSeed.Seed(modelBuilder);
++            RoleSeed.Seed(modelBuilder);
++            RolePermissionSeed.Seed(modelBuilder);
++
++            base.OnModelCreating(modelBuilder);
+         }
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/BMS.Infrastructure/Persistence/Configurations/BaseEntityConfiguration.cs b/BMS.Infrastructure/Persistence/Configurations/BaseEntityConfiguration.cs
+new file mode 100644
+index 0000000..2945d7c
+--- /dev/null
++++ b/BMS.Infrastructure/Persistence/Configurations/BaseEntityConfiguration.cs
+@@ -0,0 +1,38 @@
++﻿using BMS.Domain.Entities;
++using Microsoft.EntityFrameworkCore.Metadata.Builders;
++using Microsoft.EntityFrameworkCore;
++
++namespace BMS.Infrastructure.Persistence.Configurations
++{
++    public abstract class BaseEntityConfiguration<TEntity, TKey>
++    : IEntityTypeConfiguration<TEntity>
++    where TEntity : BaseEntity<TKey>
++    {
++        public virtual void Configure(EntityTypeBuilder<TEntity> builder)
++        {
++            // Primary Key
++            builder.HasKey(e => e.Id);
++
++            builder.Property(e => e.Id)
++                   .ValueGeneratedNever();
++
++            // Soft Delete
++            builder.Property(e => e.IsDeleted)
++                   .IsRequired()
++                   .HasDefaultValue(false);
++
++            // Audit
++            builder.Property(e => e.CreatedAtUtc)
++                   .IsRequired()
++                   .ValueGeneratedNever();
++
++            builder.Property(e => e.UpdatedAtUtc)
++                   .ValueGeneratedNever();
++
++            // Indexes
++            builder.HasIndex(e => e.IsDeleted);
++            builder.HasIndex(e => e.CreatedAtUtc);
++        }
++    }
++
++}
+diff --git a/BMS.Infrastructure/Persistence/Configurations/PermissionConfiguration.cs b/BMS.Infrastructure/Persistence/Configurations/PermissionConfiguration.cs
+new file mode 100644
+index 0000000..882b629
+--- /dev/null
++++ b/BMS.Infrastructure/Persistence/Configurations/PermissionConfiguration.cs
+@@ -0,0 +1,39 @@
++﻿using BMS.Domain.Entities;
++using Microsoft.EntityFrameworkCore;
++using Microsoft.EntityFrameworkCore.Metadata.Builders;
++
++namespace BMS.Infrastructure.Persistence.Configurations
++{
++    public sealed class PermissionConfiguration
++        : BaseEntityConfiguration<Permission, int>
++    {
++        public override void Configure(EntityTypeBuilder<Permission> builder)
++        {
++            base.Configure(builder);
++
++            builder.ToTable("Permissions");
++
++            builder.Property(x => x.Key)
++                .IsRequired()
++                .HasMaxLength(150);
++
++            builder.HasIndex(x => x.Key)
++                .IsUnique();
++
++            builder.Property(x => x.Title)
++                .IsRequired()
++                .HasMaxLength(200);
++
++            builder.Property(x => x.Module)
++                .IsRequired()
++                .HasMaxLength(100);
++
++            builder.Property(x => x.RiskLevel)
++                .IsRequired();
++
++            // ✅ Backing field access
++            builder.Navigation(x => x.RolePermissions)
++                   .UsePropertyAccessMode(PropertyAccessMode.Field);
++        }
++    }
++}
+diff --git a/BMS.Infrastructure/Persistence/Configurations/PersonConfiguration.cs b/BMS.Infrastructure/Persistence/Configurations/PersonConfiguration.cs
+new file mode 100644
+index 0000000..db4952b
+--- /dev/null
++++ b/BMS.Infrastructure/Persistence/Configurations/PersonConfiguration.cs
+@@ -0,0 +1,38 @@
++﻿using BMS.Domain.Entities;
++using Microsoft.EntityFrameworkCore;
++using Microsoft.EntityFrameworkCore.Metadata.Builders;
++
++namespace BMS.Infrastructure.Persistence.Configurations
++{
++    public sealed class PersonConfiguration
++        : BaseEntityConfiguration<Person, Guid>
++    {
++        public override void Configure(EntityTypeBuilder<Person> b)
++        {
++            base.Configure(b);
++
++            b.ToTable("Persons");
++
++            b.Property(x => x.FirstName)
++                .HasMaxLength(100)
++                .IsRequired();
++
++            b.Property(x => x.LastName)
++                .HasMaxLength(100)
++                .IsRequired();
++
++            b.Property(x => x.Email)
++                .HasMaxLength(200);
++
++            b.Property(x => x.Mobile)
++                .HasMaxLength(20);
++
++            b.Property(x => x.IsActive)
++                .IsRequired();
++
++            // Index حرفه‌ای
++            b.HasIndex(x => x.Email)
++                .HasDatabaseName("IX_Person_Email");
++        }
++    }
++}
+diff --git a/BMS.Infrastructure/Persistence/Configurations/RoleConfiguration.cs b/BMS.Infrastructure/Persistence/Configurations/RoleConfiguration.cs
+new file mode 100644
+index 0000000..721410a
+--- /dev/null
++++ b/BMS.Infrastructure/Persistence/Configurations/RoleConfiguration.cs
+@@ -0,0 +1,61 @@
++﻿using BMS.Domain.Entities;
++using Microsoft.EntityFrameworkCore;
++using Microsoft.EntityFrameworkCore.Metadata.Builders;
++
++namespace BMS.Infrastructure.Persistence.Configurations
++{
++    public sealed class RoleConfiguration
++        : BaseEntityConfiguration<Role, int>
++    {
++        public override void Configure(EntityTypeBuilder<Role> b)
++        {
++            base.Configure(b);
++
++            b.ToTable("Roles");
++
++            // =========================
++            // Scalar Properties
++            // =========================
++
++            b.Property(x => x.Name)
++                .HasMaxLength(100)
++                .IsRequired();
++
++            b.HasIndex(x => x.Name)
++                .IsUnique();
++
++            b.Property(x => x.Description)
++                .HasMaxLength(500);
++
++            b.Property(x => x.IsActive)
++                .IsRequired()
++                .HasDefaultValue(true);
++
++            // =========================
++            // Relationships
++            // =========================
++
++            b.HasMany(r => r.UserRoles)
++             .WithOne(ur => ur.Role)
++             .HasForeignKey(ur => ur.RoleId)
++             .IsRequired()
++             .OnDelete(DeleteBehavior.Cascade);
++
++            b.HasMany(r => r.RolePermissions)
++             .WithOne(rp => rp.Role)
++             .HasForeignKey(rp => rp.RoleId)
++             .IsRequired()
++             .OnDelete(DeleteBehavior.Cascade);
++
++            // =========================
++            // Backing Fields (مهم برای DDD)
++            // =========================
++
++            b.Navigation(r => r.UserRoles)
++             .UsePropertyAccessMode(PropertyAccessMode.Field);
++
++            b.Navigation(r => r.RolePermissions)
++             .UsePropertyAccessMode(PropertyAccessMode.Field);
++        }
++    }
++}
+diff --git a/BMS.Infrastructure/Persistence/Configurations/RolePermissionConfiguration.cs b/BMS.Infrastructure/Persistence/Configurations/RolePermissionConfiguration.cs
+new file mode 100644
+index 0000000..6cf572e
+--- /dev/null
++++ b/BMS.Infrastructure/Persistence/Configurations/RolePermissionConfiguration.cs
+@@ -0,0 +1,44 @@
++﻿using BMS.Domain.Entities;
++using Microsoft.EntityFrameworkCore.Metadata.Builders;
++using Microsoft.EntityFrameworkCore;
++using System;
++using System.Collections.Generic;
++using System.Linq;
++using BMS.Domain.Entities;
++using Microsoft.EntityFrameworkCore;
++using Microsoft.EntityFrameworkCore.Metadata.Builders;
++
++namespace BMS.Infrastructure.Persistence.Configurations
++{
++    public sealed class RolePermissionConfiguration
++        : BaseEntityConfiguration<RolePermission, Guid>
++    {
++        public override void Configure(EntityTypeBuilder<RolePermission> b)
++        {
++            base.Configure(b);
++
++            b.ToTable("RolePermissions");
++
++            // =========================
++            // Keys
++            // =========================
++
++            b.HasIndex(x => new { x.RoleId, x.PermissionId })
++             .IsUnique();
++
++            // =========================
++            // Relationships
++            // =========================
++
++            b.HasOne(rp => rp.Role)
++             .WithMany(r => r.RolePermissions)
++             .HasForeignKey(rp => rp.RoleId)
++             .OnDelete(DeleteBehavior.Cascade);
++
++            b.HasOne(rp => rp.Permission)
++             .WithMany(p => p.RolePermissions)
++             .HasForeignKey(rp => rp.PermissionId)
++             .OnDelete(DeleteBehavior.Cascade);
++        }
++    }
++}
+diff --git a/BMS.Infrastructure/Persistence/Configurations/UserConfiguration.cs b/BMS.Infrastructure/Persistence/Configurations/UserConfiguration.cs
+new file mode 100644
+index 0000000..977b382
+--- /dev/null
++++ b/BMS.Infrastructure/Persistence/Configurations/UserConfiguration.cs
+@@ -0,0 +1,53 @@
++﻿using BMS.Domain.Entities;
++using Microsoft.EntityFrameworkCore;
++using Microsoft.EntityFrameworkCore.Metadata.Builders;
++
++namespace BMS.Infrastructure.Persistence.Configurations
++{
++    public sealed class UserConfiguration
++        : BaseEntityConfiguration<User, Guid>
++    {
++        public override void Configure(EntityTypeBuilder<User> b)
++        {
++            base.Configure(b);
++
++            b.ToTable("Users");
++
++            // =========================
++            // Scalar Properties
++            // =========================
++
++            b.Property(x => x.UserName)
++                .HasMaxLength(100)
++                .IsRequired();
++
++            b.HasIndex(x => x.UserName)
++                .IsUnique();
++
++            b.Property(x => x.PasswordHash)
++                .HasMaxLength(500)
++                .IsRequired();
++
++            b.Property(x => x.IsActive)
++                .IsRequired();
++
++
++            b.Property(x => x.LastLoginAtUtc)
++                .HasColumnType("datetime2");
++
++            // =========================
++            // One-to-One : User <-> Person
++            // =========================
++
++            b.HasOne(x => x.Person)
++                .WithOne(p => p.User)
++                .HasForeignKey<User>(x => x.PersonId)
++                .IsRequired()
++                .OnDelete(DeleteBehavior.Cascade);
++
++            // ❗ هیچ HasMany یا SetPropertyAccessMode اینجا تعریف نکن
++            // Relationship مربوط به UserRole و UserPermission
++            // در Configuration همان entity‌ها تعریف شده است.
++        }
++    }
++}
+diff --git a/BMS.Infrastructure/Persistence/Configurations/UserPermissionConfiguration.cs b/BMS.Infrastructure/Persistence/Configurations/UserPermissionConfiguration.cs
+new file mode 100644
+index 0000000..3e00e0f
+--- /dev/null
++++ b/BMS.Infrastructure/Persistence/Configurations/UserPermissionConfiguration.cs
+@@ -0,0 +1,38 @@
++﻿using BMS.Domain.Entities;
++using Microsoft.EntityFrameworkCore;
++using Microsoft.EntityFrameworkCore.Metadata.Builders;
++
++namespace BMS.Infrastructure.Persistence.Configurations
++{
++    public sealed class UserPermissionConfiguration
++        : BaseEntityConfiguration<UserPermission, Guid>
++    {
++        public override void Configure(EntityTypeBuilder<UserPermission> b)
++        {
++            base.Configure(b);
++
++            b.ToTable("UserPermissions");
++
++            // هر User فقط یک بار می‌تواند یک Permission خاص داشته باشد
++            b.HasIndex(x => new { x.UserId, x.PermissionId })
++             .IsUnique();
++
++            b.Property(x => x.IsGranted)
++             .IsRequired()
++             .HasDefaultValue(true);
++
++            // روابط
++            b.HasOne(x => x.User)
++             .WithMany(u => u.UserPermissions)
++             .HasForeignKey(x => x.UserId)
++             .OnDelete(DeleteBehavior.Cascade)
++             .IsRequired();
++
++            b.HasOne(x => x.Permission)
++             .WithMany()
++             .HasForeignKey(x => x.PermissionId)
++             .OnDelete(DeleteBehavior.Restrict)
++             .IsRequired();
++        }
++    }
++}
+diff --git a/BMS.Infrastructure/Persistence/Configurations/UserRoleConfiguration.cs b/BMS.Infrastructure/Persistence/Configurations/UserRoleConfiguration.cs
+new file mode 100644
+index 0000000..3a37165
+--- /dev/null
++++ b/BMS.Infrastructure/Persistence/Configurations/UserRoleConfiguration.cs
+@@ -0,0 +1,50 @@
++﻿using BMS.Domain.Entities;
++using Microsoft.EntityFrameworkCore;
++using Microsoft.EntityFrameworkCore.Metadata.Builders;
++
++namespace BMS.Infrastructure.Persistence.Configurations
++{
++    public sealed class UserRoleConfiguration
++        : BaseEntityConfiguration<UserRole, Guid>
++    {
++        public override void Configure(EntityTypeBuilder<UserRole> b)
++        {
++            base.Configure(b);
++
++            b.ToTable("UserRoles");
++
++            // =========================
++            // Index (Prevent duplicate role per user)
++            // =========================
++
++            b.HasIndex(x => new { x.UserId, x.RoleId })
++                .IsUnique();
++
++            // =========================
++            // Properties
++            // =========================
++
++            b.Property(x => x.RoleId)
++                .IsRequired();
++
++            b.Property(x => x.IsActive)
++                .HasDefaultValue(true);
++
++            // =========================
++            // Relationships
++            // =========================
++
++            b.HasOne(x => x.User)
++                .WithMany(u => u.UserRoles) // ✅ use navigation property
++                .HasForeignKey(x => x.UserId)
++                .IsRequired()
++                .OnDelete(DeleteBehavior.Cascade);
++
++            b.HasOne(x => x.Role)
++                .WithMany(r => r.UserRoles)
++                .HasForeignKey(x => x.RoleId)
++                .IsRequired()
++                .OnDelete(DeleteBehavior.Restrict);
++        }
++    }
++}
+diff --git a/BMS.Infrastructure/Persistence/UnitOfWork.cs b/BMS.Infrastructure/Persistence/UnitOfWork.cs
+new file mode 100644
+index 0000000..9bea5e5
+--- /dev/null
++++ b/BMS.Infrastructure/Persistence/UnitOfWork.cs
+@@ -0,0 +1,19 @@
++﻿using BMS.Application.Common.Interfaces;
++using BMS.Infrastructure.Persistence;
++
++namespace BMS.Infrastructure.Persistence;
++
++public class UnitOfWork : IUnitOfWork
++{
++    private readonly BMSDbContext _context;
++
++    public UnitOfWork(BMSDbContext context)
++    {
++        _context = context;
++    }
++
++    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
++    {
++        return await _context.SaveChangesAsync(cancellationToken);
++    }
++}
+diff --git a/BMS.Infrastructure/Repositories/PersonRepository.cs b/BMS.Infrastructure/Repositories/PersonRepository.cs
+new file mode 100644
+index 0000000..a5adc65
+--- /dev/null
++++ b/BMS.Infrastructure/Repositories/PersonRepository.cs
+@@ -0,0 +1,40 @@
++﻿using BMS.Domain.Entities;
++using BMS.Application.Common.Interfaces;
++using Microsoft.EntityFrameworkCore;
++using BMS.Infrastructure.Persistence;
++
++namespace BMS.Infrastructure.Repositories
++{
++    public sealed class PersonRepository : IPersonRepository
++    {
++        private readonly BMSDbContext _context;
++
++        public PersonRepository(BMSDbContext context)
++        {
++            _context = context;
++        }
++
++        public async Task<Person?> GetByIdAsync(
++            Guid id,
++            CancellationToken cancellationToken)
++        {
++            return await _context.Persons
++                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
++        }
++
++        public async Task AddAsync(
++            Person person,
++            CancellationToken cancellationToken)
++        {
++            await _context.Persons.AddAsync(person, cancellationToken);
++        }
++
++        public async Task<bool> ExistsByEmailAsync(
++            string email,
++            CancellationToken cancellationToken)
++        {
++            return await _context.Persons
++                .AnyAsync(x => x.Email == email, cancellationToken);
++        }
++    }
++}
+diff --git a/BMS.Infrastructure/Repositories/UserRepository.cs b/BMS.Infrastructure/Repositories/UserRepository.cs
+new file mode 100644
+index 0000000..2c8216b
+--- /dev/null
++++ b/BMS.Infrastructure/Repositories/UserRepository.cs
+@@ -0,0 +1,92 @@
++﻿using Microsoft.EntityFrameworkCore;
++using BMS.Application.Common.Interfaces;
++using BMS.Domain.Entities;
++using BMS.Infrastructure.Persistence;
++
++namespace BMS.Infrastructure.Repositories
++{
++    public class UserRepository : IUserRepository
++    {
++        private readonly BMSDbContext _context;
++
++        public UserRepository(BMSDbContext context)
++        {
++            _context = context;
++        }
++
++        public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
++        {
++            return await _context.Users
++                .Include(u => u.UserRoles)       // اگر navigation داری
++                .ThenInclude(ur => ur.Role)
++                .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
++        }
++
++        public async Task<User?> GetByUserNameAsync(string userName, CancellationToken cancellationToken)
++        {
++            return await _context.Users
++                .FirstOrDefaultAsync(u => u.UserName == userName, cancellationToken);
++        }
++
++        public async Task AddAsync(User user, CancellationToken cancellationToken)
++        {
++            await _context.Users.AddAsync(user, cancellationToken);
++        }
++
++        public async Task<bool> ExistsByUserNameAsync(string userName, CancellationToken cancellationToken)
++        {
++            return await _context.Users
++                .AnyAsync(u => u.UserName == userName, cancellationToken);
++        }
++        public async Task<User?> GetByIdWithRolesAsync(
++        Guid userId,
++        CancellationToken cancellationToken)
++        {
++            return await _context.Users
++                .Include(u => u.UserRoles)
++                .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
++        }
++
++
++        public async Task<List<User>> GetAllWithRolesAsync(
++            CancellationToken cancellationToken)
++        {
++            return await _context.Users
++                .Include(u => u.UserRoles)
++                .ToListAsync(cancellationToken);
++        }
++        public async Task<bool> ExistsByUserNameAsync(
++        string username,
++        CancellationToken cancellationToken,
++        Guid? excludeUserId = null)
++        {
++            var query = _context.Users
++                .Where(u => u.UserName == username);
++
++            if (excludeUserId.HasValue)
++                query = query.Where(u => u.Id != excludeUserId.Value);
++
++            return await query.AnyAsync(cancellationToken);
++        }
++
++        public async Task<bool> ExistsByPersonIdAsync(
++        Guid personId,
++        CancellationToken cancellationToken)
++        {
++            return await _context.Users
++                .AnyAsync(u => u.PersonId == personId, cancellationToken);
++        }
++        public async Task<User?> GetActiveByUserNameAsync(
++        string userName,
++        CancellationToken cancellationToken)
++        {
++            return await _context.Users
++                .Include(u => u.UserRoles)
++                .FirstOrDefaultAsync(
++                    u => u.UserName == userName && u.IsActive,
++                    cancellationToken);
++        }
++
++    }
++
++}
+diff --git a/BMS.Infrastructure/Security/JwtProvider.cs b/BMS.Infrastructure/Security/JwtProvider.cs
+new file mode 100644
+index 0000000..d56230e
+--- /dev/null
++++ b/BMS.Infrastructure/Security/JwtProvider.cs
+@@ -0,0 +1,63 @@
++﻿using System.IdentityModel.Tokens.Jwt;
++using System.Security.Claims;
++using System.Text;
++using Microsoft.IdentityModel.Tokens;
++using BMS.Application.Common.Interfaces;
++using BMS.Domain.Entities;
++using BMS.Application.Common.Settings;
++
++namespace BMS.Infrastructure.Security
++{
++    public sealed class JwtProvider : IJwtProvider
++    {
++        private readonly JwtSettings _settings;
++
++        public JwtProvider(JwtSettings settings)
++        {
++            _settings = settings;
++        }
++
++        public (string token, DateTime expiresAt) GenerateToken(
++            User user,
++            IReadOnlyList<string> permissions,
++            int permissionVersion)
++        {
++            // ⏳ زمان انقضا
++            var expiresAt = DateTime.UtcNow
++                .AddMinutes(_settings.ExpiryMinutes);
++
++            // 🧾 Claims پایه + PermissionVersion
++            var claims = new List<Claim>
++            {
++                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
++                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
++                new Claim("pv", permissionVersion.ToString())
++            };
++
++            // 🔐 اضافه کردن Permission ها
++            claims.AddRange(
++                permissions.Select(p => new Claim("perm", p)));
++
++            // 🔑 امضای توکن با Key صحیح
++            var key = new SymmetricSecurityKey(
++                Encoding.UTF8.GetBytes(_settings.Key));
++
++            var credentials = new SigningCredentials(
++                key,
++                SecurityAlgorithms.HmacSha256);
++
++            // 🎟 ساخت JWT
++            var token = new JwtSecurityToken(
++                issuer: _settings.Issuer,
++                audience: _settings.Audience,
++                claims: claims,
++                expires: expiresAt,
++                signingCredentials: credentials);
++
++            var tokenString = new JwtSecurityTokenHandler()
++                .WriteToken(token);
++
++            return (tokenString, expiresAt);
++        }
++    }
++}
+diff --git a/BMS.Infrastructure/Security/PasswordHasher.cs b/BMS.Infrastructure/Security/PasswordHasher.cs
+new file mode 100644
+index 0000000..1cacf80
+--- /dev/null
++++ b/BMS.Infrastructure/Security/PasswordHasher.cs
+@@ -0,0 +1,21 @@
++﻿using BMS.Application.Common.Interfaces;
++using BCrypt.Net;
++
++namespace BMS.Infrastructure.Security
++{
++    public class PasswordHasher : IPasswordHasher
++    {
++        public string Hash(string password)
++        {
++            return BCrypt.Net.BCrypt.HashPassword(password);
++        }
++
++        // بررسی می‌کند که پسورد ورودی با پسورد هش شده در دیتابیس مطابقت دارد یا نه
++        // خروجی: true اگر برابر باشد، false اگر نادرست باشد
++        public bool Verify(string password, string passwordHash)
++        {
++            return BCrypt.Net.BCrypt.Verify(password, passwordHash);
++        }
++    }
++
++}
+diff --git a/BMS.Infrastructure/Security/PermissionResolver.cs b/BMS.Infrastructure/Security/PermissionResolver.cs
+new file mode 100644
+index 0000000..6c87941
+--- /dev/null
++++ b/BMS.Infrastructure/Security/PermissionResolver.cs
+@@ -0,0 +1,64 @@
++﻿using System;
++using System.Collections.Generic;
++using System.Linq;
++using System.Threading;
++using System.Threading.Tasks;
++using BMS.Infrastructure.Persistence;
++using BMS.Application.Common.Interfaces;
++using Microsoft.EntityFrameworkCore;
++
++namespace BMS.Infrastructure.Security
++{
++    public sealed class PermissionResolver : IPermissionResolver
++    {
++        private readonly BMSDbContext _context;
++
++        public PermissionResolver(BMSDbContext context)
++        {
++            _context = context;
++        }
++
++        public async Task<IReadOnlyList<string>> ResolveAsync(
++            Guid userId,
++            CancellationToken cancellationToken)
++        {
++            // دریافت لیست کلیدهای دسترسی مربوط به نقش‌های فعال یک کاربر
++            // ابتدا نقش‌های کاربر از جدول ارتباط کاربر و نقش گرفته می‌شود
++            // سپس دسترسی‌های هر نقش از جدول نقش و دسترسی استخراج می‌شود
++            // در نهایت فقط مقدار کلید هر دسترسی انتخاب و برگردانده می‌شود
++            var rolePermissionKeys = await (
++                from ur in _context.UserRoles.AsNoTracking()
++                join rp in _context.RolePermissions.AsNoTracking()
++                    on ur.RoleId equals rp.RoleId
++                join p in _context.Permissions.AsNoTracking()
++                    on rp.PermissionId equals p.Id
++                where ur.UserId == userId && ur.IsActive
++                select p.Key
++            ).ToListAsync(cancellationToken);
++
++            // دریافت لیست دسترسی‌های تنظیم‌شده مستقیم برای یک کاربر
++            // اطلاعات از جدول دسترسی‌های کاربر گرفته می‌شود
++            // سپس برای هر مورد، کلید دسترسی از جدول دسترسی‌ها استخراج می‌شود
++            // نتیجه شامل نام دسترسی و وضعیت مجاز بودن آن برای کاربر است
++            // این لیست هم موارد مجاز و هم موارد غیرمجاز را شامل می‌شود
++            var userOverrides = await (
++                from up in _context.UserPermissions.AsNoTracking()
++                join p in _context.Permissions.AsNoTracking()
++                    on up.PermissionId equals p.Id
++                where up.UserId == userId
++                select new { p.Key, up.IsGranted }
++            ).ToListAsync(cancellationToken);
++
++            // 3) اعمال Override
++            var granted = new HashSet<string>(rolePermissionKeys);
++
++            foreach (var ov in userOverrides)
++            {
++                if (ov.IsGranted) granted.Add(ov.Key);
++                else granted.Remove(ov.Key);
++            }
++
++            return granted.OrderBy(x => x).ToList();
++        }
++    }
++}
+diff --git a/BMS.Infrastructure/Seeds/PermissionKeys.cs b/BMS.Infrastructure/Seeds/PermissionKeys.cs
+new file mode 100644
+index 0000000..d4a2aae
+--- /dev/null
++++ b/BMS.Infrastructure/Seeds/PermissionKeys.cs
+@@ -0,0 +1,54 @@
++﻿namespace Bms.Infrastructure.Seeds
++{
++    public static class PermissionKeys
++    {
++        // دسترسی‌های پایه برای اپراتورها (Operator)
++        public static readonly string[] OperatorPermissions =
++        {
++            "Devices.Command.Execute",
++            "Devices.View",
++            "Devices.Definition.Manage",
++            "Trends.View",
++            "Trends.Export",
++            "Scheduler.View",
++            "Scheduler.Manage",
++            "SharedMemory.View"
++        };
++
++        // دسترسی‌های بیننده/مشاهده‌کننده (Viewer)
++        public static readonly string[] ViewerPermissions =
++        {
++            "Dashboard.View",
++            "Users.View",
++            "Roles.View",
++            "Controllers.View",
++            "Trends.View",
++            "PM.View"
++        };
++
++        // دسترسی‌های مدیر سیستم / Admin (دسترسی کامل به همه Permissionها)
++        public static readonly string[] AdminPermissions =
++        {
++            "Roles.View",
++            "Roles.Manage",
++            "Dashboard.View",
++            "Controllers.View",
++            "Controllers.Manage",
++            "Devices.View",
++            "Devices.Definition.Manage",
++            "Devices.Command.Execute",
++            "Trends.View",
++            "Trends.Export",
++            "Scheduler.View",
++            "Scheduler.Manage",
++            "SharedMemory.View",
++            "SharedMemory.Manage",
++            "SharedMemory.Edit",
++            "SharedMemory.Delete",
++            "SystemLogs.View",
++            "UserAudit.View",
++            "PM.View",
++            "PM.Manage"
++        };
++    }
++}
+diff --git a/BMS.Infrastructure/Seeds/PermissionSeed.cs b/BMS.Infrastructure/Seeds/PermissionSeed.cs
+new file mode 100644
+index 0000000..7620066
+--- /dev/null
++++ b/BMS.Infrastructure/Seeds/PermissionSeed.cs
+@@ -0,0 +1,47 @@
++﻿using BMS.Domain.Entities;
++using BMS.Domain.Entities;
++using Microsoft.EntityFrameworkCore;
++using System.Collections.Generic;
++
++namespace Bms.Infrastructure.Seeds
++{
++    public static class PermissionSeed
++    {
++        public static readonly List<Permission> AllPermissions = new()
++        {
++            new Permission(1, "Roles.View", "مشاهده گروه‌های دسترسی", "UsersAndAccess", 1),
++            new Permission(2, "Roles.Manage", "مدیریت گروه‌های دسترسی", "UsersAndAccess", 2),
++
++            new Permission(3, "Dashboard.View", "مشاهده داشبورد", "Dashboard", 0),
++
++            new Permission(4, "Controllers.View", "مشاهده کنترلرها", "Controllers", 0),
++            new Permission(5, "Controllers.Manage", "مدیریت کنترلرها", "Controllers", 2),
++
++            new Permission(6, "Devices.View", "مشاهده تجهیزات", "Devices", 0),
++            new Permission(7, "Devices.Definition.Manage", "مدیریت مشخصات/عکس تجهیزات", "Devices", 1),
++            new Permission(8, "Devices.Command.Execute", "اجرای فرمان روشن/خاموش", "Devices", 2),
++
++            new Permission(9, "Trends.View", "مشاهده نمودارها", "Trends", 0),
++            new Permission(10, "Trends.Export", "خروجی اکسل نمودارها", "Trends", 1),
++
++            new Permission(11, "Scheduler.View", "مشاهده زمان‌بندی‌ها", "Scheduler", 0),
++            new Permission(12, "Scheduler.Manage", "مدیریت زمان‌بندی‌ها", "Scheduler", 2),
++
++            new Permission(13, "SharedMemory.View", "مشاهده حافظه‌های مشترک", "SharedMemory", 1),
++            new Permission(14, "SharedMemory.Manage", "مدیریت لیست حافظه‌های مشترک", "SharedMemory", 2),
++            new Permission(15, "SharedMemory.Edit", "ویرایش مقدار حافظه‌های مشترک", "SharedMemory", 2),
++            new Permission(16, "SharedMemory.Delete", "حذف حافظه مشترک", "SharedMemory", 2),
++
++            new Permission(17, "SystemLogs.View", "مشاهده لاگ‌های سیستمی", "Logs", 1),
++            new Permission(18, "UserAudit.View", "مشاهده لاگ تغییرات کاربران", "Logs", 2),
++
++            new Permission(19, "PM.View", "مشاهده تعمیر و نگهداری", "PM", 0),
++            new Permission(20, "PM.Manage", "مدیریت تعمیر و نگهداری", "PM", 1)
++        };
++
++        public static void Seed(ModelBuilder modelBuilder)
++        {
++            modelBuilder.Entity<Permission>().HasData(AllPermissions);
++        }
++    }
++}
+diff --git a/BMS.Infrastructure/Seeds/RolePermissionSeed.cs b/BMS.Infrastructure/Seeds/RolePermissionSeed.cs
+new file mode 100644
+index 0000000..3fec88a
+--- /dev/null
++++ b/BMS.Infrastructure/Seeds/RolePermissionSeed.cs
+@@ -0,0 +1,56 @@
++﻿//using Bms.Infrastructure.Common;
++using BMS.Domain.Entities;
++using BMS.Domain.Entities;
++using BMS.Infrastructure.Common;
++using Microsoft.EntityFrameworkCore;
++using System.Collections.Generic;
++using System.Linq;
++
++namespace Bms.Infrastructure.Seeds
++{
++    public static class RolePermissionSeed
++    {
++        public static void Seed(ModelBuilder modelBuilder)
++        {
++            var permissions = PermissionSeed.AllPermissions;
++            var rolePermissions = new List<RolePermission>();
++
++            foreach (var permission in permissions)
++            {
++                rolePermissions.Add(
++                    new RolePermission(
++                        DeterministicGuid.Create(RoleSeed.SuperAdminId, permission.Id),
++                        RoleSeed.SuperAdminId,
++                        permission.Id
++                    )
++                );
++            }
++
++            foreach (var permission in permissions
++                         .Where(p => PermissionKeys.OperatorPermissions.Contains(p.Key)))
++            {
++                rolePermissions.Add(
++                    new RolePermission(
++                        DeterministicGuid.Create(RoleSeed.OperatorId, permission.Id),
++                        RoleSeed.OperatorId,
++                        permission.Id
++                    )
++                );
++            }
++
++            foreach (var permission in permissions
++                         .Where(p => PermissionKeys.ViewerPermissions.Contains(p.Key)))
++            {
++                rolePermissions.Add(
++                    new RolePermission(
++                        DeterministicGuid.Create(RoleSeed.ViewerId, permission.Id),
++                        RoleSeed.ViewerId,
++                        permission.Id
++                    )
++                );
++            }
++
++            modelBuilder.Entity<RolePermission>().HasData(rolePermissions);
++        }
++    }
++}
+diff --git a/BMS.Infrastructure/Seeds/RoleSeed.cs b/BMS.Infrastructure/Seeds/RoleSeed.cs
+new file mode 100644
+index 0000000..a20f508
+--- /dev/null
++++ b/BMS.Infrastructure/Seeds/RoleSeed.cs
+@@ -0,0 +1,22 @@
++﻿using BMS.Domain.Entities;
++using BMS.Domain.Entities;
++using Microsoft.EntityFrameworkCore;
++
++namespace Bms.Infrastructure.Seeds
++{
++    public static class RoleSeed
++    {
++        public const int SuperAdminId = 1;
++        public const int OperatorId = 2;
++        public const int ViewerId = 3;
++
++        public static void Seed(ModelBuilder modelBuilder)
++        {
++            modelBuilder.Entity<Role>().HasData(
++                new Role(SuperAdminId, "SuperAdmin", "دسترسی کامل به کل سیستم", true),
++                new Role(OperatorId, "Operator", "اپراتور سیستم و تجهیزات", true),
++                new Role(ViewerId, "Viewer", "فقط مشاهده اطلاعات", true)
++            );
++        }
++    }
++}
+diff --git a/BMS.Infrastructure/Services/PermissionResolver.cs b/BMS.Infrastructure/Services/PermissionResolver.cs
+new file mode 100644
+index 0000000..bdd1ab8
+--- /dev/null
++++ b/BMS.Infrastructure/Services/PermissionResolver.cs
+@@ -0,0 +1,34 @@
++﻿using Microsoft.EntityFrameworkCore;
++using BMS.Application.Common.Interfaces;
++//using Bms.Infrastructure.
++using BMS.Infrastructure.Security;
++using System;
++using BMS.Infrastructure.Persistence;
++namespace BMS.Infrastructure.Services;
++
++public sealed class PermissionResolver : IPermissionResolver
++{
++    private readonly BMSDbContext _context;
++
++    public PermissionResolver(BMSDbContext context)
++    {
++        _context = context;
++    }
++
++    public async Task<IReadOnlyList<string>> ResolveAsync(
++        Guid userId,
++        CancellationToken cancellationToken)
++    {
++        var permissions = await (
++            from ur in _context.UserRoles
++            join rp in _context.RolePermissions
++                on ur.RoleId equals rp.RoleId
++            where ur.UserId == userId
++            select rp.Permission.Key
++        )
++        .Distinct()
++        .ToListAsync(cancellationToken);
++
++        return permissions;
++    }
++}
+diff --git a/WebApi/Controllers/AuthController.cs b/WebApi/Controllers/AuthController.cs
+new file mode 100644
+index 0000000..780be6c
+--- /dev/null
++++ b/WebApi/Controllers/AuthController.cs
+@@ -0,0 +1,22 @@
++﻿using BMS.Application.Auth.Commands.Login;
++using MediatR;
++using Microsoft.AspNetCore.Mvc;
++
++[ApiController]
++[Route("api/auth")]
++public class AuthController : ControllerBase
++{
++    private readonly IMediator _mediator;
++
++    public AuthController(IMediator mediator)
++    {
++        _mediator = mediator;
++    }
++
++    [HttpPost("login")]
++    public async Task<IActionResult> Login(LoginCommand command)
++    {
++        var result = await _mediator.Send(command);
++        return Ok(result);
++    }
++}
+diff --git a/WebApi/Controllers/PersonsController.cs b/WebApi/Controllers/PersonsController.cs
+new file mode 100644
+index 0000000..f2d09b9
+--- /dev/null
++++ b/WebApi/Controllers/PersonsController.cs
+@@ -0,0 +1,39 @@
++﻿using Microsoft.AspNetCore.Mvc;
++using MediatR;
++using BMS.Application.Persons.Commands;
++
++namespace BMS.API.Controllers;
++
++[ApiController]
++[Route("api/persons")]
++public class PersonsController : ControllerBase
++{
++    private readonly IMediator _mediator;
++
++    public PersonsController(IMediator mediator)
++    {
++        _mediator = mediator;
++    }
++
++    [HttpPost]
++    public async Task<IActionResult> Create(
++        [FromBody] CreatePersonCommand command)
++    {
++        var id = await _mediator.Send(command);
++        return Ok(id);
++    }
++
++    [HttpPut("{id:guid}")]
++    public async Task<IActionResult> Update(
++    Guid id,
++    [FromBody] UpdatePersonCommand command)
++    {
++        if (id != command.Id)
++            return BadRequest();
++
++        await _mediator.Send(command);
++
++        return NoContent();
++    }
++
++}
+diff --git a/WebApi/Controllers/UsersController.cs b/WebApi/Controllers/UsersController.cs
+new file mode 100644
+index 0000000..17d7368
+--- /dev/null
++++ b/WebApi/Controllers/UsersController.cs
+@@ -0,0 +1,68 @@
++﻿using Microsoft.AspNetCore.Http;
++using Microsoft.AspNetCore.Mvc;
++using MediatR;
++using BMS.Application;
++using BMS.Application.Users.Commands;
++using BMS.Application.Users.Queries;
++using BMS.Application.Users.Dtos;
++using Microsoft.AspNetCore.Authorization;
++
++
++
++namespace BMS.API.Controllers
++{
++
++    [ApiController]
++    [Route("api/users")]
++    public class UsersController : ControllerBase
++    {
++        private readonly IMediator _mediator;
++
++        public UsersController(IMediator mediator)
++        {
++            _mediator = mediator;
++        }
++
++        [HttpPost]
++        public async Task<IActionResult> Create([FromBody] CreateUserCommand command)
++        {
++            var userId = await _mediator.Send(command);
++            return Ok(userId);
++        }
++
++
++        [HttpPut("{id:guid}")]
++        public async Task<IActionResult> Update(
++            Guid id,
++            [FromBody] UpdateUserCommand command)
++        {
++            command.UserId = id;
++
++            await _mediator.Send(command);
++
++            return NoContent();
++        }
++
++        [HttpPut("{id:guid}/change-password")]
++        public async Task<IActionResult> ChangePassword(
++    Guid id,
++    [FromBody] ChangePasswordCommand command)
++        {
++            command.UserId = id;
++
++            await _mediator.Send(command);
++
++            return NoContent();
++        }
++
++
++        [Authorize]
++        [HttpGet]
++        public async Task<IActionResult> GetList()
++        {
++            var users = await _mediator.Send(new GetUsersListQuery());
++            return Ok(users);
++        }
++    }
++}
++
+diff --git a/WebApi/WebApi.csproj b/WebApi/WebApi.csproj
+index 33a6c10..ee56946 100644
+--- a/WebApi/WebApi.csproj
++++ b/WebApi/WebApi.csproj
+@@ -7,6 +7,7 @@
+   </PropertyGroup>
+ 
+   <ItemGroup>
++    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.9" />
+     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+   </ItemGroup>
+-- 
+2.53.0.windows.1
+
