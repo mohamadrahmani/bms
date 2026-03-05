@@ -54,6 +54,10 @@ builder.Services.AddScoped<
     IEventHandler<DataPointUpdatedDomainEvent>,
     DataPointUpdatedRealtimeHandler>();
 
+builder.Services.AddScoped<
+    IEventHandler<GetDeviceStateDomainEvent>,
+    GetDeviceStateRealtimeHandler>();
+
 var channel = Channel.CreateUnbounded<DataPointDeltaModel>(
                 new UnboundedChannelOptions
                 {
@@ -74,7 +78,7 @@ builder.Services.AddScoped<IEventHandler<DataPointUpdatedDomainEvent>,
 //    DataPointUpdatedAlarmHandler>();
 var app = builder.Build();
 app.UseCors("AllowAngularDev");
-app.MapHub<BMSHub>("/hubs/twin");
+app.MapHub<BMSHub>("/hubs/deviceState");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

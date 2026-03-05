@@ -2,7 +2,7 @@
 
 namespace WebApi.Realtime.Hubs;
 
-public class TwinHub : Hub
+public class DeviceStateHub : Hub
 {
     public override async Task OnConnectedAsync()
     {
@@ -12,6 +12,17 @@ public class TwinHub : Hub
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         await base.OnDisconnectedAsync(exception);
+    }
+
+    public async Task GetDeviceState(string deviceId)
+    {
+        // منطق پردازش پیام دریافتی
+        // مثال: لاگ کردن، ذخیره در دیتابیس، یا ارسال به هاب‌های دیگر
+
+        // اگر می‌خواهید پس از دریافت، پیام را به بقیه هم بفرستید:
+        // await Clients.All.SendAsync("receiveConfirmation", "Data received");
+
+        System.Console.WriteLine($"Data received for device {deviceId}");
     }
 
     // Optional: Subscribe to specific device/group

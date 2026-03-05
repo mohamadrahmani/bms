@@ -24,7 +24,7 @@ namespace BMS.Infrastructure.Historian
         {
             var delta = new DataPointDeltaModel(
                 domainEvent.DeviceId,
-                domainEvent.PointId,
+                domainEvent.Id,
                 domainEvent.Value,
                 domainEvent.TimestampUtc);
 

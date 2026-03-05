@@ -6,9 +6,9 @@ namespace WebApi.Realtime.Services;
 
 public class TwinRealtimePublisher : ITwinRealtimePublisher
 {
-    private readonly IHubContext<TwinHub> _hubContext;
+    private readonly IHubContext<DeviceStateHub> _hubContext;
 
-    public TwinRealtimePublisher(IHubContext<TwinHub> hubContext)
+    public TwinRealtimePublisher(IHubContext<DeviceStateHub> hubContext)
     {
         _hubContext = hubContext;
     }

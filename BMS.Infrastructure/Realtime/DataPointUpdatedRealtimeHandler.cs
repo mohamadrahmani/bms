@@ -20,12 +20,25 @@ namespace BMS.Infrastructure.Realtime
             _hubContext = hubContext;
         }
 
+        // 1. متدی برای دریافت پیام از کلاینت
+        // نام این متد باید دقیقاً با نامی که در انگولار فراخوانی می‌کنید یکسان باشد
+        public async Task GetDeviceState(string deviceId)
+        {
+            // منطق پردازش پیام دریافتی
+            // مثال: لاگ کردن، ذخیره در دیتابیس، یا ارسال به هاب‌های دیگر
+
+            // اگر می‌خواهید پس از دریافت، پیام را به بقیه هم بفرستید:
+            // await Clients.All.SendAsync("receiveConfirmation", "Data received");
+
+            System.Console.WriteLine($"Data received for device {deviceId}");
+        }
+
         public async Task HandleAsync(
             DataPointUpdatedDomainEvent domainEvent)
         {
             var dto = new RealtimeDataPointDto(
                 domainEvent.DeviceId,
-                domainEvent.PointId,
+                domainEvent.Id,
                 domainEvent.Value,
                 domainEvent.TimestampUtc);
 

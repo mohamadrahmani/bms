@@ -18,7 +18,7 @@ public static class RealtimeExtensions
     public static IEndpointRouteBuilder MapRealtimeEndpoints(
         this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapHub<TwinHub>("/hubs/twin");
+        endpoints.MapHub<DeviceStateHub>("/hubs/deviceState");
 
         return endpoints;
     }
