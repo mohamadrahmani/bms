@@ -1,3 +1,4 @@
+using System.Drawing;
 using BMS.Application.Interfaces;
 using BMS.Application.Models;
 using BMS.Application.UseCases;
@@ -52,6 +53,107 @@ namespace WebApi.Controllers
 
             }
             return Ok();
+        }
+
+
+        [HttpGet("{twinId}/AutoUpdate")]
+        public async Task<IActionResult> AutoUpdate(Guid twinId)
+        {
+            var device = _store.Get(twinId);
+            device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000001"), PointDataType.Int32);
+            device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000002"), PointDataType.Int32);
+            device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000003"), PointDataType.Int32);
+            device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000004"), PointDataType.Int32);
+            device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000005"), PointDataType.Int32);
+            device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000006"), PointDataType.Int32);
+            device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000007"), PointDataType.Int32);
+
+            //while (true)
+            //{
+            //    await _useCase.ExecuteAsync(
+            //        Guid.Empty,
+            //        Guid.Parse("00000000-0000-0000-0000-000000000001"),
+            //        Convert.ToInt32((new Random()).Next(1, 101)));
+
+            //    await _useCase.ExecuteAsync(
+            //        Guid.Empty,
+            //        Guid.Parse("00000000-0000-0000-0000-000000000002"),
+            //        Convert.ToInt32((new Random()).Next(1, 101)));
+
+            //    await _useCase.ExecuteAsync(
+            //        Guid.Empty,
+            //        Guid.Parse("00000000-0000-0000-0000-000000000003"),
+            //        Convert.ToInt32((new Random()).Next(1, 101)));
+
+            //    await _useCase.ExecuteAsync(
+            //        Guid.Empty,
+            //        Guid.Parse("00000000-0000-0000-0000-000000000004"),
+            //        Convert.ToInt32((new Random()).Next(1, 101)));
+
+            //    await _useCase.ExecuteAsync(
+            //        Guid.Empty,
+            //        Guid.Parse("00000000-0000-0000-0000-000000000005"),
+            //        Convert.ToInt32((new Random()).Next(1, 101)));
+
+            //    await _useCase.ExecuteAsync(
+            //        Guid.Empty,
+            //        Guid.Parse("00000000-0000-0000-0000-000000000006"),
+            //        Convert.ToInt32((new Random()).Next(1, 101)));
+
+            //    await _useCase.ExecuteAsync(
+            //        Guid.Empty,
+            //        Guid.Parse("00000000-0000-0000-0000-000000000007"),
+            //        Convert.ToInt32((new Random()).Next(1, 101)));
+
+            //    System.Threading.Thread.Sleep(1000);
+            //}
+
+            _AutoUpdate(twinId);
+            return Ok();
+        }
+
+        async Task<bool> _AutoUpdate(Guid twinId)
+        {
+            while (true)
+            {
+                await _useCase.ExecuteAsync(
+                    Guid.Empty,
+                    Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    Convert.ToInt32((new Random()).Next(1, 101)));
+
+                await _useCase.ExecuteAsync(
+                    Guid.Empty,
+                    Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                    Convert.ToInt32((new Random()).Next(1, 101)));
+
+                await _useCase.ExecuteAsync(
+                    Guid.Empty,
+                    Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                    Convert.ToInt32((new Random()).Next(1, 101)));
+
+                await _useCase.ExecuteAsync(
+                    Guid.Empty,
+                    Guid.Parse("00000000-0000-0000-0000-000000000004"),
+                    Convert.ToInt32((new Random()).Next(1, 101)));
+
+                await _useCase.ExecuteAsync(
+                    Guid.Empty,
+                    Guid.Parse("00000000-0000-0000-0000-000000000005"),
+                    Convert.ToInt32((new Random()).Next(1, 101)));
+
+                await _useCase.ExecuteAsync(
+                    Guid.Empty,
+                    Guid.Parse("00000000-0000-0000-0000-000000000006"),
+                    Convert.ToInt32((new Random()).Next(1, 101)));
+
+                await _useCase.ExecuteAsync(
+                    Guid.Empty,
+                    Guid.Parse("00000000-0000-0000-0000-000000000007"),
+                    Convert.ToInt32((new Random()).Next(1, 101)));
+
+                System.Threading.Thread.Sleep(1000);
+            }
+            
         }
     }
 }

@@ -8,6 +8,9 @@
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="MediatR" Version="11.1.0" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
+    <PackageReference Include="microsoft.aspnetcore.authentication.jwtbearer" Version="8.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.9" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
@@ -19,7 +22,6 @@
 
   <ItemGroup>
     <Folder Include="Filters\" />
-    <Folder Include="Middlewares\" />
     <Folder Include="Extensions\" />
     <Folder Include="DependencyInjection\" />
   </ItemGroup>

@@ -2,6 +2,7 @@
 using BMS.Application.Models;
 using BMS.Application.UseCases;
 using BMS.Domain.Events;
+using MediatR;
 using BMS.Infrastructure.Alarm;
 using BMS.Infrastructure;
 using BMS.Infrastructure.Events;
@@ -11,21 +12,68 @@ using BMS.Infrastructure.Realtime.Hubs;
 using System.Threading.Channels;
 using WebApi.Domain.Twin.Services;
 using WebApi.Infrastructure.Twin;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using WebApi.Realtime.Extensions;
 using WebApi.Realtime.Hubs;
 
 using Microsoft.Extensions.DependencyInjection;
 using BMS.Infrastructure.State;
+using BMS.Application;
+using FluentValidation;
+using Microsoft.OpenApi.Models;
+using BMS.Application.Common.Settings;
+using BMS.Application.Common.Interfaces;
+using BMS.Infrastructure.Security;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
+using System;
+using BMS.Infrastructure.Persistence;
+using BMS.Application.Common.Behaviors;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddMediatR(typeof(ApplicationAssemblyReference).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(ApplicationAssemblyReference).Assembly);
 builder.Services.AddControllers();
 builder.Services.AddRealtimeInfrastructure();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "BMS.API",
+        Version = "v1"
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter: Bearer {your JWT token}"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 builder.Services.AddCors(options =>
 {
@@ -38,6 +86,8 @@ builder.Services.AddCors(options =>
     });
 });
 
+
+//builder.Services.AddMediatR();
 builder.Services.AddSingleton<ITwinRepository, InMemoryTwinRepository>();
 //builder.Services.AddScoped<ITwinService, TwinService>();
 //builder.Services.AddScoped<IDeviceStateStore, DeviceStateStore >();
@@ -45,6 +95,63 @@ builder.Services.AddSingleton<IDeviceStateStore, InMemoryDeviceStateStore>();
 builder.Services.AddScoped<IHistorianWriter, ChannelHistorianWriter>();
 //builder.Services.AddScoped<Channel, ChannelHistorianWriter>();
 //builder.Services.AddScoped<IEventDispatcher, EventDispatcher>();
+
+// --------------------
+// JWT Settings Binding
+// --------------------
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection("Jwt")
+);
+
+// --------------------
+// JWT Provider
+// --------------------
+builder.Services.AddSingleton<IJwtProvider>(sp =>
+{
+    var settings = sp
+        .GetRequiredService<IOptions<JwtSettings>>()
+        .Value;
+
+    return new JwtProvider(settings);
+});
+
+// --------------------
+// Authentication / Authorization
+// --------------------
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+
+        options.DefaultChallengeScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        var settings = builder.Configuration
+            .GetSection("Jwt")
+            .Get<JwtSettings>()!;
+
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero, // حرفه‌ای‌تر
+
+                ValidIssuer = settings.Issuer,
+                ValidAudience = settings.Audience,
+
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(settings.Key)
+                    )
+            };
+    });
+
 
 builder.Services.AddScoped<UpdateDataPointUseCase>();
 
@@ -69,8 +176,35 @@ builder.Services.AddSingleton(channel);
 
 //builder.Services.AddScoped<IEventDispatcher, EventDispatcher>();
 
-builder.Services.AddInfrastructure(builder.Configuration);
+// --------------------
+// Infrastructure
+// --------------------
+//var connectionString = builder.Configuration
+//    .GetConnectionString("DefaultConnection")
+//    ?? throw new InvalidOperationException("Connection string not found.");
 
+
+// --------------------
+// Pipeline Behaviors
+// --------------------
+builder.Services.AddTransient(
+    typeof(IPipelineBehavior<,>),
+    typeof(ValidationBehavior<,>)
+);
+
+
+builder.Services.AddInfrastructure(builder.Configuration);
+//builder.Services.AddInfrastructure2(connectionString);
+
+// --------------------
+// DbContext
+// --------------------
+//builder.Services.AddDbContext<BMSDbContext>(options =>
+//    options.UseSqlServer(
+//        builder.Configuration.GetConnectionString("DefaultConnection"),
+//        x => x.MigrationsAssembly("Bms.Infrastructure")
+//    )
+//);
 builder.Services.AddScoped<IEventHandler<DataPointUpdatedDomainEvent>,
     DataPointUpdatedHistorianHandler>();
 
@@ -87,6 +221,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthorization();
 

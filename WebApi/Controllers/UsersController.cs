@@ -44,9 +44,7 @@ namespace BMS.API.Controllers
         }
 
         [HttpPut("{id:guid}/change-password")]
-        public async Task<IActionResult> ChangePassword(
-    Guid id,
-    [FromBody] ChangePasswordCommand command)
+        public async Task<IActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordCommand command)
         {
             command.UserId = id;
 
@@ -56,12 +54,12 @@ namespace BMS.API.Controllers
         }
 
 
-        [Authorize]
+   
         [HttpGet]
         public async Task<IActionResult> GetList()
         {
             var users = await _mediator.Send(new GetUsersListQuery());
-            return Ok(users);
+            return Ok(new { Data = users, Total = users?.Count ?? 0 });
         }
     }
 }

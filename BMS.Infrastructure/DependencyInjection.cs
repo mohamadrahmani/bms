@@ -30,7 +30,7 @@ namespace BMS.Infrastructure
             // =======================
             services.AddDbContext<BMSDbContext>(options =>
                 options.UseSqlServer(
-                    configuration.GetConnectionString("Default")));
+                    configuration.GetConnectionString("DefaultConnection")));
 
             // =======================
             // Repositories & UoW
