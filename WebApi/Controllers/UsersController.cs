@@ -40,7 +40,7 @@ namespace BMS.API.Controllers
 
             await _mediator.Send(command);
 
-            return NoContent();
+            return Ok(new { success= true });
         }
 
         [HttpPut("{id:guid}/change-password")]

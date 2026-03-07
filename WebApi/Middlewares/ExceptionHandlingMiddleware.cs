@@ -69,7 +69,7 @@ public class ExceptionHandlingMiddleware
         }
 
         // 🔹 Database constraint errors
-        catch (DbUpdateException)
+        catch (DbUpdateException ex)
         {
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             context.Response.ContentType = "application/json";
