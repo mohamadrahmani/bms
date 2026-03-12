@@ -13,6 +13,8 @@ public class UserDto
     public string UserName { get; set; } = string.Empty;
 
     public bool IsActive { get; set; }
+    public Guid PersonId { get; set; }
+    public string PersonFullName { get; set; }
 
     public List<int> RoleIds { get; set; } = new();
 }

@@ -56,10 +56,10 @@ namespace BMS.API.Controllers
 
    
         [HttpGet]
-        public async Task<IActionResult> GetList()
+        public async Task<IActionResult> GetList([FromQuery] GetUsersListQuery query)
         {
-            var users = await _mediator.Send(new GetUsersListQuery());
-            return Ok(new { Data = users, Total = users?.Count ?? 0 });
+            var users = await _mediator.Send(query);
+            return Ok(users);
         }
     }
 }

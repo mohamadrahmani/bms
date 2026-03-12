@@ -13,6 +13,7 @@ namespace BMS.Infrastructure.Repositories
         {
             _context = context;
         }
+        public IQueryable<Person> Persons => _context.Persons;
 
         public async Task<Person?> GetByIdAsync(
             Guid id,
@@ -20,6 +21,12 @@ namespace BMS.Infrastructure.Repositories
         {
             return await _context.Persons
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
+        public async Task<List<Person>> GetAll(CancellationToken cancellationToken)
+        {
+            return await _context.Persons
+                .ToListAsync(cancellationToken);
         }
 
         public async Task AddAsync(

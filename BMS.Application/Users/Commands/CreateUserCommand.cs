@@ -8,8 +8,8 @@ namespace BMS.Application.Users.Commands;
 /// برای یک شخص (Person) موجود در سیستم.
 /// </summary>
 public sealed record CreateUserCommand(
-    Guid PersonId,                     // شناسه شخص موجود
-    string UserName,                   // نام کاربری
-    string Password,                   // رمز عبور خام (در Handler هش می‌شود)
-    IReadOnlyCollection<int>? RoleIds   // 🔥 اصلاح شد: int به جای Guid
+    Guid PersonId,
+    string UserName,
+    string Password,
+    IReadOnlyCollection<int>? RoleIds
 ) : IRequest<Guid>;

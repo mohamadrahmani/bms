@@ -2,13 +2,14 @@
 using BMS.Application.Common.Interfaces;
 using BMS.Domain.Entities;
 using BMS.Infrastructure.Persistence;
+using System.Reflection.Metadata;
 
 namespace BMS.Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
         private readonly BMSDbContext _context;
-
+        public IQueryable<User> Users => _context.Users; 
         public UserRepository(BMSDbContext context)
         {
             _context = context;
@@ -53,6 +54,7 @@ namespace BMS.Infrastructure.Repositories
         {
             return await _context.Users
                 .Include(u => u.UserRoles)
+                .Include(q=> q.Person)
                 .ToListAsync(cancellationToken);
         }
         public async Task<bool> ExistsByUserNameAsync(

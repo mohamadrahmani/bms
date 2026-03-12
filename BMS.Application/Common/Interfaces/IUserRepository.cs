@@ -1,9 +1,11 @@
 ﻿using BMS.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace BMS.Application.Common.Interfaces;
 
 public interface IUserRepository
 {
+    public IQueryable<User> Users { get; }
     Task<User?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken);

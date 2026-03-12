@@ -211,6 +211,7 @@ builder.Services.AddScoped<IEventHandler<DataPointUpdatedDomainEvent>,
 //builder.Services.AddScoped<IEventHandler<DataPointUpdatedDomainEvent>,
 //    DataPointUpdatedAlarmHandler>();
 var app = builder.Build();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseCors("AllowAngularDev");
 app.MapHub<BMSHub>("/hubs/deviceState");
 // Configure the HTTP request pipeline.
@@ -222,7 +223,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthorization();
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using BMS.Application.Persons.Commands;
+using BMS.Application.Users.Queries;
 
 namespace BMS.API.Controllers;
 
@@ -36,4 +37,10 @@ public class PersonsController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetList([FromQuery] GetPersonsListQuery query)
+    {
+        var users = await _mediator.Send(query);
+        return Ok(users);
+    }
 }
