@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using BMS.Domain.Events;
 using BMS.Domain.Enums;
-using BMS.Domain.Events;
 using System.Net;
 using System.Net.NetworkInformation;
+using BMS.Domain.Entities.Location;
 
 namespace BMS.Domain.Entities.BMS
 {
@@ -31,7 +31,7 @@ namespace BMS.Domain.Entities.BMS
         public Device() { } // سازنده خصوصی برای EF Core
 
         // سازنده اصلی برای ایجاد دستگاه جدید
-        public Device(Guid controllerId, string code, string name, DeviceType type)
+        public Device(Guid controllerId, string code, string name, DeviceType type, LocationReference location)
         {
             // اعتبارسنجی ورودی‌ها
             if (controllerId == Guid.Empty) throw new ArgumentException("ControllerId is required.");
@@ -42,7 +42,7 @@ namespace BMS.Domain.Entities.BMS
             Code = code.Trim();            // کد یکتای دستگاه (مثلاً AHU-01)
             Name = name.Trim();            // نام نمایشی دستگاه
             Type = type;                   // نوع دستگاه (Fan, Pump, AHU ...)
-
+            Location = location;
             // تنظیمات پیش‌فرض
             IsActive = true;               // دستگاه فعال است
             EnableAlarming = true;         // آلارم فعال است
@@ -51,6 +51,11 @@ namespace BMS.Domain.Entities.BMS
 
         // شناسه کنترلر مربوطه
         public Guid ControllerId { get; private set; }
+        public void UpdateLocation(LocationReference location)
+        {
+            Location = location;
+            SetUpdated();
+        }
 
         // ناوبری به شیء کنترلر (رابطه EF)
         public Controller Controller { get; private set; } = default!;
@@ -64,8 +69,8 @@ namespace BMS.Domain.Entities.BMS
         public string Name { get; private set; } = default!;
         public DeviceType Type { get; private set; }
 
-        // اطلاعات تکمیلی
-        //public string? Location { get; private set; }      // محل نصب (مثلاً طبقه ۲)
+        public LocationReference Location { get; private set; } = default!;
+
         public string? Description { get; private set; }   // توضیح اضافی
 
         // کلید صفحه گرافیکی UI
@@ -207,6 +212,20 @@ namespace BMS.Domain.Entities.BMS
                     value,
                     point.LastUpdatedAtUtc.Value);
             }
+        }
+        public void UpdateLocation(
+    Guid siteId,
+    Guid buildingId,
+    Guid floorId,
+    Guid wardId,
+    Guid roomId)
+        {
+            Location = new LocationReference(
+                siteId,
+                buildingId,
+                floorId,
+                wardId,
+                roomId);
         }
 
         public GetDeviceStateDomainEvent? GetDeviceState(Guid deviceId)

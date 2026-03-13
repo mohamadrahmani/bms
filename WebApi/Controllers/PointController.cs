@@ -8,12 +8,18 @@ using WebApi.Domain.Twin.Services;
 using WebApi.Realtime.Models;
 using WebApi.Realtime.Services;
 
+using BMS.Application.Points.Commands;
+using BMS.Application.Points.Dtos;
+using BMS.Application.Points.Queries;
+using MediatR;
+
 namespace WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     public class PointController : ControllerBase
     {
+        private readonly IMediator _mediator;
 
         //private readonly ITwinRealtimePublisher _publisher;
 
@@ -30,7 +36,8 @@ namespace WebApi.Controllers
         public PointController(ILogger<PointController> logger,// ITwinRealtimePublisher publisher, ITwinService twinService,
             IDeviceStateStore store
             ,IEventDispatcher dispatcher,
-            UpdateDataPointUseCase useCase
+            UpdateDataPointUseCase useCase,
+            IMediator mediator
             )
         {
             _logger = logger;
@@ -39,7 +46,9 @@ namespace WebApi.Controllers
             _store = store;
             _dispatcher = dispatcher;
             _useCase = useCase;
+            _mediator = mediator;
         }
+
 
         [HttpPost("{twinId}/update")]
         public async Task<IActionResult> Update(
@@ -68,34 +77,87 @@ namespace WebApi.Controllers
             return Ok();
         }
 
-        [HttpGet(Name = "GetWeatherForecast")]
-        public async Task<IActionResult> Get()
+        //[HttpGet(Name = "GetWeatherForecast")]
+        //public async Task<IActionResult> Get()
+        //{
+        //    //while (true)
+        //    //{
+        //    //    await _publisher.PublishAsync(new RealtimeUpdate
+        //    //    {
+        //    //        DatapointId = "ahu1.temp.supply",
+        //    //        Value = Random.Shared.Next(-20, 55),
+        //    //        Quality = "Good"
+        //    //    });
+        //    //    System.Threading.Thread.Sleep(1000);
+        //    //}
+
+        //    return Ok();
+
+        //    //return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        //    //{
+        //    //    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+        //    //    TemperatureC = Random.Shared.Next(-20, 55),
+        //    //    Summary = Summaries[Random.Shared.Next(Summaries.Length)]
+        //    //})
+        //    //.ToArray();
+        //}
+        // -------------------------------
+        // CRUD APIs
+        // -------------------------------
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
-            //while (true)
-            //{
-            //    await _publisher.PublishAsync(new RealtimeUpdate
-            //    {
-            //        DatapointId = "ahu1.temp.supply",
-            //        Value = Random.Shared.Next(-20, 55),
-            //        Quality = "Good"
-            //    });
-            //    System.Threading.Thread.Sleep(1000);
-            //}
+            var result = await _mediator.Send(new GetPointsQuery());
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(CreatePointDto dto)
+        {
+            var id = await _mediator.Send(new CreatePointCommand(dto));
+
+            return Ok(id);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdatePoint(Guid id, UpdatePointDto dto)
+        {
+            await _mediator.Send(new UpdatePointCommand(id, dto));
 
             return Ok();
+        }
 
-            //return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            //{
-            //    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            //    TemperatureC = Random.Shared.Next(-20, 55),
-            //    Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            //})
-            //.ToArray();
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            await _mediator.Send(new DeletePointCommand(id));
+
+            return Ok();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var result = await _mediator.Send(new GetPointByIdQuery(id));
+
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
+        }
+
+        [HttpGet("device/{deviceId}")]
+        public async Task<IActionResult> GetByDevice(Guid deviceId)
+        {
+            var result = await _mediator.Send(new GetPointsByDeviceQuery(deviceId));
+
+            return Ok(result);
         }
     }
+
     public class UpdateRequest
     {
-        public Guid DataPointId { get; set; } = default!;
+        public Guid DataPointId { get; set; }
         public object? Value { get; set; }
     }
 }

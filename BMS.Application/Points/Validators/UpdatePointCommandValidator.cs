@@ -1,0 +1,23 @@
+﻿using BMS.Application.Points.Commands;
+using FluentValidation;
+
+namespace BMS.Application.Points.Validators;
+
+public class UpdatePointCommandValidator : AbstractValidator<UpdatePointCommand>
+{
+    public UpdatePointCommandValidator()
+    {
+        RuleFor(x => x.Id)
+            .NotEmpty();
+
+        RuleFor(x => x.Dto.Title)
+            .NotEmpty();
+
+        RuleFor(x => x.Dto.Address)
+    .NotEmpty()
+    .OverridePropertyName("Address");
+
+
+
+    }
+}

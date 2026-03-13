@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BMS.Domain.Enums;
 using System.Globalization;
+using System.Xml.Linq;
 
 namespace BMS.Domain.Entities.BMS
 {
@@ -19,7 +20,7 @@ namespace BMS.Domain.Entities.BMS
             Guid deviceId,        // شناسه کنترلری که این نقطه به آن تعلق دارد
             PointKind kind,           // نوع نقطه (DI, DO, AI, AO, TI …)
             ushort? address,           // آدرس نقطه (مثلاً X0, Y0, CH1 ...)
-            //string tag,               // برچسب مختصر و یکتا
+           string tag,               // برچسب مختصر و یکتا
             string? title,             // عنوان توصیفی نقطه
             PointDataType dataType,   // نوع داده نقطه (Boolean, Int32, Float32 …)
             string? unit = null)      // واحد اندازه‌گیری (اختیاری)
@@ -27,13 +28,13 @@ namespace BMS.Domain.Entities.BMS
             // اعتبارسنجی پارامترها
             if (deviceId == Guid.Empty) throw new ArgumentException("DeviceId is required.");
             if (address == null) throw new ArgumentException("Address is required.");
-            //if (string.IsNullOrWhiteSpace(tag)) throw new ArgumentException("Tag is required.");
+            if (string.IsNullOrWhiteSpace(tag)) throw new ArgumentException("Tag is required.");
             if (string.IsNullOrWhiteSpace(title)) throw new ArgumentException("Title is required.");
 
             DeviceId = deviceId;
             Kind = kind;
             Address = address;
-            //Tag = tag.Trim();
+            Tag = tag.Trim();
             Title = title.Trim();
             DataType = dataType;
             Unit = string.IsNullOrWhiteSpace(unit) ? null : unit.Trim(); // حذف فاصله اضافی یا null
@@ -46,7 +47,7 @@ namespace BMS.Domain.Entities.BMS
         }
 
       
-        public string Code { get; set; } = default!;
+        public string? Code { get; set; } = default!;
 
       
         public ushort Length { get; set; } = 1;
@@ -164,6 +165,15 @@ namespace BMS.Domain.Entities.BMS
                     break;
             }
 
+            SetUpdated();
+        }
+
+        public void Update(string title, PointKind kind, PointDataType dataType, ushort? address)
+        {
+            Rename(title);
+            Kind = kind;
+            DataType = dataType;
+            Address = address;
             SetUpdated();
         }
 

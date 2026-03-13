@@ -1,6 +1,7 @@
 ﻿using Bms.Infrastructure.Seeds;
 using BMS.Domain.Entities;
 using BMS.Domain.Entities.BMS;
+using BMS.Infrastructure.Persistence.Configurations;
 using BMS.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Security;
@@ -35,7 +36,6 @@ namespace BMS.Infrastructure.Persistence
             // Apply all IEntityTypeConfiguration<T>
             modelBuilder.ApplyConfigurationsFromAssembly(
                 typeof(BMSDbContext).Assembly);
-
             // ===== Seeds =====
             PermissionSeed.Seed(modelBuilder);
             RoleSeed.Seed(modelBuilder);

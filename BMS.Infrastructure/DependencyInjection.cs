@@ -7,6 +7,7 @@ using BMS.Infrastructure.Commanding;
 using BMS.Infrastructure.Devices;
 using BMS.Infrastructure.Historian;
 using BMS.Infrastructure.Persistence;
+using BMS.Infrastructure.Persistence.Repositories;
 using BMS.Infrastructure.Realtime;
 using BMS.Infrastructure.Repositories;
 using BMS.Infrastructure.Security;
@@ -39,6 +40,8 @@ namespace BMS.Infrastructure
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IControllerRepository, ControllerRepository>();
+            services.AddScoped<IDeviceRepository, DeviceRepository>();
+            services.AddScoped<IPointRepository, PointRepository>();
 
 
             // =======================
