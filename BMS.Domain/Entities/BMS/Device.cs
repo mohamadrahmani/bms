@@ -186,7 +186,7 @@ namespace BMS.Domain.Entities.BMS
 
         public DataPointUpdatedDomainEvent? UpdatePoint(
             Guid pointId,
-            object? value)
+            string? value)
         {
             lock (_sync)
             {

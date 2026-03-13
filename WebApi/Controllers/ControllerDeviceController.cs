@@ -49,7 +49,7 @@ namespace WebApi.Controllers
                 await _useCase.ExecuteAsync(
                     twinId,
                     point.Id,
-                    Convert.ToInt32(point.Value.ToString()));
+                    point.Value.ToString());
 
             }
             return Ok();
@@ -119,37 +119,37 @@ namespace WebApi.Controllers
                 await _useCase.ExecuteAsync(
                     Guid.Empty,
                     Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                    Convert.ToInt32((new Random()).Next(1, 101)));
+                    (new Random()).Next(1, 101).ToString());
 
                 await _useCase.ExecuteAsync(
                     Guid.Empty,
                     Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                    Convert.ToInt32((new Random()).Next(1, 101)));
+                    (new Random()).Next(1, 101).ToString());
 
                 await _useCase.ExecuteAsync(
                     Guid.Empty,
                     Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                    Convert.ToInt32((new Random()).Next(1, 101)));
+                    (new Random()).Next(1, 101).ToString());
 
                 await _useCase.ExecuteAsync(
                     Guid.Empty,
                     Guid.Parse("00000000-0000-0000-0000-000000000004"),
-                    Convert.ToInt32((new Random()).Next(1, 101)));
+                    (new Random()).Next(1, 101).ToString());
 
                 await _useCase.ExecuteAsync(
                     Guid.Empty,
                     Guid.Parse("00000000-0000-0000-0000-000000000005"),
-                    Convert.ToInt32((new Random()).Next(1, 101)));
+                    (new Random()).Next(1, 101).ToString());
 
                 await _useCase.ExecuteAsync(
                     Guid.Empty,
                     Guid.Parse("00000000-0000-0000-0000-000000000006"),
-                    Convert.ToInt32((new Random()).Next(1, 101)));
+                    (new Random()).Next(1, 101).ToString());
 
                 await _useCase.ExecuteAsync(
                     Guid.Empty,
                     Guid.Parse("00000000-0000-0000-0000-000000000007"),
-                    Convert.ToInt32((new Random()).Next(1, 101)));
+                    (new Random()).Next(1, 101).ToString());
 
                 System.Threading.Thread.Sleep(1000);
             }

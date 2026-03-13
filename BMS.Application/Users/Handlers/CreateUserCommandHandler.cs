@@ -3,7 +3,6 @@ using BMS.Application.Users.Commands;
 using BMS.Application.Common.Interfaces;
 using BMS.Domain.Entities;
 using BMS.Application.Common.Exceptions;
-using BMS.Domain.Entities;
 
 
 namespace BMS.Application.Users.Handlers;

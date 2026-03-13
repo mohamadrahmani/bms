@@ -16,7 +16,7 @@ namespace BMS.Domain.Entities.BMS
 
         // سازنده اصلی برای ایجاد یک Point جدید
         public Point(
-            Guid controllerId,        // شناسه کنترلری که این نقطه به آن تعلق دارد
+            Guid deviceId,        // شناسه کنترلری که این نقطه به آن تعلق دارد
             PointKind kind,           // نوع نقطه (DI, DO, AI, AO, TI …)
             ushort? address,           // آدرس نقطه (مثلاً X0, Y0, CH1 ...)
             //string tag,               // برچسب مختصر و یکتا
@@ -25,12 +25,12 @@ namespace BMS.Domain.Entities.BMS
             string? unit = null)      // واحد اندازه‌گیری (اختیاری)
         {
             // اعتبارسنجی پارامترها
-            if (controllerId == Guid.Empty) throw new ArgumentException("ControllerId is required.");
+            if (deviceId == Guid.Empty) throw new ArgumentException("DeviceId is required.");
             if (address == null) throw new ArgumentException("Address is required.");
             //if (string.IsNullOrWhiteSpace(tag)) throw new ArgumentException("Tag is required.");
             if (string.IsNullOrWhiteSpace(title)) throw new ArgumentException("Title is required.");
 
-            ControllerId = controllerId;
+            DeviceId = deviceId;
             Kind = kind;
             Address = address;
             //Tag = tag.Trim();
@@ -61,8 +61,8 @@ namespace BMS.Domain.Entities.BMS
         public int ValidationDelayMs { get; set; } = 200;
 
         // شناسه کنترلر و شیء کنترلر مرتبط
-        public Guid ControllerId { get; private set; }
-        public Controller Controller { get; private set; } = default!;
+        public Guid DeviceId { get; private set; }
+        public Device Device { get; private set; } = default!;
 
         public PointKind Kind { get; private set; }
 
@@ -81,7 +81,7 @@ namespace BMS.Domain.Entities.BMS
         public int? BitIndex { get; private set; }                // بیت مرتبط (برای Coil یا DO)
         public ByteOrder? ByteOrder { get; private set; }         // ترتیب بایت برای داده‌های چند بایتی
 
-        public object? Value { get; set; }
+        public string? Value { get; set; }
         // آخرین مقدار ذخیره‌شده (Snapshot / Realtime)
         public double? LastNumericValue { get; private set; }     // برای عددی‌ها
         public bool? LastBooleanValue { get; private set; }       // برای بولی‌ها

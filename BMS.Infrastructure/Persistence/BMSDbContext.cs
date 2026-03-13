@@ -1,5 +1,6 @@
 ﻿using Bms.Infrastructure.Seeds;
 using BMS.Domain.Entities;
+using BMS.Domain.Entities.BMS;
 using BMS.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Security;
@@ -21,6 +22,9 @@ namespace BMS.Infrastructure.Persistence
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<UserPermission> UserPermissions { get; set; }
+        public DbSet<Controller> Controllers { get; set; }
+        public DbSet<Device> Devices => Set<Device>();
+        public DbSet<Point> Points => Set<Point>();
 
         // ===== BMS Entities =====
         public DbSet<DataPointHistoryEntity> DataPointHistory =>

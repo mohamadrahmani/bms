@@ -40,6 +40,19 @@ public class ExceptionHandlingMiddleware
             );
         }
 
+        catch (ArgumentException ex)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            context.Response.ContentType = "application/json";
+
+            await context.Response.WriteAsync(
+                JsonSerializer.Serialize(new
+                {
+                    errors = new[] { ex.Message }
+                })
+            );
+        }
+
         // 🔹 Domain Rules (NEW)
         catch (DomainException ex)
         {

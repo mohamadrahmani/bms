@@ -10,12 +10,12 @@ using BMS.Infrastructure.Persistence;
 using BMS.Infrastructure.Realtime;
 using BMS.Infrastructure.Repositories;
 using BMS.Infrastructure.Security;
-using BMS.Infrastructure.Services;
+//using BMS.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Channels;
-using PermissionResolver = BMS.Infrastructure.Services.PermissionResolver;
+//using PermissionResolver = BMS.Infrastructure.Services.PermissionResolver;
 
 namespace BMS.Infrastructure
 {
@@ -38,6 +38,8 @@ namespace BMS.Infrastructure
             services.AddScoped<IPersonRepository, PersonRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IControllerRepository, ControllerRepository>();
+
 
             // =======================
             // Security

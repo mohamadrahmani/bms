@@ -58,7 +58,7 @@ namespace WebApi.Controllers
             await _useCase.ExecuteAsync(
                 twinId,
                 request.DataPointId,
-                Convert.ToInt32(request.Value.ToString()));
+                request.Value.ToString());
 
             //if (domainEvent == null)
             //    return;

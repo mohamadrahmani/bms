@@ -133,5 +133,27 @@ namespace BMS.Domain.Entities.BMS
 
         // فعال کردن کنترلر
         public void Enable() { IsActive = true; SetUpdated(); }
+
+        // این کد باید در فایل Controller.cs (یا معادل آن) در لایه Domain قرار گیرد.
+
+        public void UpdateInfo(
+            string newName,
+            int newTimeoutMs,
+            int newRetryCount,
+            int newScanIntervalMs,
+            string? newDescription)
+        {
+            // فرض می‌کنیم Name در دیتابیس همان Code است و باید نرمال شود
+            this.Code = newName.Trim().ToUpperInvariant();
+            this.Name = newName; // اگر فیلد مجزایی به نام Name وجود دارد
+            this.TimeoutMs = newTimeoutMs;
+            this.RetryCount = newRetryCount;
+            this.ScanIntervalMs = newScanIntervalMs;
+            this.Description = newDescription;
+
+            // اگر نیاز به تغییر تاریخ آخرین به‌روزرسانی دارید:
+            // this.LastModifiedDate = DateTime.UtcNow;
+        }
+
     }
 }

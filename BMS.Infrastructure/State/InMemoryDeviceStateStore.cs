@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BMS.Application.Abstraction;
+using BMS.Domain.Entities;
 
 namespace BMS.Infrastructure.State
 {
@@ -19,7 +20,7 @@ namespace BMS.Infrastructure.State
             return _devices.GetOrAdd(deviceId, id => new Device(id));
         }
 
-        public void Update(Guid deviceId, Guid pointId, object? value)
+        public void Update(Guid deviceId, Guid pointId, string? value)
         {
             var device = GetOrCreate(deviceId);
             device.UpdatePoint(pointId, value);
