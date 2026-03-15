@@ -11,5 +11,8 @@ namespace BMS.Application.Interfaces
             string deviceId,
             string commandName,
             object? payload);
+
+        Task<bool> SendAsync(PointWriteCommand command, CancellationToken ct);
     }
+
 }

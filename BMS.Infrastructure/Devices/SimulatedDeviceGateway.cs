@@ -29,5 +29,10 @@ namespace BMS.Infrastructure.Devices
                 return Task.FromResult(
                     CommandResult.Fail("Unknown command"));
             }
+
+        public Task<bool> SendAsync(PointWriteCommand command, CancellationToken ct)
+        {
+            throw new NotImplementedException();
         }
+    }
     }
