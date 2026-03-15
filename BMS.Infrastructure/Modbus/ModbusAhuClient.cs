@@ -1,6 +1,6 @@
 ﻿using BMS.Application.Abstractions;
 using BMS.Application.Models;
-// using BMS.Application.Utilities;
+using BMS.Application.Utilities;
 
 namespace BMS.Infrastructure.Modbus;
 
@@ -21,7 +21,7 @@ public class ModbusAhuClient : IDeviceClient
         _config = config;
 
         // Stable, deterministic identity per PLC+Device
-       // _deviceId = DeterministicGuid.FromString($"bms|plc:{_plcName}|device:{_config.Name}");
+        _deviceId = DeterministicGuid.FromString($"bms|plc:{_plcName}|device:{_config.Name}");
     }
 
     public Guid DeviceId => _deviceId;
@@ -50,7 +50,7 @@ public class ModbusAhuClient : IDeviceClient
 
             snapshot.Sensors.Add(new SensorValueDto
             {
-                //SensorId = DeterministicGuid.FromString($"bms|plc:{_plcName}|device:{_config.Name}|point:{point.Code}"),
+                SensorId = DeterministicGuid.FromString($"bms|plc:{_plcName}|device:{_config.Name}|point:{point.Code}"),
                 Name = point.Code,
                 Value = value
             });

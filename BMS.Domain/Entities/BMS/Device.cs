@@ -232,21 +232,6 @@ namespace BMS.Domain.Entities.BMS
         {
             lock (_sync)
             {
-                
-                //var device = _devicePoints.FirstOrDefault(p => p.Id == deviceId);
-
-                //if (device == null)
-                    //throw new KeyNotFoundException($"Point '{deviceId}' not found.");
-
-
-                return new GetDeviceStateDomainEvent(Id, this);
-            }
-        }
-
-        public GetDeviceStateDomainEvent? GetDeviceState(Guid deviceId)
-        {
-            lock (_sync)
-            {
 
                 //var device = _devicePoints.FirstOrDefault(p => p.Id == deviceId);
 

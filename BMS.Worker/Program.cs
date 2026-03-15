@@ -2,7 +2,7 @@ using System.Threading.Channels;
 using BMS.Application.Abstraction;
 using BMS.Application.Abstractions;
 using BMS.Application.Models;
-//using BMS.Application.Utilities;
+using BMS.Application.Utilities;
 using BMS.Infrastructure.Modbus;
 using BMS.Worker.Abstractions;
 using BMS.Worker.Devices;
@@ -132,10 +132,10 @@ app.MapPost("/api/commands/write-point",
             return Results.BadRequest(new { error = "PointCode is required." });
 
         // Ensure stable routing key
-        //if (command.DeviceId == Guid.Empty)
-        //  command.DeviceId = DeterministicGuid.FromString($"bms|plc:{command.PlcName}|device:{command.DeviceName}");
+        if (command.DeviceId == Guid.Empty)
+            command.DeviceId = DeterministicGuid.FromString($"bms|plc:{command.PlcName}|device:{command.DeviceName}");
 
-        var pointId = Guid.NewGuid(); // DeterministicGuid.FromString($"bms|plc:{command.PlcName}|device:{command.DeviceName}|point:{command.PointCode}");
+        var pointId = DeterministicGuid.FromString($"bms|plc:{command.PlcName}|device:{command.DeviceName}|point:{command.PointCode}");
 
         bool success;
         string? error = null;

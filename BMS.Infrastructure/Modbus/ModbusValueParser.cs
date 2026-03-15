@@ -70,18 +70,18 @@ public static class ModbusValueParser
             PointDataType.Int16 =>
                 new[] { (ushort)(short)rawValue },
 
-            PointDataType.UInt32 =>
-                new[]
-                {
-                    (ushort)((uint)rawValue >> 16),
-                    (ushort)((uint)rawValue & 0xFFFF)
-                },
 
             PointDataType.Int32 =>
                 new[]
                 {
                     (ushort)((int)rawValue >> 16),
                     (ushort)((int)rawValue & 0xFFFF)
+                },
+            PointDataType.UInt32 =>
+                new[]
+                {
+                    (ushort)((uint)rawValue >> 16),
+                    (ushort)((uint)rawValue & 0xFFFF)
                 },
 
             PointDataType.Float32 =>
