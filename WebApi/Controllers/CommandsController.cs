@@ -21,20 +21,18 @@ public class CommandsController : ControllerBase
 
     [HttpPost]
     public async Task<IActionResult> Execute(
-        string deviceId,
-        string commandName,
-        object? payload)
+        [FromBody]  aaaa command)
     {
         var commandId = await _useCase.ExecuteAsync(
-            deviceId,
-            commandName,
-        payload);
+            command.DeviceId,
+            command.CommandName,
+        command.Payload);
 
         await eventDispatcher.DispatchAsync(
         new DeviceCommandCompletedDomainEvent(
             "start",
-            deviceId,
-            commandName,
+            command.DeviceId,
+            command.CommandName,
             true,
             null,
             DateTime.UtcNow)
@@ -42,4 +40,11 @@ public class CommandsController : ControllerBase
 
         return Ok(new { commandId });
     }
+}
+
+public class aaaa
+{
+    public string DeviceId { get; set; }
+    public string CommandName { get; set; }
+    public object? Payload { get; set; }
 }

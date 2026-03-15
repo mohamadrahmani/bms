@@ -39,7 +39,10 @@ public sealed class GetPersonsListQueryHandler
             {
                 Id = u.Id,
                 FirstName = u.FirstName,
-                LastName = u.LastName
+                LastName = u.LastName,
+                Email = u.Email,
+                Mobile = u.Mobile,
+                IsActive = u.IsActive
             });
 
         return await query.ToPagedResultAsync(

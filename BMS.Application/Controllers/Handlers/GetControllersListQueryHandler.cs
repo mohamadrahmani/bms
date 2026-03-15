@@ -1,4 +1,5 @@
 ﻿using BMS.Application.Common.Interfaces;
+using BMS.Application.Common.Pagination;
 using BMS.Application.Controllers.Dtos;
 using BMS.Application.Controllers.Queries;
 using MediatR;
@@ -6,7 +7,7 @@ using MediatR;
 namespace BMS.Application.Controllers.Handlers
 {
     public class GetControllersListQueryHandler
-        : IRequestHandler<GetControllersListQuery, List<ControllerDto>>
+        : IRequestHandler<GetControllersListQuery, PagedResult<ControllerDto>>
     {
         private readonly IControllerRepository _controllerRepository;
 
@@ -15,13 +16,13 @@ namespace BMS.Application.Controllers.Handlers
             _controllerRepository = controllerRepository;
         }
 
-        public async Task<List<ControllerDto>> Handle(
+        public async Task<PagedResult<ControllerDto>> Handle(
             GetControllersListQuery request,
             CancellationToken cancellationToken)
         {
-            var controllers = await _controllerRepository.GetAllAsync(cancellationToken);
+            var controllers = _controllerRepository.Controllers;
 
-            return controllers.Select(c => new ControllerDto
+            var query = controllers.Select(c => new ControllerDto
             {
                 Id = c.Id,
                 Code = c.Code,
@@ -30,7 +31,12 @@ namespace BMS.Application.Controllers.Handlers
                 IpAddress = c.IpAddress,
                 Port = c.Port,
                 Protocol = c.Protocol
-            }).ToList();
+            });
+
+            return await query.ToPagedResultAsync(
+            request.PageNumber,
+            request.PageSize,
+            cancellationToken);
         }
     }
 }

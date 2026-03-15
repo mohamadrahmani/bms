@@ -1,14 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
-using BMS.Application.Common.Interfaces;
-using BMS.Domain.Entities.BMS;
+﻿using BMS.Application.Common.Interfaces;
 using BMS.Domain.Entities;
+using BMS.Domain.Entities.BMS;
 using BMS.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Polly;
 
 namespace BMS.Infrastructure.Repositories
 {
     public class ControllerRepository : IControllerRepository
     {
         private readonly BMSDbContext _dbContext;
+        public IQueryable<Controller> Controllers => _dbContext.Controllers;
 
         public ControllerRepository(BMSDbContext dbContext)
         {
