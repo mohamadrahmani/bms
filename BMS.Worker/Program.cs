@@ -54,7 +54,7 @@ builder.Services.AddSingleton<IEnumerable<IPlcClient>>(sp =>
     return plcConfigs.Select(plcConfig =>
     {
         var connectionManager = new ModbusConnectionManager(
-            plcConfig.Ip,
+            plcConfig.IpAddress,
             plcConfig.Port,
             loggerFactory.CreateLogger<ModbusConnectionManager>()
         );

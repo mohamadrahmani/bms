@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 namespace BMS.Application.Models;
 public class PlcConfig : Controller
 {
-    public string Name { get; set; } = default!;
-    public string Ip { get; set; } = default!;
-    public int Port { get; set; }
+    //public string Name { get; set; } = default!;
+    //public string Ip { get; set; } = default!;
+    //public int Port { get; set; }
 
     public List<DeviceConfig> Devices { get; set; } = new();
 }

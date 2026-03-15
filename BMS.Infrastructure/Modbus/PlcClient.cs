@@ -22,7 +22,7 @@ public class PlcClient
         _config = config;
         _connectionManager =
             new ModbusConnectionManager(
-                config.Ip,
+                config.IpAddress,
                 config.Port,
                 logger);
     }
