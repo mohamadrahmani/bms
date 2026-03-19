@@ -75,10 +75,10 @@ namespace BMS.Domain.Entities
         public void EnsureCanLogin()
         {
             if (!IsActive)
-                throw new UserDomainException("Invalid credentials.");
+                throw new UserDomainException("نام کاربری یا رمز ورود اشتباه می باشد.");
 
             if (IsLocked)
-                throw new UserDomainException("Account is temporarily locked.");
+                throw new UserDomainException("حساب کاربری موقتا غیر فعال شد.");
         }
 
         public void RegisterLoginResult(bool isPasswordValid)
@@ -86,7 +86,7 @@ namespace BMS.Domain.Entities
             if (!isPasswordValid)
             {
                 RegisterFailedLogin();
-                throw new UserDomainException("Invalid credentials.");
+                throw new UserDomainException("نام کاربری یا رمز ورود اشتباه می باشد.");
             }
 
             RegisterSuccessfulLogin();
@@ -148,7 +148,7 @@ namespace BMS.Domain.Entities
         public void AssignRole(int roleId)
         {
             if (roleId <= 0)
-                throw new UserDomainException("Invalid role id.");
+                throw new UserDomainException("نقش نامعتبر.");
 
             if (_userRoles.Any(r => r.RoleId == roleId))
                 return;
@@ -162,14 +162,14 @@ namespace BMS.Domain.Entities
         public void SyncRoles(IEnumerable<int> roleIds)
         {
             if (roleIds is null)
-                throw new UserDomainException("RoleIds cannot be null.");
+                throw new UserDomainException("نقش نمی تواند نامشخص باشد.");
 
             _userRoles.Clear();
 
             foreach (var roleId in roleIds.Distinct())
             {
                 if (roleId <= 0)
-                    throw new UserDomainException("Invalid role id.");
+                    throw new UserDomainException("نقش نامعتبر.");
 
                 _userRoles.Add(new UserRole(Id, roleId));
             }
@@ -184,7 +184,7 @@ namespace BMS.Domain.Entities
         public void AssignPermission(int permissionId)
         {
             if (permissionId <= 0)
-                throw new UserDomainException("Invalid permission id.");
+                throw new UserDomainException("مجوز نامعتبر.");
 
             if (_userPermissions.Any(p => p.PermissionId == permissionId))
                 return;
@@ -201,7 +201,7 @@ namespace BMS.Domain.Entities
         private void SetUserName(string userName)
         {
             if (string.IsNullOrWhiteSpace(userName))
-                throw new UserDomainException("Username is required.");
+                throw new UserDomainException("نام کاربری الزامی می باشد.");
 
             UserName = userName.Trim().ToLowerInvariant();
         }
@@ -209,7 +209,7 @@ namespace BMS.Domain.Entities
         private void SetPasswordHash(string passwordHash)
         {
             if (string.IsNullOrWhiteSpace(passwordHash))
-                throw new UserDomainException("Password hash is required.");
+                throw new UserDomainException("رمز ورود اجباری می باشد.");
 
             PasswordHash = passwordHash;
         }

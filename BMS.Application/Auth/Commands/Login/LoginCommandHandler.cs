@@ -39,18 +39,18 @@ namespace BMS.Application.Auth.Commands.Login
                 .Trim()
                 .ToLowerInvariant();
 
-            return new LoginResponse(
-                Guid.Empty,
-                request.UserName,
-                "token",
-                DateTime.Now.AddMinutes(60));
+            //return new LoginResponse(
+            //    Guid.Empty,
+            //    request.UserName,
+            //    "token",
+            //    DateTime.Now.AddMinutes(60));
 
 
             var user = await _userRepository
                 .GetActiveByUserNameAsync(normalizedUserName, cancellationToken);
 
             if (user is null)
-                throw new BusinessRuleException("Invalid credentials.");
+                throw new BusinessRuleException("نام کاربری یا رمز ورود نامعتبر می باشد");
 
             try
             {
