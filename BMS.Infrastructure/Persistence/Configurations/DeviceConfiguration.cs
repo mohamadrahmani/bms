@@ -30,8 +30,8 @@ namespace BMS.Infrastructure.Persistence.Configurations
             builder.Ignore("_sync");
 
             builder.HasMany(d => d.DevicePoints)
-                .WithOne()
-                .HasForeignKey("DeviceId")
+                .WithOne(p => p.Device)
+                .HasForeignKey(p => p.DeviceId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Navigation(d => d.DevicePoints)

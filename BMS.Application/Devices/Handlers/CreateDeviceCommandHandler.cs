@@ -1,6 +1,7 @@
-﻿using BMS.Application.Common.Interfaces;
+﻿
+using BMS.Application.Common.Interfaces;
+using BMS.Application.Common.Exceptions;
 using BMS.Application.Devices.Commands;
-using BMS.Application.Devices.DTOs;
 using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
 using MediatR;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace BMS.Application.Devices.Handlers
 {
-    public class CreateDeviceCommandHandler : IRequestHandler<CreateDeviceCommand, DeviceDto>
+    public class CreateDeviceCommandHandler : IRequestHandler<CreateDeviceCommand, Guid>
     {
         private readonly IDeviceRepository _repository;
 
@@ -19,44 +20,42 @@ namespace BMS.Application.Devices.Handlers
             _repository = repository;
         }
 
-        public async Task<DeviceDto> Handle(CreateDeviceCommand request, CancellationToken cancellationToken)
+        public async Task<Guid> Handle(CreateDeviceCommand request, CancellationToken cancellationToken)
         {
-            var dto = request.Device;
+            // ✅ ساخت Location (اختیاری)
+            LocationReference? location = null;
 
-            //var device = new Device(dto.ControllerId, dto.Code, dto.Name, dto.Type);
-            var location = new LocationReference(
-                dto.SiteId,
-                dto.BuildingId,
-                dto.FloorId,
-                dto.WardId,
-                dto.RoomId);
+            if (request.SiteId.HasValue || request.BuildingId.HasValue ||
+                request.FloorId.HasValue || request.WardId.HasValue || request.RoomId.HasValue)
+            {
+                location = new LocationReference(
+                    request.SiteId,
+                    request.BuildingId,
+                    request.FloorId,
+                    request.WardId,
+                    request.RoomId
+                    );
+            }
 
+            // ✅ ساخت Device
             var device = new Device(
-                dto.ControllerId,
-                dto.Code,
-                dto.Name,
-                dto.Type,
-                location);
+                request.ControllerId,
+                request.Code.Trim().ToUpperInvariant(),
+                request.Name,
+                request.Type,
+                request.Description,
+                request.IsActive,
+                location
+            );
 
+           // device.SetActive(request.IsActive);
+
+            // ✅ ذخیره در دیتابیس
             await _repository.AddAsync(device);
             await _repository.SaveChangesAsync();
 
-            return new DeviceDto
-            {
-                Id = device.Id,
-                ControllerId = device.ControllerId,
-                Code = device.Code,
-                Name = device.Name,
-                Type = device.Type,
-                EnableAlarming = device.EnableAlarming,
-                EnableTrending = device.EnableTrending,
-                IsActive = device.IsActive,
-                SiteId = device.Location.SiteId,
-                BuildingId = device.Location.BuildingId,
-                FloorId = device.Location.FloorId,
-                WardId = device.Location.WardId,
-                RoomId = device.Location.RoomId
-            };
+            // ✅ برگرداندن Id
+            return device.Id;
         }
     }
 }

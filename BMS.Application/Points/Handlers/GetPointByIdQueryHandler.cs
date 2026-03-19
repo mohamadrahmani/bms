@@ -21,15 +21,44 @@ public class GetPointByIdQueryHandler : IRequestHandler<GetPointByIdQuery, Point
         if (point == null)
             return null;
 
+        //return new PointDto
+        //{
+        //    Id = point.Id,
+        //    DeviceId = point.DeviceId,
+        //    Title = point.Title,
+        //    Kind = point.Kind,
+        //    DataType = point.DataType,
+        //    Address = point.Address,
+        //    Value = point.Value
+        //};
         return new PointDto
         {
             Id = point.Id,
             DeviceId = point.DeviceId,
+            Tag = point.Tag,
             Title = point.Title,
             Kind = point.Kind,
             DataType = point.DataType,
             Address = point.Address,
-            Value = point.Value
+            Unit = point.Unit,
+            Code = point.Code,
+            Length = point.Length,
+            Scale = point.Scale,
+            Offset = point.Offset,
+            IsWritable = point.IsWritable,
+            RegisterType = point.RegisterType,
+            RegisterAddress = point.RegisterAddress,
+            BitIndex = point.BitIndex,
+            ByteOrder = point.ByteOrder,
+            SiteId = point.Location?.SiteId,
+            BuildingId = point.Location?.BuildingId,
+            FloorId = point.Location?.FloorId,
+            WardId = point.Location?.WardId,
+            RoomId = point.Location?.RoomId,
+            Value = point.Value,
+            Quality = point.Quality.ToString(),
+            LastUpdatedAtUtc = point.LastUpdatedAtUtc
         };
+
     }
 }

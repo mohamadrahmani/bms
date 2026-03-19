@@ -1,6 +1,7 @@
 ﻿using BMS.Application.Common.Interfaces;
 using BMS.Application.Points.Commands;
 using BMS.Domain.Entities.BMS;
+using BMS.Domain.Entities.Location;
 using MediatR;
 
 namespace BMS.Application.Points.Handlers;
@@ -16,21 +17,47 @@ public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, Gui
 
     public async Task<Guid> Handle(CreatePointCommand request, CancellationToken cancellationToken)
     {
-        var dto = request.Dto;
-
+        LocationReference? location = null;
+        if (request.SiteId.HasValue)
+        {
+            location = new LocationReference(
+                request.SiteId,
+                request.BuildingId,
+                request.FloorId,
+                request.WardId,
+                request.RoomId
+            );
+        }
         var point = new Point(
-    dto.DeviceId,
-    dto.Kind,
-    dto.Address,
-    dto.Tag,
-    dto.Title,
-    dto.DataType,
-    dto.Unit
-);
-
-
+           request.DeviceId,
+           request.Kind,
+           request.Address,
+           request.Tag,
+           request.Title,
+           request.DataType,
+           request.Unit,
+           location,
+        request.Code,
+        request.Length,
+        request.Scale,
+        request.Offset,
+        request.CommandAddress,
+        request.FeedbackAddress,
+        request.ValidationRetryCount,
+        request.ValidationDelayMs,
+        request.IsWritable
+       );
+        // تنظیم Mapping (رجیستر PLC)
+        if (request.RegisterType.HasValue && request.RegisterAddress.HasValue)
+        {
+            point.SetMapping(
+                request.RegisterType.Value,
+                request.RegisterAddress.Value,
+                request.BitIndex,
+                request.ByteOrder
+            );
+        }
         await _repository.AddAsync(point);
-
         return point.Id;
     }
 }

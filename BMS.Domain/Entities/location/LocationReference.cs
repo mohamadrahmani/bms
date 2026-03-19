@@ -25,5 +25,13 @@ namespace BMS.Domain.Entities.Location
             WardId = wardId;
             RoomId = roomId;
         }
+        public bool IsEmpty()
+        {
+            return SiteId == null &&
+                   BuildingId == null &&
+                   FloorId == null &&
+                   WardId == null &&
+                   RoomId == null;
+        }
     }
 }

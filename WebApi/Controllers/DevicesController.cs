@@ -36,16 +36,23 @@ namespace BMS.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<DeviceDto>> Create(CreateDeviceDto dto)
+        public async Task<ActionResult<DeviceDto>> Create(CreateDeviceCommand command)
         {
-            var result = await _mediator.Send(new CreateDeviceCommand(dto));
-            return Ok(result);
+            //var result = await _mediator.Send(new CreateDeviceCommand(dto));
+            var id = await _mediator.Send(command);
+            return Ok(id);
         }
 
+        //[HttpPut]
+        //public async Task<ActionResult<DeviceDto>> Update(UpdateDeviceDto dto)
+        //{
+        //    var result = await _mediator.Send(new UpdateDeviceCommand(dto));
+        //    return Ok(result);
+        //}
         [HttpPut]
-        public async Task<ActionResult<DeviceDto>> Update(UpdateDeviceDto dto)
+        public async Task<ActionResult<DeviceDto>> Update(UpdateDeviceCommand command)
         {
-            var result = await _mediator.Send(new UpdateDeviceCommand(dto));
+            var result = await _mediator.Send(command);
             return Ok(result);
         }
 

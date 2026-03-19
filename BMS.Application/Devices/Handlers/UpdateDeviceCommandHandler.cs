@@ -2,6 +2,7 @@
 using BMS.Application.Devices.Commands;
 using BMS.Application.Devices.DTOs;
 using MediatR;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,29 +19,48 @@ namespace BMS.Application.Devices.Handlers
 
         public async Task<DeviceDto> Handle(UpdateDeviceCommand request, CancellationToken cancellationToken)
         {
-            var dto = request.Device;
-
-            var device = await _repository.GetByIdAsync(dto.Id);
+            var device = await _repository.GetByIdAsync(request.Id);
 
             if (device == null)
                 throw new Exception("Device not found");
 
-            device.Rename(dto.Name);
+            // ---- Core fields ----
+            device.Rename(request.Name);
+            device.SetDescription(request.Description);
 
-            device.SetAlarming(dto.EnableAlarming);
-            device.SetTrending(dto.EnableTrending);
+            // ---- Changeable identifiers ----
+            if (device.Code != request.Code)
+                device.ChangeCode(request.Code);
 
-            if (dto.IsActive)
+            if (device.Type != request.Type)
+                device.ChangeType(request.Type);
+
+            if (device.ControllerId != request.ControllerId)
+                device.ChangeController(request.ControllerId);
+
+            // ---- Settings ----
+            device.SetAlarming(request.EnableAlarming);
+            device.SetTrending(request.EnableTrending);
+
+            if (request.IsActive)
                 device.Enable();
             else
                 device.Disable();
-            // ✅ Update Location
-            device.UpdateLocation(
-                dto.SiteId,
-                dto.BuildingId,
-                dto.FloorId,
-                dto.WardId,
-                dto.RoomId);
+
+            // ---- Location ----
+            if (request.SiteId.HasValue &&
+                request.BuildingId.HasValue &&
+                request.FloorId.HasValue &&
+                request.WardId.HasValue &&
+                request.RoomId.HasValue)
+            {
+                device.UpdateLocation(
+                    request.SiteId.Value,
+                    request.BuildingId.Value,
+                    request.FloorId.Value,
+                    request.WardId.Value,
+                    request.RoomId.Value);
+            }
 
             await _repository.UpdateAsync(device);
             await _repository.SaveChangesAsync();
@@ -54,7 +74,12 @@ namespace BMS.Application.Devices.Handlers
                 Type = device.Type,
                 EnableAlarming = device.EnableAlarming,
                 EnableTrending = device.EnableTrending,
-                IsActive = device.IsActive
+                IsActive = device.IsActive,
+                SiteId = device.Location?.SiteId,
+                BuildingId = device.Location?.BuildingId,
+                FloorId = device.Location?.FloorId,
+                WardId = device.Location?.WardId,
+                RoomId = device.Location?.RoomId
             };
         }
     }

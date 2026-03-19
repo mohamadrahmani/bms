@@ -31,7 +31,7 @@ namespace BMS.Domain.Entities.BMS
         public Device() { } // سازنده خصوصی برای EF Core
 
         // سازنده اصلی برای ایجاد دستگاه جدید
-        public Device(Guid controllerId, string code, string name, DeviceType type, LocationReference location)
+        public Device(Guid controllerId, string code, string name, DeviceType type, string? description, bool isActive, LocationReference? location = null)
         {
             // اعتبارسنجی ورودی‌ها
             if (controllerId == Guid.Empty) throw new ArgumentException("ControllerId is required.");
@@ -41,17 +41,22 @@ namespace BMS.Domain.Entities.BMS
             ControllerId = controllerId;   // کنترلری که این دستگاه به آن متصل است
             Code = code.Trim();            // کد یکتای دستگاه (مثلاً AHU-01)
             Name = name.Trim();            // نام نمایشی دستگاه
-            Type = type;                   // نوع دستگاه (Fan, Pump, AHU ...)
+            Type = type;
+            //Description = description;// نوع دستگاه (Fan, Pump, AHU ...)
+            Description = string.IsNullOrWhiteSpace(description)
+    ? null
+    : description.Trim();
+
             Location = location;
             // تنظیمات پیش‌فرض
-            IsActive = true;               // دستگاه فعال است
+            IsActive = isActive;               // دستگاه فعال است
             EnableAlarming = true;         // آلارم فعال است
             EnableTrending = true;         // ثبت ترند فعال است
         }
 
         // شناسه کنترلر مربوطه
         public Guid ControllerId { get; private set; }
-        public void UpdateLocation(LocationReference location)
+        public void UpdateLocation(LocationReference? location)
         {
             Location = location;
             SetUpdated();
@@ -69,7 +74,7 @@ namespace BMS.Domain.Entities.BMS
         public string Name { get; private set; } = default!;
         public DeviceType Type { get; private set; }
 
-        public LocationReference Location { get; private set; } = default!;
+        public LocationReference? Location { get; private set; }
 
         public string? Description { get; private set; }   // توضیح اضافی
 
@@ -278,13 +283,35 @@ namespace BMS.Domain.Entities.BMS
                     .ToList();
             }
         }
+        public void ChangeCode(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+                throw new ArgumentException("Code is required");
+
+            Code = code;
+            SetUpdated();
+        }
+        public void ChangeType(DeviceType type)
+        {
+            Type = type;
+            SetUpdated();
+        }
 
         public bool HasPoint(Guid pointId)
         {
             lock (_sync)
                 return _devicePoints.Any(p=> p.Id == pointId);
         }
+        public void ChangeController(Guid controllerId)
+        {
+            if (controllerId == Guid.Empty)
+                throw new ArgumentException("ControllerId is required");
+
+            ControllerId = controllerId;
+            SetUpdated();
+        }
     }
+
 
     public record DataPointSnapshot(
         Guid PointId,

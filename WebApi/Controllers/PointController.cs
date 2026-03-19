@@ -77,33 +77,7 @@ namespace WebApi.Controllers
             return Ok();
         }
 
-        //[HttpGet(Name = "GetWeatherForecast")]
-        //public async Task<IActionResult> Get()
-        //{
-        //    //while (true)
-        //    //{
-        //    //    await _publisher.PublishAsync(new RealtimeUpdate
-        //    //    {
-        //    //        DatapointId = "ahu1.temp.supply",
-        //    //        Value = Random.Shared.Next(-20, 55),
-        //    //        Quality = "Good"
-        //    //    });
-        //    //    System.Threading.Thread.Sleep(1000);
-        //    //}
 
-        //    return Ok();
-
-        //    //return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-        //    //{
-        //    //    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-        //    //    TemperatureC = Random.Shared.Next(-20, 55),
-        //    //    Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-        //    //})
-        //    //.ToArray();
-        //}
-        // -------------------------------
-        // CRUD APIs
-        // -------------------------------
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -112,17 +86,22 @@ namespace WebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreatePointDto dto)
+        public async Task<IActionResult> Create(CreatePointCommand command)
         {
-            var id = await _mediator.Send(new CreatePointCommand(dto));
+            var id = await _mediator.Send(command);
 
             return Ok(id);
         }
 
+
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePoint(Guid id, UpdatePointDto dto)
+        public async Task<IActionResult> UpdatePoint(Guid id, UpdatePointCommand command)
         {
-            await _mediator.Send(new UpdatePointCommand(id, dto));
+            if (id != command.Id)
+                return BadRequest("Route id and command id do not match");
+
+            await _mediator.Send(command);
 
             return Ok();
         }

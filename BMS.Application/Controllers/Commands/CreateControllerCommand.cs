@@ -15,5 +15,16 @@ namespace BMS.Application.Controllers.Commands
         public int RetryCount { get; init; }
         public int ScanIntervalMs { get; init; }
         public string? Description { get; init; }
+
+        public string? FirmwareVersion { get; init; }
+        public ControllerHealthStatus? HealthStatus { get; init; }
+
+        public bool IsActive { get; init; } = true;
+
+        public Guid? SiteId { get; init; }
+        public Guid? BuildingId { get; init; }
+        public Guid? FloorId { get; init; }
+        public Guid? WardId { get; init; }
+        public Guid? RoomId { get; init; }
     }
 }

@@ -2,7 +2,8 @@
 using BMS.Application.Common.Interfaces;
 using BMS.Application.Common.Exceptions;
 using BMS.Domain.Exceptions;
-using BMS.Application.Controllers.Commands; // شامل UpdateControllerCommand
+using BMS.Application.Controllers.Commands;
+using BMS.Domain.Entities.Location;
 
 namespace BMS.Application.Controllers.Handlers
 {
@@ -24,8 +25,7 @@ namespace BMS.Application.Controllers.Handlers
             UpdateControllerCommand request,
             CancellationToken cancellationToken)
         {
-            // 1. دریافت موجودیت
-            // فرض می‌کنیم GetByIdAsync شما در IControllerRepository پیاده‌سازی شده است.
+            // 1. دریافت Controller
             var controller = await _controllerRepository
                 .GetByIdAsync(request.ControllerId, cancellationToken);
 
@@ -33,35 +33,57 @@ namespace BMS.Application.Controllers.Handlers
                 throw new NotFoundException(
                     $"Controller with id '{request.ControllerId}' not found.");
 
-            // 2. نرمال‌سازی کدی که از Command آمده
-            var normalizedNewCode = request.Name
+            // 2. نرمال سازی Code
+            var normalizedCode = request.Code
                 .Trim()
                 .ToUpperInvariant();
 
-            // 3. بررسی تکراری بودن کد جدید
-            // ⚠️ توجه: برای تکمیل این بخش، باید در IControllerRepository و پیاده‌سازی آن،
-            // متدی برای بررسی وجود کد جدید با قابلیت نادیده گرفتن ID فعلی پیاده‌سازی شود.
-            // برای سادگی، از متدی فرضی به نام ExistsByCodeAndIgnoringIdAsync استفاده می‌کنیم که معادل
-            // ExistsByUserNameAsync در مثال کاربر است.
+            // 3. بررسی تکراری نبودن Code
             var exists = await _controllerRepository
                 .ExistsByCodeAndIgnoringIdAsync(
-                    normalizedNewCode,
+                    normalizedCode,
                     cancellationToken,
-                    request.ControllerId); // ارسال ID برای نادیده گرفتن خود این رکورد
+                    request.ControllerId);
 
             if (exists)
-                throw new BusinessRuleException("Controller code (Name) already exists.");
+                throw new BusinessRuleException("Controller code already exists.");
 
-            // 4. اعمال تغییرات بر روی موجودیت با استفاده از متد جدید
+            // 4. اعمال تغییرات
             controller.UpdateInfo(
-                newName: normalizedNewCode, // ارسال مقدار نرمال شده
+                newCode: normalizedCode,
+                newName: request.Name,
+                newProtocol: request.Protocol,
+                newIpAddress: request.IpAddress,
+                newPort: request.Port,
+                newUnitId: request.UnitId,
                 newTimeoutMs: request.TimeoutMs,
                 newRetryCount: request.RetryCount,
                 newScanIntervalMs: request.ScanIntervalMs,
-                newDescription: request.Description
+                newDescription: request.Description,
+                newFirmwareVersion: request.FirmwareVersion,
+                newHealthStatus: request.HealthStatus,
+                newIsActive: request.IsActive
             );
+            var location = new LocationReference(
+    request.SiteId,
+    request.BuildingId,
+    request.FloorId,
+    request.WardId,
+    request.RoomId
+);
 
-            // 5. ذخیره تغییرات
+            controller.UpdateLocation(location);
+
+            // 5. آپدیت Location
+            //controller.UpdateLocation(
+            //    request.SiteId,
+            //    request.BuildingId,
+            //    request.FloorId,
+            //    request.WardId,
+            //    request.RoomId
+            //);
+
+            // 6. ذخیره
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Unit.Value;

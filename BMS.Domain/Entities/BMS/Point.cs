@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BMS.Domain.Enums;
 using System.Globalization;
 using System.Xml.Linq;
+using BMS.Domain.Entities.Location;
 
 namespace BMS.Domain.Entities.BMS
 {
@@ -23,7 +24,17 @@ namespace BMS.Domain.Entities.BMS
            string tag,               // برچسب مختصر و یکتا
             string? title,             // عنوان توصیفی نقطه
             PointDataType dataType,   // نوع داده نقطه (Boolean, Int32, Float32 …)
-            string? unit = null)      // واحد اندازه‌گیری (اختیاری)
+            string? unit = null,
+            LocationReference? location = null,
+        string? code = null,
+        ushort length = 1,
+        double scale = 1,
+        double offset = 0,
+        ushort? commandAddress = null,
+        ushort? feedbackAddress = null,
+        int validationRetryCount = 3,
+        int validationDelayMs = 200,
+        bool isWritable = false)      // واحد اندازه‌گیری (اختیاری)
         {
             // اعتبارسنجی پارامترها
             if (deviceId == Guid.Empty) throw new ArgumentException("DeviceId is required.");
@@ -38,63 +49,111 @@ namespace BMS.Domain.Entities.BMS
             Title = title.Trim();
             DataType = dataType;
             Unit = string.IsNullOrWhiteSpace(unit) ? null : unit.Trim(); // حذف فاصله اضافی یا null
-
+            Location = location;
             // آیا نقطه قابل نوشتن است؟ فقط DO و AO قابل نوشتن هستند
             IsWritable = kind is PointKind.DO or PointKind.AO;
 
             // کیفیت اولیه نقطه
             Quality = PointQuality.Unknown;
+            Code = code;
+            Length = length;
+            Scale = scale;
+            Offset = offset;
+
+            CommandAddress = commandAddress;
+            FeedbackAddress = feedbackAddress;
+
+            ValidationRetryCount = validationRetryCount;
+            ValidationDelayMs = validationDelayMs;
+
+            IsWritable = isWritable;
+
+            Quality = PointQuality.Unknown;
         }
 
-      
-        public string? Code { get; set; } = default!;
+        public LocationReference? Location { get; private set; }
+        // کد یکتا برای پوینت
+        public string? Code { get; set; }
 
-      
+        // طول داده در رجیستر
         public ushort Length { get; set; } = 1;
-
+        // ضریب مقیاس برای تبدیل مقدار خام PLC به مقدار مهندسی
         public double Scale { get; set; } = 1;
+        // آفست برای اصلاح مقدار بعد از Scale
         public double Offset { get; set; } = 0;
-
+        // آدرس ارسال فرمان
         public ushort? CommandAddress { get; set; }
+        // آدرس دریافت فیدبک از PLC (مثلاً وضعیت واقعی خروجی)
         public ushort? FeedbackAddress { get; set; }
-
+        // تعداد دفعات تلاش مجدد برای اعتبارسنجی فرمان
         public int ValidationRetryCount { get; set; } = 3;
+        // فاصله زمانی بین تلاش‌های اعتبارسنجی (میلی‌ثانیه)
         public int ValidationDelayMs { get; set; } = 200;
 
         // شناسه کنترلر و شیء کنترلر مرتبط
         public Guid DeviceId { get; private set; }
         public Device Device { get; private set; } = default!;
-
+        // نوع پوینت در سیستم BMS
+        // DI = Digital Input
+        // DO = Digital Output
+        // AI = Analog Input
+        // AO = Analog Output
         public PointKind Kind { get; private set; }
 
         // اطلاعات PLC/Excel-friendly
+        // آدرس منطقی پوینت در PLC
         public ushort? Address { get; set; } = default!;  // X0 / Y0 / CH1 ...
+        // نام کوتاه و یکتای پوینت (Tag مهندسی)
         public string Tag { get; private set; } = default!;
+        // عنوان قابل نمایش برای کاربر
         public string? Title { get; private set; } = default!;
-
+        // واحد اندازه‌گیری مقدار
+        // مثال: °C ، bar ، m³/h
         public string? Unit { get; private set; }       // واحد اندازه‌گیری (مثلاً °C یا m³/h)
+        // نوع داده پوینت
+        // Boolean / Int32 / Float32 / Float64 / String
         public PointDataType DataType { get; set; } // نوع داده
+        // مشخص می‌کند این پوینت قابل نوشتن است یا فقط خواندنی
+        // معمولاً DO و AO قابل نوشتن هستند
         public bool IsWritable { get; set; }    // آیا قابل نوشتن است؟
 
         // اطلاعات Mapping صنعتی (برای ارتباط با Modbus یا PLC)
+        // نوع رجیستر در پروتکل Modbus
+        // Coil / DiscreteInput / HoldingRegister / InputRegister
         public RegisterType? RegisterType { get; private set; }   // نوع رجیستر
+        // آدرس رجیستر Modbus
         public int? RegisterAddress { get; private set; }         // آدرس رجیستر
-        public int? BitIndex { get; private set; }                // بیت مرتبط (برای Coil یا DO)
+        // شماره بیت داخل رجیستر (برای سیگنال‌های دیجیتال)
+        public int? BitIndex { get; private set; }
+        // ترتیب بایت برای داده‌های چند بایتی
+        // BigEndian / LittleEndian// بیت مرتبط (برای Coil یا DO)
         public ByteOrder? ByteOrder { get; private set; }         // ترتیب بایت برای داده‌های چند بایتی
 
+        //public LocationReference Location { get; private set; } = default!;
+
+        // مقدار فعلی پوینت به صورت رشته (برای نمایش عمومی یا انتقال)
         public string? Value { get; set; }
         // آخرین مقدار ذخیره‌شده (Snapshot / Realtime)
+        // آخرین مقدار عددی پوینت (برای AI/AO)
         public double? LastNumericValue { get; private set; }     // برای عددی‌ها
+        // آخرین مقدار بولین پوینت (برای DI/DO)
         public bool? LastBooleanValue { get; private set; }       // برای بولی‌ها
+        // آخرین مقدار متنی پوینت (برای String points)
         public string? LastTextValue { get; private set; }        // برای رشته‌ها
-
+        // مقدار خام دریافت‌شده از PLC قبل از تبدیل
         public string? LastRawValue { get; private set; }         // مقدار خام برای UI یا دیباگ
         public DateTime? LastUpdatedAtUtc { get; private set; } = DateTime.UtcNow;  // زمان آخرین بروزرسانی
+        // کیفیت داده دریافتی
+        // Good / Bad / Unknown
         public PointQuality Quality { get; private set; }         // کیفیت داده (Good, Bad, Unknown…)
 
         // مقیاس‌بندی برای AI/AO/TI (مثلاً تبدیل raw → engineering unit)
         //public PointScaling? Scaling { get; private set; }
-
+        public void UpdateLocation(LocationReference location)
+        {
+            Location = location;
+            SetUpdated();
+        }
         // تنظیم Mapping صنعتی
         public void SetMapping(RegisterType registerType, int registerAddress, int? bitIndex = null, ByteOrder? byteOrder = null)
         {
@@ -117,7 +176,6 @@ namespace BMS.Domain.Entities.BMS
             ByteOrder = null;
             SetUpdated();
         }
-
         // تنظیم Scaling برای AI/AO/TI
         //public void SetScaling(PointScaling? scaling)
         //{
@@ -168,13 +226,48 @@ namespace BMS.Domain.Entities.BMS
             SetUpdated();
         }
 
-        public void Update(string title, PointKind kind, PointDataType dataType, ushort? address)
+    public void Update(
+    string tag,
+    string title,
+    PointKind kind,
+    PointDataType dataType,
+    ushort address,
+    string? unit,
+    string? code,
+    ushort length,
+    double scale,
+    double offset,
+    ushort? commandAddress,
+    ushort? feedbackAddress,
+    int validationRetryCount,
+    int validationDelayMs,
+    bool isWritable,
+    LocationReference? location
+)
         {
-            Rename(title);
+            Tag = tag;
+            Title = title;
             Kind = kind;
             DataType = dataType;
             Address = address;
-            SetUpdated();
+            Unit = unit;
+
+            Code = code;
+            Length = length;
+            Scale = scale;
+            Offset = offset;
+
+            CommandAddress = commandAddress;
+            FeedbackAddress = feedbackAddress;
+
+            ValidationRetryCount = validationRetryCount;
+            ValidationDelayMs = validationDelayMs;
+
+            IsWritable = isWritable;
+
+            Location = location;
+
+            UpdatedAtUtc = DateTime.UtcNow;
         }
 
         // تغییر عنوان نقطه

@@ -32,11 +32,11 @@ namespace BMS.Application.Devices.Queries
                 EnableAlarming = d.EnableAlarming,
                 EnableTrending = d.EnableTrending,
                 IsActive = d.IsActive,
-                SiteId=d.Location.SiteId,
-                BuildingId = d.Location.BuildingId,
-                FloorId = d.Location.FloorId,
-                WardId = d.Location.WardId,
-                RoomId = d.Location.RoomId
+                SiteId=d.Location?.SiteId,
+                BuildingId = d.Location?.BuildingId,
+                FloorId = d.Location?.FloorId,
+                WardId = d.Location?.WardId,
+                RoomId = d.Location?.RoomId
             }).ToList();
         }
     }
