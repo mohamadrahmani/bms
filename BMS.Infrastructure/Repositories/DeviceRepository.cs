@@ -8,7 +8,7 @@ namespace BMS.Infrastructure.Persistence.Repositories
     public class DeviceRepository : IDeviceRepository
     {
         private readonly BMSDbContext _context;
-
+        public IQueryable<Device> Devices => _context.Devices;
         public DeviceRepository(BMSDbContext context)
         {
             _context = context;

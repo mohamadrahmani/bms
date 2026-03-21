@@ -16,7 +16,7 @@ using MediatR;
 namespace WebApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/points")]
     public class PointController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -79,9 +79,9 @@ namespace WebApi.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] GetPointsQuery query)
         {
-            var result = await _mediator.Send(new GetPointsQuery());
+            var result = await _mediator.Send(query);
             return Ok(result);
         }
 
@@ -101,9 +101,9 @@ namespace WebApi.Controllers
             if (id != command.Id)
                 return BadRequest("Route id and command id do not match");
 
-            await _mediator.Send(command);
+            var res = await _mediator.Send(command);
 
-            return Ok();
+            return StatusCode(res.StatusCode, res);
         }
 
         [HttpDelete("{id}")]

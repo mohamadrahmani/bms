@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using MediatR;
-using BMS.Application.Controllers.Commands;
+﻿using BMS.Application.Controllers.Commands;
 using BMS.Application.Controllers.Queries;
+using BMS.Application.Users.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace BMS.API.Controllers
@@ -51,10 +52,9 @@ namespace BMS.API.Controllers
 
         // GET LIST
         [HttpGet]
-        public async Task<IActionResult> GetList()
+        public async Task<IActionResult> GetList([FromQuery] GetControllersListQuery query)
         {
-            var list = await _mediator.Send(
-                new GetControllersListQuery());
+            var list = await _mediator.Send(query);
 
             return Ok(list);
         }

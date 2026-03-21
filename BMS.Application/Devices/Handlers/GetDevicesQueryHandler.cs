@@ -1,4 +1,5 @@
 ﻿using BMS.Application.Common.Interfaces;
+using BMS.Application.Common.Pagination;
 using BMS.Application.Devices.DTOs;
 using BMS.Application.Interfaces;
 using BMS.Domain.Entities.BMS;
@@ -7,7 +8,7 @@ using MediatR;
 namespace BMS.Application.Devices.Queries
 {
     public class GetDevicesQueryHandler
-        : IRequestHandler<GetDevicesQuery, List<DeviceDto>>
+        : IRequestHandler<GetDevicesQuery, PagedResult<DeviceDto>>
     {
         private readonly IDeviceRepository _repository;
 
@@ -16,13 +17,13 @@ namespace BMS.Application.Devices.Queries
             _repository = repository;
         }
 
-        public async Task<List<DeviceDto>> Handle(
+        public async Task<PagedResult<DeviceDto>> Handle(
             GetDevicesQuery request,
             CancellationToken cancellationToken)
         {
-            var devices = await _repository.GetAllAsync();
+            var devices = _repository.Devices;
 
-            return devices.Select(d => new DeviceDto
+            var query = devices.Select(d => new DeviceDto
             {
                 Id = d.Id,
                 ControllerId = d.ControllerId,
@@ -32,12 +33,26 @@ namespace BMS.Application.Devices.Queries
                 EnableAlarming = d.EnableAlarming,
                 EnableTrending = d.EnableTrending,
                 IsActive = d.IsActive,
-                SiteId=d.Location?.SiteId,
-                BuildingId = d.Location?.BuildingId,
-                FloorId = d.Location?.FloorId,
-                WardId = d.Location?.WardId,
-                RoomId = d.Location?.RoomId
-            }).ToList();
+                Description = d.Description,
+                SiteId = d.Location != null ? d.Location!.SiteId : null,
+                BuildingId = d.Location != null ? d.Location!.BuildingId : null,
+                FloorId = d.Location != null ? d.Location!.FloorId : null,
+                WardId = d.Location != null ? d.Location!.WardId : null,
+                RoomId = d.Location != null ? d.Location!.RoomId : null
+            });
+
+            try
+            {
+                var asdfa = query.ToList();
+            }
+            catch(Exception ex)
+            {
+
+            }
+            return await query.ToPagedResultAsync(
+                request.PageNumber,
+                request.PageSize,
+                cancellationToken);
         }
     }
 }

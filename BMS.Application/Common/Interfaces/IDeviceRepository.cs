@@ -7,6 +7,7 @@ namespace BMS.Application.Common.Interfaces
 {
     public interface IDeviceRepository
     {
+        IQueryable<Device> Devices { get; }
         Task<Device?> GetByIdAsync(Guid id);
 
         Task<List<Device>> GetByControllerIdAsync(Guid controllerId);

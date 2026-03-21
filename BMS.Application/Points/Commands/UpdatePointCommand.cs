@@ -1,11 +1,14 @@
 ﻿
+using BMS.Application.Devices.DTOs;
+using BMS.Application.Models;
+using BMS.Application.Points.Dtos;
 using BMS.Domain.Entities.BMS;
 using BMS.Domain.Enums;
 using MediatR;
 
 namespace BMS.Application.Points.Commands;
 
-public class UpdatePointCommand : IRequest
+public class UpdatePointCommand : IRequest<ApiResponse<PointDto>>
 {
     public Guid Id { get; set; }
 

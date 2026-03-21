@@ -55,7 +55,7 @@ namespace BMS.Domain.Entities.BMS
         }
 
         // شناسه کنترلر مربوطه
-        public Guid ControllerId { get; private set; }
+        public Guid? ControllerId { get; private set; }
         public void UpdateLocation(LocationReference? location)
         {
             Location = location;
@@ -84,10 +84,10 @@ namespace BMS.Domain.Entities.BMS
         //public string? GraphicPageKey { get; private set; }
 
         // تنظیمات سیستم
-        public bool EnableAlarming { get; private set; }   // آیا آلارم این دستگاه فعال است؟
-        public bool EnableTrending { get; private set; }   // آیا داده‌های این دستگاه ذخیره ترند شوند؟
+        public bool? EnableAlarming { get; private set; }   // آیا آلارم این دستگاه فعال است؟
+        public bool? EnableTrending { get; private set; }   // آیا داده‌های این دستگاه ذخیره ترند شوند؟
 
-        public bool IsActive { get; private set; }         // آیا دستگاه فعال است؟
+        public bool? IsActive { get; private set; }         // آیا دستگاه فعال است؟
 
         // دسترسی فقط خواندنی به نقاط دستگاه
         public IReadOnlyCollection<Point> DevicePoints => _devicePoints.AsReadOnly();
@@ -121,14 +121,14 @@ namespace BMS.Domain.Entities.BMS
         //}
 
         // فعال/غیرفعال کردن آلارم
-        public void SetAlarming(bool enabled)
+        public void SetAlarming(bool? enabled)
         {
             EnableAlarming = enabled;
             SetUpdated();
         }
 
         // فعال/غیرفعال کردن ترندینگ
-        public void SetTrending(bool enabled)
+        public void SetTrending(bool? enabled)
         {
             EnableTrending = enabled;
             SetUpdated();
@@ -302,7 +302,7 @@ namespace BMS.Domain.Entities.BMS
             lock (_sync)
                 return _devicePoints.Any(p=> p.Id == pointId);
         }
-        public void ChangeController(Guid controllerId)
+        public void ChangeController(Guid? controllerId)
         {
             if (controllerId == Guid.Empty)
                 throw new ArgumentException("ControllerId is required");

@@ -5,6 +5,7 @@ namespace BMS.Application.Common.Interfaces;
 
 public interface IPointRepository
 {
+    IQueryable<Point> Points { get; }
     Task<Point?> GetByIdAsync(Guid id);
 
     Task<IEnumerable<Point>> GetByDeviceIdAsync(Guid deviceId);

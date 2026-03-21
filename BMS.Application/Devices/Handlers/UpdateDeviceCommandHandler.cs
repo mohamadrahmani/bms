@@ -18,7 +18,7 @@ namespace BMS.Application.Devices.Handlers
         }
 
         public async Task<DeviceDto> Handle(UpdateDeviceCommand request, CancellationToken cancellationToken)
-        {
+            {
             var device = await _repository.GetByIdAsync(request.Id);
 
             if (device == null)
@@ -42,7 +42,7 @@ namespace BMS.Application.Devices.Handlers
             device.SetAlarming(request.EnableAlarming);
             device.SetTrending(request.EnableTrending);
 
-            if (request.IsActive)
+            if (request?.IsActive ?? false)
                 device.Enable();
             else
                 device.Disable();
@@ -79,7 +79,8 @@ namespace BMS.Application.Devices.Handlers
                 BuildingId = device.Location?.BuildingId,
                 FloorId = device.Location?.FloorId,
                 WardId = device.Location?.WardId,
-                RoomId = device.Location?.RoomId
+                RoomId = device.Location?.RoomId,
+                Description = device.Description
             };
         }
     }

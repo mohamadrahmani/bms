@@ -1,6 +1,7 @@
 ﻿using BMS.Application.Devices.Commands;
 using BMS.Application.Devices.DTOs;
 using BMS.Application.Devices.Queries;
+using BMS.Application.Users.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +13,7 @@ namespace BMS.API.Controllers
     {
         private readonly IMediator _mediator;
 
-        public DevicesController(IMediator mediator)
+        public DevicesController(IMediator mediator)    
         {
             _mediator = mediator;
         }
@@ -49,7 +50,7 @@ namespace BMS.API.Controllers
         //    var result = await _mediator.Send(new UpdateDeviceCommand(dto));
         //    return Ok(result);
         //}
-        [HttpPut]
+        [HttpPut("{id}")]
         public async Task<ActionResult<DeviceDto>> Update(UpdateDeviceCommand command)
         {
             var result = await _mediator.Send(command);
@@ -67,9 +68,9 @@ namespace BMS.API.Controllers
             return NoContent();
         }
         [HttpGet]
-        public async Task<IActionResult> GetDevices()
+        public async Task<IActionResult> GetDevices([FromQuery] GetDevicesQuery query)
         {
-            var result = await _mediator.Send(new GetDevicesQuery());
+            var result = await _mediator.Send(query);
             return Ok(result);
         }
     }

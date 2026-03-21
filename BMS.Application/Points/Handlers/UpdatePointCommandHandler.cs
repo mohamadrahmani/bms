@@ -1,47 +1,15 @@
-﻿//using BMS.Application.Common.Interfaces;
-//using BMS.Application.Points.Commands;
-//using MediatR;
-
-//namespace BMS.Application.Points.Handlers;
-
-//public class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand>
-//{
-//    private readonly IPointRepository _repository;
-
-//    public UpdatePointCommandHandler(IPointRepository repository)
-//    {
-//        _repository = repository;
-//    }
-
-//    public async Task<Unit> Handle(UpdatePointCommand request, CancellationToken cancellationToken)
-//    {
-//        var point = await _repository.GetByIdAsync(request.Id);
-
-//        if (point == null)
-//            throw new Exception("Point not found");
-
-//        var dto = request.Dto;
-
-//        point.Update(
-//            dto.Title,
-//            dto.Kind,
-//            dto.DataType,
-//            dto.Address
-//        );
-
-//        await _repository.UpdateAsync(point);
-
-//        return Unit.Value;
-//    }
-//}
-using BMS.Application.Common.Interfaces;
+﻿using BMS.Application.Common.Interfaces;
+using BMS.Application.Devices.DTOs;
+using BMS.Application.Models;
 using BMS.Application.Points.Commands;
+using BMS.Application.Points.Dtos;
+using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
 using MediatR;
 
 namespace BMS.Application.Points.Handlers;
 
-public class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand>
+public class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand, ApiResponse<PointDto>>
 {
     private readonly IPointRepository _repository;
 
@@ -50,7 +18,7 @@ public class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand>
         _repository = repository;
     }
 
-    public async Task<Unit> Handle(UpdatePointCommand request, CancellationToken cancellationToken)
+    public async Task<ApiResponse<PointDto>> Handle(UpdatePointCommand request, CancellationToken cancellationToken)
     {
         var point = await _repository.GetByIdAsync(request.Id);
 
@@ -100,6 +68,11 @@ public class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand>
 
         await _repository.UpdateAsync(point);
 
-        return Unit.Value;
+        var dto = new PointDto
+        {
+            Id = point.Id,
+        };
+
+        return ApiResponse<PointDto>.SuccessResponse(dto, "Device updated successfully");
     }
 }

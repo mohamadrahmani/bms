@@ -9,6 +9,7 @@ namespace BMS.Infrastructure.Repositories
     public class PointRepository : IPointRepository
     {
         private readonly BMSDbContext _context;
+        public IQueryable<Point> Points => _context.Points;
 
         public PointRepository(BMSDbContext context)
         {

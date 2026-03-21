@@ -30,7 +30,8 @@ namespace BMS.Application.Controllers.Handlers
                 UnitId = c.UnitId,
                 IpAddress = c.IpAddress,
                 Port = c.Port,
-                Protocol = c.Protocol
+                Protocol = c.Protocol,
+                Description = c.Description
             });
 
             return await query.ToPagedResultAsync(
