@@ -1,5 +1,8 @@
 ﻿using BMS.Domain.Entities;
+using BMS.Domain.Entities.BMS;
+using BMS.Domain.Entities.Location;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace BMS.Application.Common.Interfaces;
 

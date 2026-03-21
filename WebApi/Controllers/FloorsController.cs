@@ -1,0 +1,74 @@
+﻿using BMS.Application.Location.Floors.Commands;
+using BMS.Application.Location.Floors.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+
+[ApiController]
+public class FloorsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public FloorsController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    [HttpGet("api/buildings/{buildingId}/floors")]
+    public async Task<IActionResult> GetByBuilding(Guid buildingId)
+    {
+        var result = await _mediator.Send(
+            new GetFloorsByBuildingQuery { BuildingId = buildingId });
+
+        return Ok(result);
+    }
+
+    [HttpGet("api/floors")]
+    public async Task<IActionResult> GetAll()
+    {
+        var result = await _mediator.Send(new GetAllFloorsQuery());
+
+        return Ok(result);
+    }
+
+    [HttpGet("api/floors/{id}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var result = await _mediator.Send(
+            new GetFloorByIdQuery { Id = id });
+
+        return Ok(result);
+    }
+
+    [HttpPost("api/buildings/{buildingId}/floors")]
+    public async Task<IActionResult> Create(
+        Guid buildingId,
+        CreateFloorCommand command)
+    {
+        command.BuildingId = buildingId;
+
+        var id = await _mediator.Send(command);
+
+        return Ok(id);
+    }
+
+    [HttpPut("api/floors/{id}")]
+    public async Task<IActionResult> Update(
+        Guid id,
+        UpdateFloorCommand command)
+    {
+        command.Id = id;
+
+        await _mediator.Send(command);
+
+        return NoContent();
+    }
+
+    [HttpDelete("api/floors/{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await _mediator.Send(
+            new DeleteFloorCommand { Id = id });
+
+        return NoContent();
+    }
+}

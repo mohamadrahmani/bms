@@ -42,6 +42,11 @@ namespace BMS.Infrastructure
             services.AddScoped<IControllerRepository, ControllerRepository>();
             services.AddScoped<IDeviceRepository, DeviceRepository>();
             services.AddScoped<IPointRepository, PointRepository>();
+            services.AddScoped<ISiteRepository, SiteRepository>();
+            services.AddScoped<IBuildingRepository, BuildingRepository>();
+            services.AddScoped<IFloorRepository,FloorRepository>();
+            services.AddScoped<IWardRepository, WardRepository>();
+            services.AddScoped<IRoomRepository, RoomRepository>();
 
 
             // =======================

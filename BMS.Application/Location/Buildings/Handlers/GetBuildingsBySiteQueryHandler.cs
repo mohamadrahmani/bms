@@ -1,0 +1,33 @@
+﻿using MediatR;
+using BMS.Application.Common.Interfaces;
+using BMS.Application.Location.Buildings.Dtos;
+using BMS.Application.Location.Buildings.Queries;
+
+public sealed class GetBuildingsBySiteQueryHandler
+    : IRequestHandler<GetBuildingsBySiteQuery, List<BuildingDto>>
+{
+    private readonly IBuildingRepository _repository;
+
+    public GetBuildingsBySiteQueryHandler(IBuildingRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<List<BuildingDto>> Handle(
+        GetBuildingsBySiteQuery request,
+        CancellationToken cancellationToken)
+    {
+        var buildings = await _repository.GetBySiteIdAsync(
+            request.SiteId,
+            cancellationToken);
+
+        return buildings.Select(x => new BuildingDto
+        {
+            Id = x.Id,
+            SiteId = x.SiteId,
+            Name = x.Name,
+            Code = x.Code,
+            Description = x.Description
+        }).ToList();
+    }
+}

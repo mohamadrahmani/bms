@@ -34,11 +34,11 @@ namespace BMS.Domain.Entities.Location
             Description = description?.Trim();
         }
 
-        public void Update(string name, string? type, string? description)
+        public void Update(Guid floorId, string name, string? type, string? description)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Ward name is required");
-
+            FloorId = floorId;
             Name = name.Trim();
             Type = type?.Trim();
             Description = description?.Trim();

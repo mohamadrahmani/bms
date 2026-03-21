@@ -38,14 +38,14 @@ namespace BMS.Domain.Entities.Location
         /// <summary>
         /// بروزرسانی اطلاعات ساختمان
         /// </summary>
-        public void Update(string name, string code, string? description)
+        public void Update(Guid siteId, string name, string code, string? description)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Building name is required");
 
             if (string.IsNullOrWhiteSpace(code))
                 throw new ArgumentException("Building code is required");
-
+            SiteId = siteId;
             Name = name.Trim();
             Code = code.Trim();
             Description = description?.Trim();

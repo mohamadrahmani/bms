@@ -50,11 +50,19 @@ namespace BMS.Domain.Entities.Location
         }
 
         public void Update(
+            Guid floorId,
+    Guid wardId,
             string name,
             string roomNumber,
             string? type,
             double area)
         {
+            if (floorId == Guid.Empty)
+                throw new ArgumentException("FloorId is required");
+
+            if (wardId == Guid.Empty)
+                throw new ArgumentException("WardId is required");
+
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Room name is required");
 
@@ -63,7 +71,8 @@ namespace BMS.Domain.Entities.Location
 
             if (area < 0)
                 throw new ArgumentException("Area cannot be negative");
-
+            FloorId = floorId;
+            WardId = wardId;
             Name = name.Trim();
             RoomNumber = roomNumber.Trim();
             Type = type?.Trim();
@@ -71,5 +80,6 @@ namespace BMS.Domain.Entities.Location
 
             SetUpdated();
         }
+
     }
 }

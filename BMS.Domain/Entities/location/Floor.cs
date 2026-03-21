@@ -33,11 +33,11 @@ namespace BMS.Domain.Entities.Location
         /// <summary>
         /// بروزرسانی اطلاعات طبقه
         /// </summary>
-        public void Update(string name, int levelNumber, string? description)
+        public void Update(Guid buildingId, string name, int levelNumber, string? description)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Floor name is required");
-
+            BuildingId = buildingId;
             Name = name.Trim();
             LevelNumber = levelNumber;
             Description = description?.Trim();

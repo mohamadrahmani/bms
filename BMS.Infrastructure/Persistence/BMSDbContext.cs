@@ -1,6 +1,7 @@
 ﻿using Bms.Infrastructure.Seeds;
 using BMS.Domain.Entities;
 using BMS.Domain.Entities.BMS;
+using BMS.Domain.Entities.Location;
 using BMS.Infrastructure.Persistence.Configurations;
 using BMS.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,13 @@ namespace BMS.Infrastructure.Persistence
         public DbSet<Controller> Controllers { get; set; }
         public DbSet<Device> Devices => Set<Device>();
         public DbSet<Point> Points => Set<Point>();
+        public DbSet<Site> Sites { get; set; }
+        public DbSet<Building> Buildings { get; set; }
+        public DbSet<Floor> Floors { get; set; }
+        public DbSet<Ward> Wards { get; set; }
+        public DbSet<Room> Rooms { get; set; }
+
+
 
         // ===== BMS Entities =====
         public DbSet<DataPointHistoryEntity> DataPointHistory =>
