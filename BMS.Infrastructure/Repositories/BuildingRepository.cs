@@ -2,6 +2,7 @@
 using BMS.Application.Common.Interfaces;
 using BMS.Domain.Entities.Location;
 using BMS.Infrastructure.Persistence;
+using BMS.Domain.Entities.BMS;
 
 public class BuildingRepository : IBuildingRepository
 {
@@ -11,7 +12,7 @@ public class BuildingRepository : IBuildingRepository
     {
         _context = context;
     }
-
+    public IQueryable<Building> Buildings => _context.Buildings;
     public async Task<Building?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         return await _context.Buildings

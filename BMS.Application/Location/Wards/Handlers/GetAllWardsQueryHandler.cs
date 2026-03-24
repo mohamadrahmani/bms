@@ -1,11 +1,14 @@
 ﻿using BMS.Application.Common.Interfaces;
+using BMS.Application.Common.Pagination;
+using BMS.Application.Location.Rooms.Dtos;
 using BMS.Application.Location.Wards.Dtos;
 using BMS.Application.Location.Wards.Queries;
 using MediatR;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BMS.Application.Location.Wards.Handlers;
 
-public class GetAllWardsQueryHandler : IRequestHandler<GetAllWardsQuery, List<WardDto>>
+public class GetAllWardsQueryHandler : IRequestHandler<GetAllWardsQuery, PagedResult<WardDto>>
 {
     private readonly IWardRepository _repository;
 
@@ -14,11 +17,11 @@ public class GetAllWardsQueryHandler : IRequestHandler<GetAllWardsQuery, List<Wa
         _repository = repository;
     }
 
-    public async Task<List<WardDto>> Handle(GetAllWardsQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResult<WardDto>> Handle(GetAllWardsQuery request, CancellationToken cancellationToken)
     {
-        var wards = await _repository.GetAllAsync(cancellationToken);
+        var wards = _repository.Wards;
 
-        return wards.Select(w => new WardDto
+        var query=wards.Select(w => new WardDto
         {
             Id = w.Id,
             FloorId = w.FloorId,
@@ -26,6 +29,12 @@ public class GetAllWardsQueryHandler : IRequestHandler<GetAllWardsQuery, List<Wa
             Type = w.Type,
             Description = w.Description
 
-        }).ToList();
+        });
+        return await query.ToPagedResultAsync(
+            request.PageNumber,
+            request.PageSize,
+            cancellationToken);
+
+
     }
 }

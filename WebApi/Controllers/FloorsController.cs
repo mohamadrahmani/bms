@@ -23,9 +23,9 @@ public class FloorsController : ControllerBase
     }
 
     [HttpGet("api/floors")]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] GetAllFloorsQuery query)
     {
-        var result = await _mediator.Send(new GetAllFloorsQuery());
+        var result = await _mediator.Send(query);
 
         return Ok(result);
     }

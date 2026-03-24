@@ -17,9 +17,9 @@ public sealed class SitesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetList()
+    public async Task<IActionResult> GetList([FromQuery] GetSitesListQuery query)
     {
-        var result = await _mediator.Send(new GetSitesListQuery());
+        var result = await _mediator.Send(query);
         return Ok(result);
     }
 

@@ -1,4 +1,5 @@
-﻿using BMS.Application.Location.Wards.Commands;
+﻿using BMS.Application.Controllers.Queries;
+using BMS.Application.Location.Wards.Commands;
 using BMS.Application.Location.Wards.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +16,14 @@ public class WardsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] GetControllersListQuery query)
     {
-        return Ok(await _mediator.Send(new GetAllWardsQuery()));
+        return Ok(await _mediator.Send(query));
     }
+
+
+
+
 
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(Guid id)

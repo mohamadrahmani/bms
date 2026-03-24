@@ -1,4 +1,5 @@
 ﻿using BMS.Application.Common.Interfaces;
+using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
 using BMS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 public class WardRepository : IWardRepository
 {
     private readonly BMSDbContext _context;
-
+    public IQueryable<Ward> Wards => _context.Wards;
     public WardRepository(BMSDbContext context)
     {
         _context = context;

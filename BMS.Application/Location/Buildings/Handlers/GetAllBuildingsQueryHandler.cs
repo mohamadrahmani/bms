@@ -2,9 +2,11 @@
 using BMS.Application.Common.Interfaces;
 using BMS.Application.Location.Buildings.Dtos;
 using BMS.Application.Location.Buildings.Queries;
+using BMS.Application.Common.Pagination;
+using BMS.Application.Controllers.Dtos;
 
 public sealed class GetAllBuildingsQueryHandler
-    : IRequestHandler<GetAllBuildingsQuery, List<BuildingDto>>
+    : IRequestHandler<GetAllBuildingsQuery, PagedResult<BuildingDto>>
 {
     private readonly IBuildingRepository _repository;
 
@@ -13,19 +15,24 @@ public sealed class GetAllBuildingsQueryHandler
         _repository = repository;
     }
 
-    public async Task<List<BuildingDto>> Handle(
+    public async Task<PagedResult<BuildingDto>> Handle(
         GetAllBuildingsQuery request,
         CancellationToken cancellationToken)
     {
-        var buildings = await _repository.GetAllAsync(cancellationToken);
+        var buildings = _repository.Buildings;
 
-        return buildings.Select(x => new BuildingDto
+        var query = buildings.Select(x => new BuildingDto
         {
             Id = x.Id,
             SiteId = x.SiteId,
             Name = x.Name,
             Code = x.Code,
             Description = x.Description
-        }).ToList();
+        });
+        return await query.ToPagedResultAsync(
+        request.PageNumber,
+        request.PageSize,
+        cancellationToken);
+
     }
 }

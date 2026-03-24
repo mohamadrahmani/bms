@@ -1,9 +1,11 @@
-﻿using BMS.Domain.Entities.Location;
+﻿using BMS.Domain.Entities.BMS;
+using BMS.Domain.Entities.Location;
 
 namespace BMS.Application.Common.Interfaces;
 
 public interface ISiteRepository
 {
+    IQueryable<Site> Sites { get; }
     Task<Site?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
 

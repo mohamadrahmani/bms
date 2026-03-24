@@ -1,4 +1,5 @@
-﻿using BMS.Domain.Entities.Location;
+﻿using BMS.Domain.Entities.BMS;
+using BMS.Domain.Entities.Location;
 using BMS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +11,7 @@ public class FloorRepository : IFloorRepository
     {
         _context = context;
     }
-
+    public IQueryable<Floor> Floors => _context.Floors;
     public async Task<Floor?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         return await _context.Floors

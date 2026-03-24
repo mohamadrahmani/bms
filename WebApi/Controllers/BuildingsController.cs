@@ -56,9 +56,9 @@ public class BuildingsController : ControllerBase
     }
     [HttpGet]
     [Route("/api/buildings")]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] GetAllBuildingsQuery query)
     {
-        var result = await _mediator.Send(new GetAllBuildingsQuery());
+        var result = await _mediator.Send(query);
         return Ok(result);
     }
 }

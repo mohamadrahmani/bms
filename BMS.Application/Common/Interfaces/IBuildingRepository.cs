@@ -1,7 +1,9 @@
-﻿using BMS.Domain.Entities.Location;
+﻿using BMS.Domain.Entities.BMS;
+using BMS.Domain.Entities.Location;
 
 public interface IBuildingRepository
 {
+    IQueryable<Building> Buildings { get; }
     Task<Building?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
     Task<List<Building>> GetBySiteIdAsync(Guid siteId, CancellationToken cancellationToken);

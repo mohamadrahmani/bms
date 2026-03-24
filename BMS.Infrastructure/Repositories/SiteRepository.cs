@@ -1,4 +1,5 @@
 ﻿using BMS.Application.Common.Interfaces;
+using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
 using Microsoft.EntityFrameworkCore;
 using Polly;
@@ -13,7 +14,7 @@ public class SiteRepository : ISiteRepository
     {
         _db = db;
     }
-
+    public IQueryable<Site> Sites => _db.Sites;
     public async Task<Site?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _db.Sites

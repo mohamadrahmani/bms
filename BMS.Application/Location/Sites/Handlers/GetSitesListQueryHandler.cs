@@ -2,11 +2,13 @@
 using BMS.Application.Location.Sites.Queries;
 using BMS.Application.Location.Sites.Dtos;
 using BMS.Application.Common.Interfaces;
+using BMS.Application.Common.Pagination;
+using BMS.Application.Controllers.Dtos;
 
 namespace BMS.Application.Location.Sites.Handlers;
 
 public sealed class GetSitesListQueryHandler
-    : IRequestHandler<GetSitesListQuery, IReadOnlyList<SiteDto>>
+    : IRequestHandler<GetSitesListQuery, PagedResult<SiteDto>>
 {
     private readonly ISiteRepository _siteRepository;
 
@@ -15,21 +17,25 @@ public sealed class GetSitesListQueryHandler
         _siteRepository = siteRepository;
     }
 
-    public async Task<IReadOnlyList<SiteDto>> Handle(
+    public async Task<PagedResult<SiteDto>> Handle(
         GetSitesListQuery request,
         CancellationToken cancellationToken)
     {
-        var sites = await _siteRepository
-            .GetAllAsync(cancellationToken);
-
-        return sites
+        var sites = _siteRepository.Sites;
+        var query = sites
             .Select(site => new SiteDto
             {
                 Id = site.Id,
                 Name = site.Name,
                 Address = site.Address,
                 Description = site.Description
-            })
-            .ToList();
+            });
+
+
+        return await query.ToPagedResultAsync(
+        request.PageNumber,
+        request.PageSize,
+        cancellationToken);
+
     }
 }

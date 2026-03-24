@@ -1,4 +1,5 @@
-﻿using BMS.Domain.Entities.Location;
+﻿using BMS.Domain.Entities.BMS;
+using BMS.Domain.Entities.Location;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace BMS.Application.Common.Interfaces
 {
     public interface IWardRepository
     {
+        IQueryable<Ward> Wards { get; }
         Task<Ward?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
         Task<List<Ward>> GetByFloorIdAsync(Guid floorId, CancellationToken cancellationToken = default);
