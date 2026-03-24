@@ -25,8 +25,9 @@ namespace BMS.Infrastructure.Persistence
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<UserPermission> UserPermissions { get; set; }
         public DbSet<Controller> Controllers { get; set; }
-        public DbSet<Device> Devices => Set<Device>();
-        public DbSet<Point> Points => Set<Point>();
+        public DbSet<Device> Devices { get; set; }
+        public DbSet<Point> Points { get; set; }
+        public DbSet<CommandDefinition> CommandDefinitions { get; set; }
         public DbSet<Site> Sites { get; set; }
         public DbSet<Building> Buildings { get; set; }
         public DbSet<Floor> Floors { get; set; }

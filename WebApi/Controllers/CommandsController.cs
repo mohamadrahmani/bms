@@ -30,7 +30,7 @@ public class CommandsController : ControllerBase
 
         await eventDispatcher.DispatchAsync(
         new DeviceCommandCompletedDomainEvent(
-            "start",
+            Guid.Empty,
             command.DeviceId,
             command.CommandName,
             true,
@@ -44,7 +44,7 @@ public class CommandsController : ControllerBase
 
 public class aaaa
 {
-    public string DeviceId { get; set; }
+    public Guid DeviceId { get; set; }
     public string CommandName { get; set; }
     public object? Payload { get; set; }
 }

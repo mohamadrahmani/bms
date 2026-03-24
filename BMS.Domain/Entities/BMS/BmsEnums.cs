@@ -67,14 +67,7 @@ namespace BMS.Domain.Entities.BMS
         Uncertain = 3  // داده با تردید / ممکن است خطا داشته باشد
     }
 
-    // نوع رجیستر در پروتکل Modbus
-    public enum RegisterType
-    {
-        Coil = 1,           // Coil: Digital Output در Modbus
-        DiscreteInput = 2,  // Digital Input
-        HoldingRegister = 3, // Analog / Writable
-        InputRegister = 4    // Analog / Read-only
-    }
+   
 
     // ترتیب بایت برای داده‌های چندبایتی (Endianness)
     public enum ByteOrder

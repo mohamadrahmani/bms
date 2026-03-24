@@ -1,6 +1,6 @@
 ﻿namespace BMS.Application.Models;
 
-public class DeviceCommandMessage
+public class DeviceCommandMessagex
 {
     public Guid ControllerId { get; set; }
 

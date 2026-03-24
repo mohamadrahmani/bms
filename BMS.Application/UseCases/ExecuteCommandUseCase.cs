@@ -19,19 +19,21 @@ namespace BMS.Application.UseCases
             _queue = queue;
         }
 
-        public async Task<string> ExecuteAsync(
-            string deviceId,
+        public async Task<Guid> ExecuteAsync(
+            Guid deviceId,
             string commandName,
             object? payload)
         {
-            var command = new DeviceCommand(
-                deviceId,
-                commandName,
-                payload);
+            var command = new DeviceCommand();
+            //{
+            //    deviceId = deviceId,
+            //    commandName = commandName,
+            //    payload = payload
+            //};
 
             await _queue.EnqueueAsync(command);
 
-            return command.CommandId;
+            return command.CommandDefinitionId;
         }
     }
 }

@@ -48,7 +48,7 @@ namespace BMS.Infrastructure.Commanding
             await foreach (var command in _queue.Reader.ReadAllAsync(ct))
             {
                 var deviceLock = _deviceLocks.GetOrAdd(
-                    command.DeviceId,
+                    command.DeviceId.ToString(),
                     _ => new SemaphoreSlim(1, 1));
 
                 await deviceLock.WaitAsync(ct);
@@ -61,9 +61,9 @@ namespace BMS.Infrastructure.Commanding
                         .GetRequiredService<IDeviceCommandGateway>();
 
                     await gateway.ExecuteAsync(
-                        command.DeviceId,
-                        command.CommandName,
-                        command.Payload);
+                        command.DeviceId.ToString(),
+                        "command.CommandName",
+                        "command.Payload");
                 }
                 finally
                 {

@@ -89,6 +89,8 @@ namespace BMS.Domain.Entities.BMS
 
         public bool? IsActive { get; private set; }         // آیا دستگاه فعال است؟
 
+        public ICollection<DeviceCommand> Commands { get; set; }
+
         // دسترسی فقط خواندنی به نقاط دستگاه
         public IReadOnlyCollection<Point> DevicePoints => _devicePoints.AsReadOnly();
 
