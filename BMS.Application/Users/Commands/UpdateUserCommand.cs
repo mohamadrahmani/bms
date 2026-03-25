@@ -1,6 +1,7 @@
-﻿using MediatR;
+﻿using BMS.Application.Models;
+using MediatR;
 
-public sealed class UpdateUserCommand : IRequest
+public sealed class UpdateUserCommand : IRequest<ApiResponse<bool>>
 {
     public Guid UserId { get; set; }
     public string UserName { get; set; } = null!;

@@ -16,6 +16,7 @@ public class PointDto
     public PointKind Kind { get; set; }
 
     public PointDataType DataType { get; set; }
+    public PointType PointType { get; set; }
 
     public ushort? Address { get; set; }
 

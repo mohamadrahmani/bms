@@ -1,9 +1,11 @@
 ﻿using BMS.Application.Common.Interfaces;
+using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
 using MediatR;
 
 namespace BMS.Application.Location.Wards.Commands;
 
-public class UpdateWardCommandHandler : IRequestHandler<UpdateWardCommand>
+public class UpdateWardCommandHandler : IRequestHandler<UpdateWardCommand, ApiResponse<bool>>
 {
     private readonly IWardRepository _repository;
     private readonly IFloorRepository _floorRepository;
@@ -19,7 +21,7 @@ public class UpdateWardCommandHandler : IRequestHandler<UpdateWardCommand>
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Unit> Handle(UpdateWardCommand request, CancellationToken cancellationToken)
+    public async Task<ApiResponse<bool>> Handle(UpdateWardCommand request, CancellationToken cancellationToken)
     {
         var ward = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
@@ -44,6 +46,6 @@ public class UpdateWardCommandHandler : IRequestHandler<UpdateWardCommand>
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Unit.Value;
+        return ApiResponse<bool>.SuccessResponse(true, "اطلاعات بخش بروزرسانی شد");
     }
 }

@@ -1,8 +1,10 @@
 ﻿using BMS.Application.Common.Interfaces;
 using BMS.Application.Location.Floors.Commands;
+using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
 using MediatR;
 
-public class DeleteFloorCommandHandler : IRequestHandler<DeleteFloorCommand>
+public class DeleteFloorCommandHandler : IRequestHandler<DeleteFloorCommand, ApiResponse<bool>>
 {
     private readonly IFloorRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
@@ -15,7 +17,7 @@ public class DeleteFloorCommandHandler : IRequestHandler<DeleteFloorCommand>
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Unit> Handle(
+    public async Task<ApiResponse<bool>> Handle(
         DeleteFloorCommand request,
         CancellationToken cancellationToken)
     {
@@ -28,6 +30,6 @@ public class DeleteFloorCommandHandler : IRequestHandler<DeleteFloorCommand>
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Unit.Value;
+        return ApiResponse<bool>.SuccessResponse(true, "طبقه حذف شد");
     }
 }

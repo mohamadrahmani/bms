@@ -1,8 +1,9 @@
-﻿using MediatR;
+﻿using BMS.Application.Models;
+using MediatR;
 
 namespace BMS.Application.Location.Floors.Commands;
 
-public class CreateFloorCommand : IRequest<Guid>
+public class CreateFloorCommand : IRequest<ApiResponse<Guid>>
 {
     public Guid BuildingId { get; set; }
 

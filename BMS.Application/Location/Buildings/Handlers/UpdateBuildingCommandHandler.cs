@@ -1,9 +1,11 @@
-﻿using MediatR;
-using BMS.Application.Common.Interfaces;
+﻿using BMS.Application.Common.Interfaces;
 using BMS.Application.Location.Buildings.Commands;
+using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
+using MediatR;
 
 public sealed class UpdateBuildingCommandHandler
-    : IRequestHandler<UpdateBuildingCommand>
+    : IRequestHandler<UpdateBuildingCommand, ApiResponse<bool>>
 {
     private readonly IBuildingRepository _repository;
     private readonly ISiteRepository _siteRepository;
@@ -19,7 +21,7 @@ public sealed class UpdateBuildingCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Unit> Handle(
+    public async Task<ApiResponse<bool>> Handle(
         UpdateBuildingCommand request,
         CancellationToken cancellationToken)
     {
@@ -46,6 +48,6 @@ public sealed class UpdateBuildingCommandHandler
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Unit.Value;
+        return ApiResponse<bool>.SuccessResponse(true, "ساختمان بروز رسانی شد");
     }
 }

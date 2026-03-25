@@ -1,14 +1,16 @@
-﻿using MediatR;
-using BMS.Application.Users.Commands;
+﻿using BMS.Application.Common.Exceptions;
 using BMS.Application.Common.Interfaces;
+using BMS.Application.Models;
+using BMS.Application.Users.Commands;
 using BMS.Domain.Entities;
-using BMS.Application.Common.Exceptions;
+using BMS.Domain.Entities.BMS;
+using MediatR;
 
 
 namespace BMS.Application.Users.Handlers;
 
 public sealed class CreateUserCommandHandler
-    : IRequestHandler<CreateUserCommand, Guid>
+    : IRequestHandler<CreateUserCommand, ApiResponse<Guid>>
 {
     private readonly IUserRepository _userRepository;
     private readonly IPersonRepository _personRepository;
@@ -27,7 +29,7 @@ public sealed class CreateUserCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Guid> Handle(
+    public async Task<ApiResponse<Guid>> Handle(
         CreateUserCommand request,
         CancellationToken cancellationToken)
     {
@@ -79,6 +81,6 @@ public sealed class CreateUserCommandHandler
         await _userRepository.AddAsync(user, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return user.Id;
+        return ApiResponse<Guid>.SuccessResponse(user.Id, "کاربر ایجاد شد");
     }
 }

@@ -9,7 +9,7 @@ using MediatR;
 
 namespace BMS.Application.Points.Handlers;
 
-public class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand, ApiResponse<PointDto>>
+public class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand, ApiResponse<bool>>
 {
     private readonly IPointRepository _repository;
 
@@ -18,7 +18,7 @@ public class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand, Api
         _repository = repository;
     }
 
-    public async Task<ApiResponse<PointDto>> Handle(UpdatePointCommand request, CancellationToken cancellationToken)
+    public async Task<ApiResponse<bool>> Handle(UpdatePointCommand request, CancellationToken cancellationToken)
     {
         var point = await _repository.GetByIdAsync(request.Id);
 
@@ -37,6 +37,7 @@ public class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand, Api
             request.Tag,
             request.Title,
             request.Kind,
+            request.PointType,
             request.DataType,
             request.Address,
             request.Unit,
@@ -73,6 +74,6 @@ public class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand, Api
             Id = point.Id,
         };
 
-        return ApiResponse<PointDto>.SuccessResponse(dto, "Device updated successfully");
+        return ApiResponse<bool>.SuccessResponse(true, "Device updated successfully");
     }
 }

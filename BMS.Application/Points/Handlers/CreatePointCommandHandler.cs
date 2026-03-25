@@ -1,4 +1,5 @@
 ﻿using BMS.Application.Common.Interfaces;
+using BMS.Application.Models;
 using BMS.Application.Points.Commands;
 using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
@@ -6,7 +7,7 @@ using MediatR;
 
 namespace BMS.Application.Points.Handlers;
 
-public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, Guid>
+public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, ApiResponse<Guid>>
 {
     private readonly IPointRepository _repository;
 
@@ -15,7 +16,7 @@ public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, Gui
         _repository = repository;
     }
 
-    public async Task<Guid> Handle(CreatePointCommand request, CancellationToken cancellationToken)
+    public async Task<ApiResponse<Guid>> Handle(CreatePointCommand request, CancellationToken cancellationToken)
     {
         LocationReference? location = null;
         if (request.SiteId.HasValue)
@@ -35,6 +36,7 @@ public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, Gui
            request.Tag,
            request.Title,
            request.DataType,
+           request.PointType,
            request.Unit,
            location,
         request.Code,
@@ -58,6 +60,6 @@ public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, Gui
             );
         }
         await _repository.AddAsync(point);
-        return point.Id;
+        return ApiResponse<Guid>.SuccessResponse(point.Id, "پوینت ایجاد شد"); ;
     }
 }

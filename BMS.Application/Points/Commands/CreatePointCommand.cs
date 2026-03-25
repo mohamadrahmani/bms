@@ -1,10 +1,11 @@
-﻿using BMS.Application.Points.Dtos;
+﻿using BMS.Application.Models;
+using BMS.Application.Points.Dtos;
 using BMS.Domain.Entities.BMS;
 using MediatR;
 
 namespace BMS.Application.Points.Commands;
 
-public class CreatePointCommand : IRequest<Guid>
+public class CreatePointCommand : IRequest<ApiResponse<Guid>>
 {
     public Guid DeviceId { get; set; }
 
@@ -17,6 +18,7 @@ public class CreatePointCommand : IRequest<Guid>
 
     public string Title { get; set; } = default!;
 
+    public PointType PointType { get; set; }
     public PointDataType DataType { get; set; }
 
     public string? Unit { get; set; }

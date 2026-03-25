@@ -33,6 +33,14 @@ namespace BMS.Domain.Entities.BMS
         CoilUnit = 8      // یونیت کویلی (کویل سرمایش/گرمایش)
     }
 
+    public enum PointType
+    {
+        Sensor = 1,
+        Command = 2,
+        SetPoint = 3,
+        Status = 4
+    }
+
     // نوع نقطه/Point در کنترلر
     public enum PointKind
     {
@@ -84,5 +92,15 @@ namespace BMS.Domain.Entities.BMS
         None = 0,              // بدون آلارم
         Binary = 1,            // Binary Alarm برای DI (مثلاً Trip / Fault / Fire)
         AnalogThreshold = 2    // Threshold آلارم برای AI/TI/AO (مثلاً High/Low/Deadband)
+    }
+
+    public enum CommandType
+    {
+        Toggle = 1,      // On/Off
+        StartStop = 2,   // Start/Stop
+        OpenClose = 3,   // Damper/Valve
+        EnableDisable = 4,
+        SetValue = 5,    // SetPoint
+        Pulse = 6        // Momentary command
     }
 }

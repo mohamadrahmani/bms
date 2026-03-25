@@ -23,10 +23,6 @@ namespace WebApi.Controllers
 
         //private readonly ITwinRealtimePublisher _publisher;
 
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
 
         private readonly ILogger<CommandDefinitionController> _logger;
         private readonly ITwinService _twinService;

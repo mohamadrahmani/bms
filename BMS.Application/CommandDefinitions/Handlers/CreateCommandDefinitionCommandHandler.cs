@@ -22,6 +22,7 @@ public class CreateCommandDefinitionCommandHandler : IRequestHandler<CreateComma
         var commandDefinition = new CommandDefinition() { 
             Code = request.Code,
             Name = request.Name,
+            CommandType = request.CommandType,
             DeviceType = request.DeviceType,
             HasParameter = request.HasParameter,
             ParameterType = request.ParameterType

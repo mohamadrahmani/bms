@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using BMS.Application.Models;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,6 @@ namespace BMS.Application.Persons.Commands
     string LastName,
     string? Email,
     string? Mobile
-) : IRequest<Guid>;
+) : IRequest<ApiResponse<Guid>>;
 
 }

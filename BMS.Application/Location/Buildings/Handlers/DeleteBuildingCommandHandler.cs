@@ -1,9 +1,11 @@
-﻿using MediatR;
-using BMS.Application.Common.Interfaces;
+﻿using BMS.Application.Common.Interfaces;
 using BMS.Application.Location.Buildings.Commands;
+using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
+using MediatR;
 
 public sealed class DeleteBuildingCommandHandler
-    : IRequestHandler<DeleteBuildingCommand>
+    : IRequestHandler<DeleteBuildingCommand, ApiResponse<bool>>
 {
     private readonly IBuildingRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
@@ -16,7 +18,7 @@ public sealed class DeleteBuildingCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Unit> Handle(
+    public async Task<ApiResponse<bool>> Handle(
         DeleteBuildingCommand request,
         CancellationToken cancellationToken)
     {
@@ -29,6 +31,6 @@ public sealed class DeleteBuildingCommandHandler
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Unit.Value;
+        return ApiResponse<bool>.SuccessResponse(true, "ساختمان حذف شد"); ;
     }
 }

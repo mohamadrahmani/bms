@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using BMS.Application.Models;
+using MediatR;
 
 namespace BMS.Application.Persons.Commands;
 
@@ -8,4 +9,4 @@ public sealed record UpdatePersonCommand(
     string LastName,
     string? Email,
     string? Mobile
-) : IRequest;
+) : IRequest<ApiResponse<bool>>;

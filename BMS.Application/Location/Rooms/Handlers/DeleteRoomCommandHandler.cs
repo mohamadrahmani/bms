@@ -1,8 +1,10 @@
-﻿using MediatR;
-using BMS.Application.Common.Interfaces;
+﻿using BMS.Application.Common.Interfaces;
 using BMS.Application.Location.Rooms.Commands;
+using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
+using MediatR;
 
-public class DeleteRoomCommandHandler : IRequestHandler<DeleteRoomCommand>
+public class DeleteRoomCommandHandler : IRequestHandler<DeleteRoomCommand, ApiResponse<bool>>
 {
     private readonly IRoomRepository _repository;
 
@@ -11,7 +13,7 @@ public class DeleteRoomCommandHandler : IRequestHandler<DeleteRoomCommand>
         _repository = repository;
     }
 
-    public async Task<Unit> Handle(DeleteRoomCommand request, CancellationToken cancellationToken)
+    public async Task<ApiResponse<bool>> Handle(DeleteRoomCommand request, CancellationToken cancellationToken)
     {
         var room = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
@@ -20,6 +22,6 @@ public class DeleteRoomCommandHandler : IRequestHandler<DeleteRoomCommand>
 
         await _repository.DeleteAsync(room, cancellationToken);
 
-        return Unit.Value;
+        return ApiResponse<bool>.SuccessResponse(true, "کنترلر ایجاد شد");
     }
 }

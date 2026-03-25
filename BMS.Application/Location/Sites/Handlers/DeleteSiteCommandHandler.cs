@@ -1,12 +1,14 @@
-﻿using MediatR;
-using BMS.Application.Location.Sites.Commands;
+﻿using BMS.Application.Common.Exceptions;
 using BMS.Application.Common.Interfaces;
-using BMS.Application.Common.Exceptions;
+using BMS.Application.Location.Sites.Commands;
+using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
+using MediatR;
 
 namespace BMS.Application.Location.Sites.Handlers;
 
 public sealed class DeleteSiteCommandHandler
-    : IRequestHandler<DeleteSiteCommand>
+    : IRequestHandler<DeleteSiteCommand, ApiResponse<bool>>
 {
     private readonly ISiteRepository _siteRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -19,7 +21,7 @@ public sealed class DeleteSiteCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Unit> Handle(
+    public async Task<ApiResponse<bool>> Handle(
         DeleteSiteCommand request,
         CancellationToken cancellationToken)
     {
@@ -33,6 +35,6 @@ public sealed class DeleteSiteCommandHandler
         _siteRepository.Delete(site);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return Unit.Value;
+        return ApiResponse<bool>.SuccessResponse(true, "سایت حذف شد");
     }
 }

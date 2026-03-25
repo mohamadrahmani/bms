@@ -1,14 +1,16 @@
-﻿using MediatR;
-using BMS.Application.Common.Exceptions;
+﻿using BMS.Application.Common.Exceptions;
 using BMS.Application.Common.Interfaces;
-using BMS.Domain.Exceptions;
+using BMS.Application.Models;
 using BMS.Application.Persons.Commands;
+using BMS.Domain.Entities.BMS;
+using BMS.Domain.Exceptions;
+using MediatR;
 
 namespace BMS.Application.Persons.Handlers;
 
 
 public sealed class UpdatePersonCommandHandler
-    : IRequestHandler<UpdatePersonCommand, Unit>
+    : IRequestHandler<UpdatePersonCommand, ApiResponse<bool>>
 {
     private readonly IPersonRepository _personRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -21,7 +23,7 @@ public sealed class UpdatePersonCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Unit> Handle(
+    public async Task<ApiResponse<bool>> Handle(
         UpdatePersonCommand request,
         CancellationToken cancellationToken)
     {
@@ -54,6 +56,6 @@ public sealed class UpdatePersonCommandHandler
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Unit.Value;   // 👈 خیلی مهم
+        return ApiResponse<bool>.SuccessResponse(true, "اطلاعات بروزرسانی شد");
     }
 }

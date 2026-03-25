@@ -8,7 +8,7 @@ using MediatR;
 
 namespace BMS.Application.Points.Commands;
 
-public class UpdatePointCommand : IRequest<ApiResponse<PointDto>>
+public class UpdatePointCommand : IRequest<ApiResponse<bool>>
 {
     public Guid Id { get; set; }
 
@@ -16,6 +16,7 @@ public class UpdatePointCommand : IRequest<ApiResponse<PointDto>>
     public string Title { get; set; } = default!;
 
     public PointKind Kind { get; set; }
+    public PointType PointType { get; set; }
     public PointDataType DataType { get; set; }
 
     public ushort Address { get; set; }

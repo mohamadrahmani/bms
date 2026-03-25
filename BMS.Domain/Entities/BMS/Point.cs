@@ -23,6 +23,7 @@ public class Point : BaseEntity<Guid>
        string tag,               // برچسب مختصر و یکتا
         string? title,             // عنوان توصیفی نقطه
         PointDataType dataType,   // نوع داده نقطه (Boolean, Int32, Float32 …)
+        PointType pointType,
         string? unit = null,
         LocationReference? location = null,
     string? code = null,
@@ -47,6 +48,7 @@ public class Point : BaseEntity<Guid>
         Tag = tag.Trim();
         Title = title.Trim();
         DataType = dataType;
+        PointType = pointType;
         Unit = string.IsNullOrWhiteSpace(unit) ? null : unit.Trim(); // حذف فاصله اضافی یا null
         Location = location;
         // آیا نقطه قابل نوشتن است؟ فقط DO و AO قابل نوشتن هستند
@@ -112,6 +114,7 @@ public class Point : BaseEntity<Guid>
                                                     // نوع داده پوینت
                                                     // Boolean / Int32 / Float32 / Float64 / String
     public PointDataType DataType { get; set; } // نوع داده
+    public PointType PointType { get; set; } // نوع داده
                                                 // مشخص می‌کند این پوینت قابل نوشتن است یا فقط خواندنی
                                                 // معمولاً DO و AO قابل نوشتن هستند
     public bool IsWritable { get; set; }    // آیا قابل نوشتن است؟
@@ -229,6 +232,7 @@ public class Point : BaseEntity<Guid>
     string tag,
     string title,
     PointKind kind,
+    PointType pointType,
     PointDataType dataType,
     ushort address,
     string? unit,
@@ -247,6 +251,7 @@ public class Point : BaseEntity<Guid>
         Tag = tag;
         Title = title;
         Kind = kind;
+        PointType = pointType;
         DataType = dataType;
         Address = address;
         Unit = unit;

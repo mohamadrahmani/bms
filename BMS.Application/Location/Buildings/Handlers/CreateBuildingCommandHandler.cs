@@ -1,10 +1,12 @@
-﻿using MediatR;
-using BMS.Application.Common.Interfaces;
+﻿using BMS.Application.Common.Interfaces;
 using BMS.Application.Location.Buildings.Commands;
+using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
+using MediatR;
 
 public sealed class CreateBuildingCommandHandler
-    : IRequestHandler<CreateBuildingCommand, Guid>
+    : IRequestHandler<CreateBuildingCommand, ApiResponse<Guid>>
 {
     private readonly IBuildingRepository _repository;
     private readonly ISiteRepository _siteRepository;
@@ -20,7 +22,7 @@ public sealed class CreateBuildingCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Guid> Handle(
+    public async Task<ApiResponse<Guid>> Handle(
         CreateBuildingCommand request,
         CancellationToken cancellationToken)
     {
@@ -48,6 +50,6 @@ public sealed class CreateBuildingCommandHandler
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return building.Id;
+        return ApiResponse<Guid>.SuccessResponse(building.Id, "ساختمان ایجاد شد");
     }
 }

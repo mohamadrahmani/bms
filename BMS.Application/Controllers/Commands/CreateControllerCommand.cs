@@ -1,9 +1,10 @@
-﻿using BMS.Domain.Entities.BMS;
+﻿using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
 using MediatR;
 
 namespace BMS.Application.Controllers.Commands
 {
-    public class CreateControllerCommand : IRequest<Guid>
+    public class CreateControllerCommand : IRequest<ApiResponse<Guid>>
     {
         public string Code { get; init; } = default!;
         public string Name { get; init; } = default!;

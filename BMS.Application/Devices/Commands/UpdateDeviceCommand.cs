@@ -43,10 +43,11 @@
 //    }
 //}
 using BMS.Application.Devices.DTOs;
+using BMS.Application.Models;
 using BMS.Domain.Entities.BMS;
 using MediatR;
 
-public class UpdateDeviceCommand : IRequest<DeviceDto>
+public class UpdateDeviceCommand : IRequest<ApiResponse<bool>>
 {
     public Guid Id { get; set; }
 

@@ -1,7 +1,9 @@
-﻿using MediatR;
-using BMS.Application.Common.Interfaces;
+﻿using BMS.Application.Common.Interfaces;
+using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
+using MediatR;
 
-public class UpdateRoomCommandHandler : IRequestHandler<UpdateRoomCommand>
+public class UpdateRoomCommandHandler : IRequestHandler<UpdateRoomCommand, ApiResponse<bool>>
 {
     private readonly IRoomRepository _repository;
     private readonly IFloorRepository _floorRepository;
@@ -17,7 +19,7 @@ public class UpdateRoomCommandHandler : IRequestHandler<UpdateRoomCommand>
         _wardRepository = wardRepository;
     }
 
-    public async Task<Unit> Handle(UpdateRoomCommand request, CancellationToken cancellationToken)
+    public async Task<ApiResponse<bool>> Handle(UpdateRoomCommand request, CancellationToken cancellationToken)
     {
         var room = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
@@ -41,6 +43,6 @@ public class UpdateRoomCommandHandler : IRequestHandler<UpdateRoomCommand>
 
         await _repository.UpdateAsync(room, cancellationToken);
 
-        return Unit.Value;
+        return ApiResponse<bool>.SuccessResponse(true, "اطلاعات طبقه بروزرسانی شد");
     }
 }

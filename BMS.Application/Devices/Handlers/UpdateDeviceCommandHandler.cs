@@ -1,6 +1,7 @@
 ﻿using BMS.Application.Common.Interfaces;
 using BMS.Application.Devices.Commands;
 using BMS.Application.Devices.DTOs;
+using BMS.Application.Models;
 using MediatR;
 using System;
 using System.Threading;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BMS.Application.Devices.Handlers
 {
-    public class UpdateDeviceCommandHandler : IRequestHandler<UpdateDeviceCommand, DeviceDto>
+    public class UpdateDeviceCommandHandler : IRequestHandler<UpdateDeviceCommand, ApiResponse<bool>>
     {
         private readonly IDeviceRepository _repository;
 
@@ -17,7 +18,7 @@ namespace BMS.Application.Devices.Handlers
             _repository = repository;
         }
 
-        public async Task<DeviceDto> Handle(UpdateDeviceCommand request, CancellationToken cancellationToken)
+        public async Task<ApiResponse<bool>> Handle(UpdateDeviceCommand request, CancellationToken cancellationToken)
             {
             var device = await _repository.GetByIdAsync(request.Id);
 
@@ -65,23 +66,7 @@ namespace BMS.Application.Devices.Handlers
             await _repository.UpdateAsync(device);
             await _repository.SaveChangesAsync();
 
-            return new DeviceDto
-            {
-                Id = device.Id,
-                ControllerId = device.ControllerId,
-                Code = device.Code,
-                Name = device.Name,
-                Type = device.Type,
-                EnableAlarming = device.EnableAlarming,
-                EnableTrending = device.EnableTrending,
-                IsActive = device.IsActive,
-                SiteId = device.Location?.SiteId,
-                BuildingId = device.Location?.BuildingId,
-                FloorId = device.Location?.FloorId,
-                WardId = device.Location?.WardId,
-                RoomId = device.Location?.RoomId,
-                Description = device.Description
-            };
+            return ApiResponse<bool>.SuccessResponse(true, "دستگاه با موفقیت به روزرسانی شد");
         }
     }
 }

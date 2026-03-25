@@ -35,6 +35,7 @@ public class GetPointsQueryHandler : IRequestHandler<GetPointsQuery, PagedResult
             Offset = p.Offset,
             IsWritable = p.IsWritable,
             RegisterType = p.RegisterType,
+            PointType = p.PointType,
             RegisterAddress = p.RegisterAddress,
             BitIndex = p.BitIndex,
             ByteOrder = p.ByteOrder,

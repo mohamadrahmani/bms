@@ -1,8 +1,9 @@
-﻿using MediatR;
+﻿using BMS.Application.Models;
+using MediatR;
 
 namespace BMS.Application.Location.Buildings.Commands;
 
-public sealed class CreateBuildingCommand : IRequest<Guid>
+public sealed class CreateBuildingCommand : IRequest<ApiResponse<Guid>>
 {
     public Guid SiteId { get; set; }
 

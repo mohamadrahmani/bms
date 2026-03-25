@@ -1,15 +1,17 @@
-﻿using MediatR;
-using BMS.Application.Controllers.Commands;
+﻿using BMS.Application.Common.Exceptions;
 using BMS.Application.Common.Interfaces;
-using BMS.Application.Common.Exceptions;
+using BMS.Application.Controllers.Commands;
+using BMS.Application.Devices.DTOs;
+using BMS.Application.Models;
 using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
+using MediatR;
 
 
 namespace BMS.Application.Controllers.Handlers;
 
 public sealed class CreateControllerCommandHandler
-    : IRequestHandler<CreateControllerCommand, Guid>
+    : IRequestHandler<CreateControllerCommand, ApiResponse<Guid>>
 {
     private readonly IControllerRepository _controllerRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -22,7 +24,7 @@ public sealed class CreateControllerCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Guid> Handle(
+    public async Task<ApiResponse<Guid>> Handle(
         CreateControllerCommand request,
         CancellationToken cancellationToken)
     {
@@ -81,6 +83,6 @@ public sealed class CreateControllerCommandHandler
         await _controllerRepository.AddAsync(controller, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return controller.Id;
+        return ApiResponse<Guid>.SuccessResponse(controller.Id, "کنترلر ایجاد شد");
     }
 }

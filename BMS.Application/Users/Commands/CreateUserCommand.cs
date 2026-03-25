@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using BMS.Application.Models;
+using MediatR;
 
 
 namespace BMS.Application.Users.Commands;
@@ -12,4 +13,4 @@ public sealed record CreateUserCommand(
     string UserName,
     string Password,
     IReadOnlyCollection<int>? RoleIds
-) : IRequest<Guid>;
+) : IRequest<ApiResponse<Guid>>;

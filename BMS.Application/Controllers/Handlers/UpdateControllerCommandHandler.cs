@@ -1,14 +1,16 @@
-﻿using MediatR;
+﻿using BMS.Application.Common.Exceptions;
 using BMS.Application.Common.Interfaces;
-using BMS.Application.Common.Exceptions;
-using BMS.Domain.Exceptions;
 using BMS.Application.Controllers.Commands;
+using BMS.Application.Devices.DTOs;
+using BMS.Application.Models;
 using BMS.Domain.Entities.Location;
+using BMS.Domain.Exceptions;
+using MediatR;
 
 namespace BMS.Application.Controllers.Handlers
 {
     public sealed class UpdateControllerCommandHandler
-        : IRequestHandler<UpdateControllerCommand>
+        : IRequestHandler<UpdateControllerCommand, ApiResponse<bool>>
     {
         private readonly IControllerRepository _controllerRepository;
         private readonly IUnitOfWork _unitOfWork;
@@ -21,7 +23,7 @@ namespace BMS.Application.Controllers.Handlers
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Unit> Handle(
+        public async Task<ApiResponse<bool>> Handle(
             UpdateControllerCommand request,
             CancellationToken cancellationToken)
         {
@@ -86,7 +88,7 @@ namespace BMS.Application.Controllers.Handlers
             // 6. ذخیره
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Unit.Value;
+            return ApiResponse<bool>.SuccessResponse(true, "Device updated successfully");
         }
     }
 }

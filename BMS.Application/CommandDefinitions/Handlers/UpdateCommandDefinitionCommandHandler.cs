@@ -28,6 +28,7 @@ public class UpdateCommandDefinitionCommandHandler : IRequestHandler<UpdateComma
 
         commandDefinition.Name = request.Name;
         commandDefinition.Code = request.Code;
+        commandDefinition.CommandType = request.CommandType;
         commandDefinition.DeviceType = request.DeviceType;
         commandDefinition.ParameterType = request.ParameterType;
         commandDefinition.HasParameter = request.HasParameter;

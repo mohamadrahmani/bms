@@ -24,6 +24,7 @@ public class GetCommandDefinitionsQueryHandler : IRequestHandler<GetCommandDefin
             Id = p.Id,
             ParameterType = p.ParameterType,
             Code = p.Code,
+            CommandType = p.CommandType,
             DeviceType = p.DeviceType,
             HasParameter = p.HasParameter,
             Name = p.Name

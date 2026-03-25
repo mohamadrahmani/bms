@@ -1,10 +1,11 @@
-﻿using BMS.Domain.Entities.BMS;
+﻿using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
 using MediatR;
 using System;
 
 namespace BMS.Application.Controllers.Commands
 {
-    public class UpdateControllerCommand : IRequest
+    public class UpdateControllerCommand : IRequest<ApiResponse<bool>>
     {
         public Guid ControllerId { get; set; }
 

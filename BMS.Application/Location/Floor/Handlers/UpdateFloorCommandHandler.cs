@@ -1,8 +1,10 @@
 ﻿using BMS.Application.Common.Interfaces;
 using BMS.Application.Location.Floors.Commands;
+using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
 using MediatR;
 
-public class UpdateFloorCommandHandler : IRequestHandler<UpdateFloorCommand>
+public class UpdateFloorCommandHandler : IRequestHandler<UpdateFloorCommand, ApiResponse<bool>>
 {
     private readonly IFloorRepository _repository;
     private readonly IBuildingRepository _buildingRepository;
@@ -18,7 +20,7 @@ public class UpdateFloorCommandHandler : IRequestHandler<UpdateFloorCommand>
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Unit> Handle(
+    public async Task<ApiResponse<bool>> Handle(
         UpdateFloorCommand request,
         CancellationToken cancellationToken)
     {
@@ -41,6 +43,6 @@ public class UpdateFloorCommandHandler : IRequestHandler<UpdateFloorCommand>
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Unit.Value;
+        return ApiResponse<bool>.SuccessResponse(true, "طبقه به روزرسانی شد");
     }
 }

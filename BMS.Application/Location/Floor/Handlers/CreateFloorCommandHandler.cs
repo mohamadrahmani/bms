@@ -1,9 +1,11 @@
 ﻿using BMS.Application.Common.Interfaces;
 using BMS.Application.Location.Floors.Commands;
+using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
 using MediatR;
 
-public class CreateFloorCommandHandler : IRequestHandler<CreateFloorCommand, Guid>
+public class CreateFloorCommandHandler : IRequestHandler<CreateFloorCommand, ApiResponse<Guid>>
 {
     private readonly IFloorRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
@@ -16,7 +18,7 @@ public class CreateFloorCommandHandler : IRequestHandler<CreateFloorCommand, Gui
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Guid> Handle(
+    public async Task<ApiResponse<Guid>> Handle(
         CreateFloorCommand request,
         CancellationToken cancellationToken)
     {
@@ -30,6 +32,6 @@ public class CreateFloorCommandHandler : IRequestHandler<CreateFloorCommand, Gui
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return floor.Id;
+        return ApiResponse<Guid>.SuccessResponse(floor.Id, "طبقه ایجاد شد");
     }
 }

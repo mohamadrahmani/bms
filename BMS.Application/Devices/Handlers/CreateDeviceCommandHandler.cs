@@ -1,7 +1,9 @@
 ﻿
-using BMS.Application.Common.Interfaces;
 using BMS.Application.Common.Exceptions;
+using BMS.Application.Common.Interfaces;
 using BMS.Application.Devices.Commands;
+using BMS.Application.Devices.DTOs;
+using BMS.Application.Models;
 using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
 using MediatR;
@@ -11,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace BMS.Application.Devices.Handlers
 {
-    public class CreateDeviceCommandHandler : IRequestHandler<CreateDeviceCommand, Guid>
+    public class CreateDeviceCommandHandler : IRequestHandler<CreateDeviceCommand, ApiResponse<Guid>>
     {
         private readonly IDeviceRepository _repository;
 
@@ -20,7 +22,7 @@ namespace BMS.Application.Devices.Handlers
             _repository = repository;
         }
 
-        public async Task<Guid> Handle(CreateDeviceCommand request, CancellationToken cancellationToken)
+        public async Task<ApiResponse<Guid>> Handle(CreateDeviceCommand request, CancellationToken cancellationToken)
         {
             // ✅ ساخت Location (اختیاری)
             LocationReference? location = null;
@@ -55,7 +57,7 @@ namespace BMS.Application.Devices.Handlers
             await _repository.SaveChangesAsync();
 
             // ✅ برگرداندن Id
-            return device.Id;
+            return ApiResponse<Guid>.SuccessResponse(device.Id, "ثبت دستگاه با موفقیت انجام شد");
         }
     }
 }

@@ -1,10 +1,12 @@
 ﻿using BMS.Application.Common.Interfaces;
+using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
 using MediatR;
 
 namespace BMS.Application.Location.Wards.Commands;
 
-public class CreateWardCommandHandler : IRequestHandler<CreateWardCommand, Guid>
+public class CreateWardCommandHandler : IRequestHandler<CreateWardCommand, ApiResponse<Guid>>
 {
     private readonly IWardRepository _repository;
     private readonly IFloorRepository _floorRepository;
@@ -20,7 +22,7 @@ public class CreateWardCommandHandler : IRequestHandler<CreateWardCommand, Guid>
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Guid> Handle(CreateWardCommand request, CancellationToken cancellationToken)
+    public async Task<ApiResponse<Guid>> Handle(CreateWardCommand request, CancellationToken cancellationToken)
     {
         var floorExists = await _floorRepository.ExistsAsync(request.FloorId);
 
@@ -37,6 +39,6 @@ public class CreateWardCommandHandler : IRequestHandler<CreateWardCommand, Guid>
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return ward.Id;
+        return ApiResponse<Guid>.SuccessResponse(ward.Id, "بخش ایجاد شد");
     }
 }

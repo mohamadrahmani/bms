@@ -1,5 +1,6 @@
-﻿using MediatR;
-using BMS.Application.Location.Rooms.Dtos;
+﻿using BMS.Application.Location.Rooms.Dtos;
+using BMS.Application.Models;
+using MediatR;
 
 public record CreateRoomCommand(
     Guid FloorId,
@@ -8,4 +9,4 @@ public record CreateRoomCommand(
     string RoomNumber,
     string? Type,
     double Area
-) : IRequest<Guid>;
+) : IRequest<ApiResponse<Guid>>;

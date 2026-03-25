@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using BMS.Application.Models;
+using MediatR;
 
 public record UpdateRoomCommand(
     Guid Id,
@@ -8,4 +9,4 @@ public record UpdateRoomCommand(
     string RoomNumber,
     string? Type,
     double Area
-) : IRequest;
+) : IRequest<ApiResponse<bool>>;
