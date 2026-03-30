@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Linq;
 using System.Threading.Channels;
+using static System.Formats.Asn1.AsnWriter;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -201,6 +202,11 @@ app.MapPost("/api/commands/write-point",
         CancellationToken token) =>
     {
         var point = await pointRepository.GetPointFullInfoAsync(request.PointId);
+
+        var logger = app.Logger;
+
+        logger.LogDebug("/api/commands/write-point");
+
         if (point == null)
             return Results.NotFound(new { error = "Point not found" });
 
