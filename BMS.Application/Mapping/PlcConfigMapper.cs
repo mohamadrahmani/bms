@@ -48,7 +48,9 @@ public static class PlcConfigMapper
             //FunctionCode = point.FunctionCode,
             Unit = point.Unit,
             Scale=point.Scale,
-            IsWritable= point.IsWritable
+            IsWritable= point.IsWritable,
+            RegisterType = point.RegisterType,
+            Length = point.Length
         };
     }
 

@@ -1,4 +1,6 @@
 ﻿using BMS.Application.Common.Interfaces;
+using BMS.Application.Models;
+using BMS.Application.Points.Dtos;
 using BMS.Domain.Entities.BMS;
 using BMS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -58,5 +60,36 @@ namespace BMS.Infrastructure.Repositories
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<PointDto?> GetPointFullInfoAsync(Guid pointId)
+        {
+            return await _context.Points
+                .Where(p => p.Id == pointId)
+                .Select(p => new PointDto
+                {
+                    Id = p.Id,
+                    Tag = p.Tag,
+                    Title = p.Title,
+                    Address = p.Address,
+                    Code= p.Code,
+                    //CommandAddress= p.CommandAddress,
+                    FeedbackAddress= p.FeedbackAddress,
+                    ValidationDelayMs= p.ValidationDelayMs,
+                    ValidationRetryCount= p.ValidationRetryCount,
+                    Scale=p.Scale,
+                    IsWritable=p.IsWritable,
+
+                    DeviceId = p.Device.Id,
+                    DeviceCode = p.Device.Code,
+                    DeviceName = p.Device.Name,
+
+                    ControllerId = p.Device.Controller.Id,
+                    ControllerCode = p.Device.Controller.Code,
+                    ControllerName = p.Device.Controller.Name,
+                    IpAddress = p.Device.Controller.IpAddress
+                })
+                .FirstOrDefaultAsync();
+        }
+
     }
 }

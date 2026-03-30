@@ -310,8 +310,8 @@ public class Point : BaseEntity<Guid>
 // نوع رجیستر در پروتکل Modbus
 public enum RegisterType
 {
-    Coil = 1,           // Coil: Digital Output در Modbus
+    Coil = 1,           // Coil: Digital Output در Modbus (M)
     DiscreteInput = 2,  // Digital Input
-    HoldingRegister = 3, // Analog / Writable
+    HoldingRegister = 3, // Analog / Writable(D)
     InputRegister = 4    // Analog / Read-only
 }

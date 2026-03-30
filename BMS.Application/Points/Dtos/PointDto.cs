@@ -27,6 +27,9 @@ public class PointDto
     }
     public ushort? Address { get; set; }
 
+    public ushort? FeedbackAddress { get; set; }
+    public int ValidationRetryCount { get; set; }
+    public int ValidationDelayMs { get; set; }
     public string? Unit { get; set; }
 
     public string? Code { get; set; }
@@ -58,4 +61,11 @@ public class PointDto
     public string? Quality { get; set; }
 
     public DateTime? LastUpdatedAtUtc { get; set; }
+    public Guid ControllerId { get; set; }
+    public string ControllerCode { get; set; }
+    public string ControllerName { get; set; }
+    public string IpAddress { get; set; }
+
+    public string DeviceCode { get; set; }
+
 }

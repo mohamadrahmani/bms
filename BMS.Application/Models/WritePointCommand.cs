@@ -12,6 +12,12 @@ public class WritePointCommand
     public Guid DeviceId { get; set; }
     public string PointCode { get; set; } = default!;
     public double Value { get; set; }
+    public Guid PointId { get; set; }
 }
 
 
+public class WritePointRequest
+{
+    public Guid PointId { get; set; }
+    public string Value { get; set; } = "";
+}

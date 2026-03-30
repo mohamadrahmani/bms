@@ -1,5 +1,6 @@
 ﻿using BMS.Application.Abstraction;
 using BMS.Application.Models;
+using BMS.Application.Points.Dtos;
 using BMS.Worker.Abstractions;
 using System;
 using System.Collections.Generic;
@@ -18,17 +19,16 @@ public class PlcCommandDispatcher : IPlcCommandDispatcher
     }
 
     public async Task<bool> SendAsync(
-        WritePointCommand command,
+        PointDto command,
+        string value,
         CancellationToken token)
     {
-        var plc = _plcs.FirstOrDefault(p => p.Name == command.PlcName);
+        var plc = _plcs.FirstOrDefault(p => p.Name == command.ControllerName);
 
         if (plc == null)
             throw new InvalidOperationException("PLC not found.");
 
-        return await plc.WriteAsync(command, token);
-
+        return await plc.WriteAsync(command, double.Parse(value), token);
     }
 
 }
-

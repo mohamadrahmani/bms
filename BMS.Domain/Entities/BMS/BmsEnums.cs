@@ -56,14 +56,14 @@ namespace BMS.Domain.Entities.BMS
 
     public enum PointDataType
     {
-        UInt16,
-        Int16,
-        UInt32,
-        Int32,
-        Float32,
-        Boolean,
-        Float64,
-        String
+        UInt16=1,
+        Int16=2,
+        UInt32=3,
+        Int32=4,
+        Float32=5,
+        Boolean=6,
+        Float64=7,
+        String=8
     }
 
     // وضعیت کیفیت داده (Quality) برای Point

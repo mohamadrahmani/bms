@@ -1,5 +1,6 @@
 ﻿using BMS.Application.Enum;
 using BMS.Application.Models;
+using BMS.Application.Points.Dtos;
 using BMS.Domain.Entities.BMS;
 
 namespace BMS.Infrastructure.Modbus;
@@ -9,7 +10,21 @@ public static class ModbusValueParser
     // -------------------------------
     // READ → Raw → Engineering
     // -------------------------------
-    public static double Parse(ushort[] registers, Point config)
+    public static double Parse(object registers, PointConfig config)
+    {
+        if (registers is bool[] bools)
+        {
+            return bools[0] ? 1 : 0;
+        }
+
+        if (registers is ushort[] ushorts)
+        {
+            return Parse(ushorts, config);
+        }
+
+        throw new NotSupportedException("Unsupported register type");
+    }
+    public static double Parse(ushort[] registers, PointConfig config)
     {
         double raw = config.DataType switch
         {
@@ -29,7 +44,7 @@ public static class ModbusValueParser
                 ParseFloat(registers),
 
             PointDataType.Boolean =>
-                registers[0] == 1 ? 1 : 0,
+                registers[0] != 0 ? 1 : 0,
 
             _ => throw new NotSupportedException(
                 $"DataType {config.DataType} not supported")
@@ -57,7 +72,7 @@ public static class ModbusValueParser
     // -------------------------------
     public static ushort[] BuildWriteRegisters(
         double engineeringValue,
-        Point config)
+        PointDto config)
     {
         var rawValue =
             (engineeringValue - config.Offset) / config.Scale;

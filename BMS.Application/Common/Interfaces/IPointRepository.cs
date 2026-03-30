@@ -1,4 +1,6 @@
 ﻿
+using BMS.Application.Models;
+using BMS.Application.Points.Dtos;
 using BMS.Domain.Entities.BMS;
 
 namespace BMS.Application.Common.Interfaces;
@@ -16,4 +18,5 @@ public interface IPointRepository
 
     Task DeleteAsync(Guid id);
     Task<List<Point>> GetAllAsync(CancellationToken cancellationToken);
+    Task<PointDto?> GetPointFullInfoAsync(Guid pointId);
 }

@@ -4,10 +4,12 @@ using BMS.Application.Common.Interfaces;
 using BMS.Application.Interfaces;
 using BMS.Application.Mapping;
 using BMS.Application.Models;
+using BMS.Application.Points.Dtos;
 using BMS.Application.Utilities;
 using BMS.Domain.Events;
 using BMS.Infrastructure;
 using BMS.Infrastructure.Modbus;
+using BMS.Infrastructure.Persistence;
 using BMS.Worker.Abstractions;
 using BMS.Worker.Devices;
 using BMS.Worker.Transport;
@@ -192,30 +194,35 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 // -------------------------------------------------
 app.MapPost("/api/commands/write-point",
     async (
-        WritePointCommand command,
+        WritePointRequest request,
+         IPointRepository pointRepository,
         IPlcCommandDispatcher dispatcher,
         ChannelWriter<TelemetryMessage> telemetryWriter,
         CancellationToken token) =>
     {
-        // Basic validation
-        if (string.IsNullOrWhiteSpace(command.PlcName))
-            return Results.BadRequest(new { error = "PlcName is required." });
-        if (string.IsNullOrWhiteSpace(command.DeviceName))
-            return Results.BadRequest(new { error = "DeviceName is required." });
-        if (string.IsNullOrWhiteSpace(command.PointCode))
-            return Results.BadRequest(new { error = "PointCode is required." });
+        var point = await pointRepository.GetPointFullInfoAsync(request.PointId);
+        if (point == null)
+            return Results.NotFound(new { error = "Point not found" });
+
+        //// Basic validation
+        //if (string.IsNullOrWhiteSpace(command.PlcName))
+        //    return Results.BadRequest(new { error = "PlcName is required." });
+        //if (string.IsNullOrWhiteSpace(command.DeviceName))
+        //    return Results.BadRequest(new { error = "DeviceName is required." });
+        //if (string.IsNullOrWhiteSpace(command.PointCode))
+        //    return Results.BadRequest(new { error = "PointCode is required." });
 
         // Ensure stable routing key
-        if (command.DeviceId == Guid.Empty)
-            command.DeviceId = DeterministicGuid.FromString($"bms|plc:{command.PlcName}|device:{command.DeviceName}");
+        //if (command.DeviceId == Guid.Empty)
+        //    command.DeviceId = DeterministicGuid.FromString($"bms|plc:{command.PlcName}|device:{command.DeviceName}");
 
-        var pointId = DeterministicGuid.FromString($"bms|plc:{command.PlcName}|device:{command.DeviceName}|point:{command.PointCode}");
+        //var pointId = DeterministicGuid.FromString($"bms|plc:{command.PlcName}|device:{command.DeviceName}|point:{command.PointCode}");
 
         bool success;
         string? error = null;
         try
         {
-            success = await dispatcher.SendAsync(command, token);
+            success = await dispatcher.SendAsync(point, request.Value, token);
         }
         catch (Exception ex)
         {
@@ -227,20 +234,20 @@ app.MapPost("/api/commands/write-point",
         telemetryWriter.TryWrite(new TelemetryMessage
         {
             Type = "commandResult",
-            PlcName = command.PlcName,
+            PlcName = point.ControllerName,
             IsOnline = true,
             TimestampUtc = DateTime.UtcNow,
-            DeviceId = command.DeviceId,
-            DeviceName = command.DeviceName,
+            DeviceId = point.DeviceId,
+            DeviceName = point.DeviceName,
             Success = success,
             Error = error,
             Points = new List<TelemetryPoint>
             {
                 new()
                 {
-                    Id = pointId,
-                    Code = command.PointCode,
-                    Value = command.Value
+                    Id = point.Id,
+                    Code = point.Code,
+                    Value = double.Parse(request.Value)
                 }
             }
         });
@@ -249,8 +256,9 @@ app.MapPost("/api/commands/write-point",
         {
             success,
             error,
-            deviceId = command.DeviceId,
-            pointId
+            deviceId = point.DeviceId,
+            PointId=point.Id,
+            value=request.Value
         });
     });
 

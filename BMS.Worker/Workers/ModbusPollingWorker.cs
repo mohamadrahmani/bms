@@ -92,6 +92,7 @@ namespace BMS.Worker.Workers
                     return;
                 }
 
+
                 _logger.LogInformation("PLC {Name} ONLINE", plc.Name);
 
                 var snapshots = await plc.PollAsync(token);
