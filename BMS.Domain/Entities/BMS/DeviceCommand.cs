@@ -8,13 +8,15 @@ using System.Threading.Tasks;
 namespace BMS.Domain.Entities.BMS;
 public class DeviceCommand : BaseEntity<int>
 {
-    public Guid DeviceId { get; set; }
+    public Guid? DeviceId { get; set; }
 
     public Guid CommandDefinitionId { get; set; }
+    public string CommandName { get; set; }
 
     public Guid? PointId { get; set; }
 
     public string ParameterValue { get; set; }
+    public string? Value { get; set; }
 
     public CommandStatus Status { get; set; }
 

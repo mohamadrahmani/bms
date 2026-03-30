@@ -24,7 +24,8 @@ namespace BMS.Infrastructure
     {
         public static IServiceCollection AddInfrastructure(
             this IServiceCollection services,
-            IConfiguration configuration)
+            IConfiguration configuration,
+             bool enableRealtime = true)
         {
             // =======================
             // DbContext
@@ -90,10 +91,12 @@ namespace BMS.Infrastructure
             // =======================
             // Domain Events → Realtime
             // =======================
-            services.AddScoped<
+            if (enableRealtime)
+            {
+                services.AddScoped<
                 IEventHandler<DeviceCommandCompletedDomainEvent>,
                 CommandCompletedRealtimeHandler>();
-
+            }
             return services;
         }
     }

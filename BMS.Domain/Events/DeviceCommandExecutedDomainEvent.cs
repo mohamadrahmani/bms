@@ -5,7 +5,7 @@ namespace BMS.Domain.Events
     public record DeviceCommandExecutedDomainEvent(
         Guid DeviceId,
         string CommandName,
-        object? Payload,
+        string? value,
         DateTime ExecutedAtUtc
     ) : IDomainEvent;
 }

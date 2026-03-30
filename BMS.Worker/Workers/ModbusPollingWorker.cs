@@ -1,5 +1,8 @@
 ﻿using BMS.Application.Abstraction;
+using BMS.Application.Common.Interfaces;
+using BMS.Application.Mapping;
 using BMS.Application.Models;
+using BMS.Infrastructure.Modbus;
 using BMS.Worker.Abstractions;
 using System.Threading.Channels;
 
@@ -13,13 +16,15 @@ namespace BMS.Worker.Workers
         private readonly IPlcStateStore _stateStore;
         private readonly IPlcCommandDispatcher _dispatcher;
         private readonly ChannelWriter<TelemetryMessage> _telemetryWriter;
+        private readonly IServiceScopeFactory _scopeFactory;
         public ModbusPollingWorker(
             ILogger<ModbusPollingWorker> logger,
             IEnumerable<IPlcClient> plcClients,
             IBackendSender sender,
             IPlcStateStore stateStore,
             IPlcCommandDispatcher dispatcher,
-            ChannelWriter<TelemetryMessage> telemetryWriter)
+            ChannelWriter<TelemetryMessage> telemetryWriter,
+            IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
             _plcClients = plcClients;
@@ -27,6 +32,7 @@ namespace BMS.Worker.Workers
             _stateStore = stateStore;
             _dispatcher = dispatcher;
             _telemetryWriter = telemetryWriter;
+            _scopeFactory = scopeFactory;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -53,7 +59,7 @@ namespace BMS.Worker.Workers
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Unexpected worker error.");
+                    //_logger.LogError(ex, "Unexpected worker error.");
                     await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
             }
@@ -67,18 +73,18 @@ namespace BMS.Worker.Workers
             {
                 var isOnline = await plc.TestConnectionAsync(token);
 
-                var statusMsg = new TelemetryMessage
-                {
-                    Type = "plcStatus",
-                    PlcName = plc.Name,
-                    IsOnline = isOnline,
-                    TimestampUtc = DateTime.UtcNow,
-                    DeviceId = null,
-                    Points = new List<TelemetryPoint>()
-                };
+                //var statusMsg = new TelemetryMessage
+                //{
+                //    Type = "plcStatus",
+                //    PlcName = plc.Name,
+                //    IsOnline = isOnline,
+                //    TimestampUtc = DateTime.UtcNow,
+                //    DeviceId = null,
+                //    Points = new List<TelemetryPoint>()
+                //};
 
                 // status همیشه ارسال میشه تا UI وضعیت رو بفهمه
-                _telemetryWriter.TryWrite(statusMsg);
+                //_telemetryWriter.TryWrite(statusMsg); //فعلا کنسلش میکنم تا در صورت نیاز بعدا فعال بشه(فقط وضعیت کنترلر رو رارسال میکنه)
 
                 if (!isOnline)
                 {
@@ -86,8 +92,8 @@ namespace BMS.Worker.Workers
                     return;
                 }
 
-                _logger.LogDebug("PLC {Name} ONLINE", plc.Name);
-                
+                _logger.LogInformation("PLC {Name} ONLINE", plc.Name);
+
                 var snapshots = await plc.PollAsync(token);
                 foreach (var snapshot in snapshots)
                 {
@@ -105,8 +111,9 @@ namespace BMS.Worker.Workers
                             Code = s.Name,        // اگر داری
                             Value = s.Value
                         }).ToList()
-                    };
 
+                    };
+                    await _sender.SendAsync(snapshot, token);
                     if (!_telemetryWriter.TryWrite(msg))
                         _logger.LogWarning("Telemetry queue is full. Dropped message for PLC {Plc}", plc.Name);
                 }
@@ -122,7 +129,7 @@ namespace BMS.Worker.Workers
                 //        snapshot.Sensors.First().Value
                 //        );
 
-                //    await _sender.SendAsync(snapshot, token);
+
                 //}
             }
             catch (OperationCanceledException)

@@ -100,7 +100,8 @@ namespace BMS.Domain.Entities.BMS
         StartStop = 2,   // Start/Stop
         OpenClose = 3,   // Damper/Valve
         EnableDisable = 4,
-        SetValue = 5,    // SetPoint
-        Pulse = 6        // Momentary command
+        AutoManual = 5,
+        SetValue = 6,    // SetPoint
+        Pulse = 7        // Momentary command
     }
 }

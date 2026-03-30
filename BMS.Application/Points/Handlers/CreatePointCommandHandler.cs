@@ -43,7 +43,6 @@ public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, Api
         request.Length,
         request.Scale,
         request.Offset,
-        request.CommandAddress,
         request.FeedbackAddress,
         request.ValidationRetryCount,
         request.ValidationDelayMs,
@@ -54,7 +53,7 @@ public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, Api
         {
             point.SetMapping(
                 request.RegisterType.Value,
-                request.RegisterAddress.Value,
+                request.Address,
                 request.BitIndex,
                 request.ByteOrder
             );

@@ -60,13 +60,13 @@ namespace WebApi.Controllers
         public async Task<IActionResult> AutoUpdate(Guid twinId)
         {
             var device = _store.Get(twinId);
-            device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000001"), PointDataType.Int32);
-            device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000002"), PointDataType.Int32);
-            device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000003"), PointDataType.Int32);
-            device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000004"), PointDataType.Int32);
-            device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000005"), PointDataType.Int32);
-            device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000006"), PointDataType.Int32);
-            device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000007"), PointDataType.Int32);
+            device.RegisterPoint(Guid.Parse("20239AF5-B49E-49CE-8503-1CCAF8303E3A"), PointDataType.Int32);
+            device.RegisterPoint(Guid.Parse("5805D680-28F0-4CE9-A6F3-20CC16681F5F"), PointDataType.Int32);
+            device.RegisterPoint(Guid.Parse("B090C2E1-8BFD-471A-9FD0-6B4D1EE96C1D"), PointDataType.Int32);
+            device.RegisterPoint(Guid.Parse("D6CFEAE7-A3A1-48DE-A37A-8DB40EB874A0"), PointDataType.Int32);
+            device.RegisterPoint(Guid.Parse("DD6E78F4-C1E2-4726-BE31-91D19E872FD6"), PointDataType.Int32);
+            //device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000006"), PointDataType.Int32);
+            //device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000007"), PointDataType.Int32);
 
             //while (true)
             //{

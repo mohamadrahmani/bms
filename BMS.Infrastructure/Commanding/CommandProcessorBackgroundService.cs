@@ -62,8 +62,9 @@ namespace BMS.Infrastructure.Commanding
 
                     await gateway.ExecuteAsync(
                         command.DeviceId.ToString(),
-                        "command.CommandName",
-                        "command.Payload");
+                        command.PointId.ToString(),
+                        command.CommandName,
+                        command.Value);
                 }
                 finally
                 {

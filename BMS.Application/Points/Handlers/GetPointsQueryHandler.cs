@@ -3,6 +3,7 @@ using BMS.Application.Common.Pagination;
 using BMS.Application.Points.Dtos;
 using BMS.Application.Points.Queries;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace BMS.Application.Points.Handlers;
 
@@ -17,12 +18,13 @@ public class GetPointsQueryHandler : IRequestHandler<GetPointsQuery, PagedResult
 
     public async Task<PagedResult<PointDto>> Handle(GetPointsQuery request, CancellationToken cancellationToken)
     {
-        var points = _pointRepository.Points;
+        var points = _pointRepository.Points.Include(p=> p.Device);
 
         var query = points.Select(p => new PointDto
         {
             Id = p.Id,
             DeviceId = p.DeviceId,
+            DeviceName = p.Device.Name,
             Tag = p.Tag,
             Title = p.Title,
             Kind = p.Kind,
@@ -36,7 +38,6 @@ public class GetPointsQueryHandler : IRequestHandler<GetPointsQuery, PagedResult
             IsWritable = p.IsWritable,
             RegisterType = p.RegisterType,
             PointType = p.PointType,
-            RegisterAddress = p.RegisterAddress,
             BitIndex = p.BitIndex,
             ByteOrder = p.ByteOrder,
             SiteId = p.Location != null ? p.Location!.SiteId : null,

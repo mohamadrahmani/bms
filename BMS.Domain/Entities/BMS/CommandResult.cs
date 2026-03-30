@@ -4,20 +4,20 @@
     {
         public bool Success { get; }
         public string? Message { get; }
-        public object? Payload { get; }
+        public string? Value { get; }
 
         public CommandResult(
             bool success,
             string? message = null,
-            object? payload = null)
+            string? value = null)
         {
             Success = success;
             Message = message;
-            Payload = payload;
+            Value = value;
         }
 
-        public static CommandResult Ok(object? payload = null)
-            => new(true, null, payload);
+        public static CommandResult Ok(string? value = null)
+            => new(true, null, value);
 
         public static CommandResult Fail(string message)
             => new(false, message);

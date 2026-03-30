@@ -11,7 +11,7 @@ public class PointConfig : Point
 {
     public string Code { get; set; } = default!;
 
-    public ushort Address { get; set; }
+    public ushort? Address { get; set; }
     public ushort Length { get; set; } = 1;
     public PointDataType DataType { get; set; }
     public double Scale { get; set; } = 1;

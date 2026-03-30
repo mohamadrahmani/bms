@@ -1,6 +1,7 @@
-﻿using System.Net.Http.Json;
+﻿using BMS.Application.Models;
+using BMS.Domain.Entities.BMS;
+using System.Net.Http.Json;
 using System.Threading.Channels;
-using BMS.Application.Models;
 
 namespace BMS.Worker.Workers;
 
@@ -25,37 +26,81 @@ public sealed class TelemetryForwarderWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var url = _config["UiSink:Url"];
-        if (string.IsNullOrWhiteSpace(url))
+        var urlTemplate = _config["UiSink:Url"];
+        string url;
+        if (string.IsNullOrWhiteSpace(urlTemplate))
             throw new InvalidOperationException("UiSink:Url is not configured.");
 
         var http = _httpClientFactory.CreateClient("UiSink");
 
+        //while (!stoppingToken.IsCancellationRequested)
+        //{
+        //    try
+        //    {
+        //        // منتظر پیام
+        //        var msg = await _reader.ReadAsync(stoppingToken);
+
+        //        // POST به UI/Backend
+        //        url = urlTemplate.Replace("{DeviceId}", msg.DeviceId.ToString());
+        //        var response = await http.PostAsJsonAsync(url, msg, stoppingToken);
+
+        //        if (!response.IsSuccessStatusCode)
+        //        {
+        //            _logger.LogWarning("UI sink returned {StatusCode} for PLC {Plc}",
+        //                (int)response.StatusCode, msg.PlcName);
+        //        }
+        //    }
+        //    catch (OperationCanceledException)
+        //    {
+        //        break;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        //_logger.LogError(ex, "Telemetry forwarder failed.");
+        //        await Task.Delay(500, stoppingToken);
+        //    }
+        //}
         while (!stoppingToken.IsCancellationRequested)
         {
+            TelemetryMessage msg;
+
             try
             {
-                // منتظر پیام
-                var msg = await _reader.ReadAsync(stoppingToken);
-
-                // POST به UI/Backend
-                var response = await http.PostAsJsonAsync(url, msg, stoppingToken);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    _logger.LogWarning("UI sink returned {StatusCode} for PLC {Plc}",
-                        (int)response.StatusCode, msg.PlcName);
-                }
+                msg = await _reader.ReadAsync(stoppingToken);
             }
             catch (OperationCanceledException)
             {
                 break;
             }
-            catch (Exception ex)
+
+            var delivered = false;
+
+            while (!delivered && !stoppingToken.IsCancellationRequested)
             {
-                _logger.LogError(ex, "Telemetry forwarder failed.");
-                await Task.Delay(500, stoppingToken);
+                try
+                {
+                    url = urlTemplate.Replace("{DeviceId}", msg.DeviceId.ToString());
+                    var response = await http.PostAsJsonAsync(url, msg, stoppingToken);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        delivered = true;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("UI sink returned {StatusCode} for PLC {Plc}",
+                            (int)response.StatusCode, msg.PlcName);
+
+                        await Task.Delay(2000, stoppingToken); // retry delay
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Telemetry forwarder failed. Retrying...");
+                    await Task.Delay(2000, stoppingToken);
+                }
             }
         }
+
     }
 }

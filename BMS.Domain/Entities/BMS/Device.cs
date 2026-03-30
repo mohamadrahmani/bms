@@ -26,7 +26,7 @@ namespace BMS.Domain.Entities.BMS
             Id = id;
         }
 
-        private readonly List<Point> _devicePoints = new();
+        private List<Point> _devicePoints = new();
 
         public Device() { } // سازنده خصوصی برای EF Core
 
@@ -55,7 +55,7 @@ namespace BMS.Domain.Entities.BMS
         }
 
         // شناسه کنترلر مربوطه
-        public Guid? ControllerId { get; private set; }
+        public Guid? ControllerId { get; set; }
         public void UpdateLocation(LocationReference? location)
         {
             Location = location;
@@ -63,36 +63,37 @@ namespace BMS.Domain.Entities.BMS
         }
 
         // ناوبری به شیء کنترلر (رابطه EF)
-        public Controller Controller { get; private set; } = default!;
+        public Controller Controller { get; set; } = default!;
 
         // اگر این دستگاه زیرمجموعه دستگاه دیگری باشد
-        //public Guid? ParentDeviceId { get; private set; }
-        //public Device? ParentDevice { get; private set; }
+        //public Guid? ParentDeviceId { get; set; }
+        //public Device? ParentDevice { get; set; }
 
         // مشخصات اصلی دستگاه
-        public string Code { get; private set; } = default!;
-        public string Name { get; private set; } = default!;
-        public DeviceType Type { get; private set; }
+        public string Code { get; set; } = default!;
+        public string Name { get; set; } = default!;
+        public DeviceType Type { get; set; }
 
-        public LocationReference? Location { get; private set; }
+        public LocationReference? Location { get; set; }
 
-        public string? Description { get; private set; }   // توضیح اضافی
+        public string? Description { get; set; }   // توضیح اضافی
 
         // کلید صفحه گرافیکی UI
         // مشخص می‌کند وقتی کاربر روی این دستگاه کلیک کرد
         // کدام صفحه گرافیکی در نرم‌افزار باز شود
-        //public string? GraphicPageKey { get; private set; }
+        //public string? GraphicPageKey { get; set; }
 
         // تنظیمات سیستم
-        public bool? EnableAlarming { get; private set; }   // آیا آلارم این دستگاه فعال است؟
-        public bool? EnableTrending { get; private set; }   // آیا داده‌های این دستگاه ذخیره ترند شوند؟
+        public bool? EnableAlarming { get; set; }   // آیا آلارم این دستگاه فعال است؟
+        public bool? EnableTrending { get; set; }   // آیا داده‌های این دستگاه ذخیره ترند شوند؟
 
-        public bool? IsActive { get; private set; }         // آیا دستگاه فعال است؟
+        public bool? IsActive { get; set; }         // آیا دستگاه فعال است؟
 
         public ICollection<DeviceCommand> Commands { get; set; }
 
         // دسترسی فقط خواندنی به نقاط دستگاه
-        public IReadOnlyCollection<Point> DevicePoints => _devicePoints.AsReadOnly();
+        //public IReadOnlyCollection<Point> DevicePoints  => _devicePoints.AsReadOnly();
+        public ICollection<Point>? DevicePoints { get; set; } = new List<Point>();
 
         // تعیین دستگاه والد
         //public void SetParent(Guid? parentDeviceId)
@@ -256,14 +257,14 @@ namespace BMS.Domain.Entities.BMS
 
         public DeviceCommandExecutedDomainEvent ExecuteCommand(
             string commandName,
-            object? payload = null)
+            string? value = null)
         {
             lock (_sync)
             {
                 return new DeviceCommandExecutedDomainEvent(
                     Id,
                     commandName,
-                    payload,
+                    value,
                     DateTime.UtcNow);
             }
         }

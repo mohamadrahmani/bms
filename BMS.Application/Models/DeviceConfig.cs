@@ -19,6 +19,6 @@ public class DeviceConfig : Device
 
     //public List<SensorConfig> Sensors { get; set; } = new();
     //public string Name { get; set; } = default!;
-    //public List<PointConfig> Points { get; set; } = new();
+    public List<PointConfig> DevicePoints{ get; set; } = new();
 }
 

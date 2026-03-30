@@ -61,24 +61,24 @@ namespace BMS.Domain.Entities.BMS
         }
 
         // اطلاعات پایه کنترلر
-        public string Code { get; private set; } = default!;
-        public string Name { get; private set; } = default!;
-        public ControllerProtocol Protocol { get; private set; }
-        public string IpAddress { get; private set; } = default!;
-        public int Port { get; private set; }
-        public byte UnitId { get; private set; } // شناسه Modbus
-        public LocationReference? Location { get; private set; } = default!;
+        public string Code { get; set; } = default!;
+        public string Name { get; set; } = default!;
+        public ControllerProtocol Protocol { get; set; }
+        public string IpAddress { get; set; } = default!;
+        public int Port { get; set; }
+        public byte UnitId { get; set; } // شناسه Modbus
+        public LocationReference? Location { get; set; } = default!;
 
         // جزئیات ارتباط و وضعیت
-        public string? FirmwareVersion { get; private set; }
-        public int TimeoutMs { get; private set; }
-        public int RetryCount { get; private set; }
-        public int ScanIntervalMs { get; private set; }
-        public string? Description { get; private set; }
+        public string? FirmwareVersion { get; set; }
+        public int TimeoutMs { get; set; }
+        public int RetryCount { get; set; }
+        public int ScanIntervalMs { get; set; }
+        public string? Description { get; set; }
 
-        public bool IsActive { get; private set; } // فعال/غیرفعال بودن کنترلر
-        public ControllerHealthStatus HealthStatus { get; private set; } // وضعیت سلامت کنترلر
-        public DateTime? LastSeenAtUtc { get; private set; } // آخرین زمان پاسخ‌دهی
+        public bool IsActive { get; set; } // فعال/غیرفعال بودن کنترلر
+        public ControllerHealthStatus HealthStatus { get; set; } // وضعیت سلامت کنترلر
+        public DateTime? LastSeenAtUtc { get; set; } // آخرین زمان پاسخ‌دهی
 
         // دسترسی به لیست نقاط و دستگاه‌ها بصورت فقط‌خواندنی
         //public IReadOnlyCollection<Point> Points => _points.AsReadOnly();

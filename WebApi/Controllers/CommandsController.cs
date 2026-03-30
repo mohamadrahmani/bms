@@ -22,16 +22,18 @@ public class CommandsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Execute(
         [FromBody]  aaaa command)
-    {
+    {   
         var commandId = await _useCase.ExecuteAsync(
             command.DeviceId,
+            command.PointId,
             command.CommandName,
-        command.Payload);
+        command.Value);
 
         await eventDispatcher.DispatchAsync(
         new DeviceCommandCompletedDomainEvent(
             Guid.Empty,
             command.DeviceId,
+            command.PointId,
             command.CommandName,
             true,
             null,
@@ -44,7 +46,8 @@ public class CommandsController : ControllerBase
 
 public class aaaa
 {
-    public Guid DeviceId { get; set; }
+    public Guid? DeviceId { get; set; }
+    public Guid PointId { get; set; }
     public string CommandName { get; set; }
-    public object? Payload { get; set; }
+    public string? Value { get; set; }
 }

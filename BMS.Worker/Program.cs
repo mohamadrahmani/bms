@@ -1,8 +1,12 @@
-using System.Threading.Channels;
 using BMS.Application.Abstraction;
 using BMS.Application.Abstractions;
+using BMS.Application.Common.Interfaces;
+using BMS.Application.Interfaces;
+using BMS.Application.Mapping;
 using BMS.Application.Models;
 using BMS.Application.Utilities;
+using BMS.Domain.Events;
+using BMS.Infrastructure;
 using BMS.Infrastructure.Modbus;
 using BMS.Worker.Abstractions;
 using BMS.Worker.Devices;
@@ -11,7 +15,11 @@ using BMS.Worker.Workers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Linq;
+using System.Threading.Channels;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +28,9 @@ var configuration = builder.Configuration;
 // ---------------------------
 // Config
 // ---------------------------
-builder.Services.Configure<List<PlcConfig>>(configuration.GetSection("Plcs"));
-
+//builder.Services.Configure<List<PlcConfig>>(configuration.GetSection("Plcs"));
+builder.Services.RemoveAll<IEventHandler<DeviceCommandCompletedDomainEvent>>();
+builder.Services.AddInfrastructure(builder.Configuration, enableRealtime: false);
 // ---------------------------
 // Demo-friendly CORS (UI calls Worker directly)
 // ---------------------------
@@ -43,36 +52,98 @@ builder.Services.AddSingleton<IPlcCommandDispatcher, PlcCommandDispatcher>();
 // ---------------------------
 // Multi-PLC registration
 // ---------------------------
+//builder.Services.AddSingleton<IEnumerable<IPlcClient>>(sp =>
+//{
+//    var plcConfigs = sp.GetRequiredService<IOptions<List<PlcConfig>>>().Value;
+//    var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+
+//    if (plcConfigs == null || plcConfigs.Count == 0)
+//        throw new InvalidOperationException("No PLC configuration found.");
+
+//    return plcConfigs.Select(plcConfig =>
+//    {
+//        var connectionManager = new ModbusConnectionManager(
+//            plcConfig.IpAddress,
+//            plcConfig.Port,
+//            loggerFactory.CreateLogger<ModbusConnectionManager>()
+//        );
+
+//        var deviceClients = plcConfig.Devices
+//            .Select(deviceConfig =>
+//                (IDeviceClient)new ModbusAhuClient(
+//                    plcConfig.Name,
+//                    connectionManager,
+//                    deviceConfig))
+//            .ToList();
+
+//        return (IPlcClient)new ModbusPlcClient(
+//            plcConfig.Name,
+//            connectionManager,
+//            deviceClients
+//        );
+//    }).ToList();
+//});
+
 builder.Services.AddSingleton<IEnumerable<IPlcClient>>(sp =>
 {
-    var plcConfigs = sp.GetRequiredService<IOptions<List<PlcConfig>>>().Value;
-    var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+    using var scope = sp.CreateScope();
+    var scoped = scope.ServiceProvider;
+    var scopedProvider = scope.ServiceProvider;
 
-    if (plcConfigs == null || plcConfigs.Count == 0)
-        throw new InvalidOperationException("No PLC configuration found.");
+    var logger = scopedProvider
+        .GetRequiredService<ILogger<Program>>();
 
-    return plcConfigs.Select(plcConfig =>
+    // ۱. گرفتن Repository
+    var controllerRepo = scopedProvider
+        .GetRequiredService<IControllerRepository>();
+
+    var loggerFactory = scoped.GetRequiredService<ILoggerFactory>();
+    // ۲. خواندن از DB (sync در زمان بوت)
+    var controllers = controllerRepo
+        .GetActiveWithDevicesAndPointsAsync(CancellationToken.None)
+        .GetAwaiter().GetResult();
+
+    // ۳. تبدیل Domain به PlcConfig (Mapperی که در Application ساخته‌ای)
+
+    var plcConfigs = PlcConfigMapper.ToConfigs(controllers);
+
+    // ۴. ساختن PlcClient برای هر Config
+    var clients = plcConfigs.Select(config =>
     {
+        var connectionLogger =
+    loggerFactory.CreateLogger<ModbusConnectionManager>();
+        // چیزهایی که ModbusPlcClient لازم دارد:
+        //var connectionManager = scopedProvider
+        //    .GetRequiredService<IModbusConnectionManager>();
         var connectionManager = new ModbusConnectionManager(
-            plcConfig.IpAddress,
-            plcConfig.Port,
-            loggerFactory.CreateLogger<ModbusConnectionManager>()
-        );
+    config.IpAddress,
+    config.Port,
+    connectionLogger
+    );
 
-        var deviceClients = plcConfig.Devices
-            .Select(deviceConfig =>
-                (IDeviceClient)new ModbusAhuClient(
-                    plcConfig.Name,
-                    connectionManager,
-                    deviceConfig))
-            .ToList();
+        //var deviceClients = scopedProvider
+        //    .GetRequiredService<IEnumerable<IDeviceClient>>();
+        var deviceClients = config.Devices
+    .Select(deviceConfig =>
+        (IDeviceClient)new ModbusAhuClient(
+            config.Name,
+            connectionManager,
+            deviceConfig))
+    .ToList();
 
         return (IPlcClient)new ModbusPlcClient(
-            plcConfig.Name,
+            config.Name,
             connectionManager,
-            deviceClients
+            deviceClients /* یا فیلتر شده بر اساس config */
         );
     }).ToList();
+
+    if (!clients.Any())
+    {
+        logger.LogWarning("No active PLC configurations found in DB.");
+    }
+
+    return clients;
 });
 
 // ---------------------------
@@ -95,6 +166,9 @@ builder.Services.AddSingleton(sp => sp.GetRequiredService<Channel<TelemetryMessa
 
 builder.Services.AddHttpClient("UiSink");
 
+//______________________________________________________
+
+//______________________________________________________
 // ---------------------------
 // Hosted services
 // ---------------------------

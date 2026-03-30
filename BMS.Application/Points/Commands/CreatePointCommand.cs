@@ -19,6 +19,7 @@ public class CreatePointCommand : IRequest<ApiResponse<Guid>>
     public string Title { get; set; } = default!;
 
     public PointType PointType { get; set; }
+
     public PointDataType DataType { get; set; }
 
     public string? Unit { get; set; }
@@ -34,8 +35,6 @@ public class CreatePointCommand : IRequest<ApiResponse<Guid>>
     public double Scale { get; set; } = 1;
 
     public double Offset { get; set; } = 0;
-
-    public ushort? CommandAddress { get; set; }
 
     public ushort? FeedbackAddress { get; set; }
 

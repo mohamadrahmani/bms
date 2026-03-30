@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BMS.Application\BMS.Application.csproj" />
+    <ProjectReference Include="..\BMS.Domain\BMS.Domain.csproj" />
     <ProjectReference Include="..\BMS.Infrastructure\BMS.Infrastructure.csproj" />
   </ItemGroup>
 

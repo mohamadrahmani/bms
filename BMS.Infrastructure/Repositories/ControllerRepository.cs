@@ -61,5 +61,16 @@ namespace BMS.Infrastructure.Repositories
         {
             _dbContext.Controllers.Remove(controller);
         }
+
+        public async Task<List<Controller>> GetActiveWithDevicesAndPointsAsync(CancellationToken cancellationToken = default)
+        {
+            return await _dbContext.Controllers
+                .Where(c => c.IsActive)
+                .Include(c => c.Devices)
+                    .ThenInclude(d => d.DevicePoints)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
+
     }
 }

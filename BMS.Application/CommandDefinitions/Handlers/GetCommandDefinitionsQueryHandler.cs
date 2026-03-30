@@ -26,6 +26,8 @@ public class GetCommandDefinitionsQueryHandler : IRequestHandler<GetCommandDefin
             Code = p.Code,
             CommandType = p.CommandType,
             DeviceType = p.DeviceType,
+            OnState = p.OnState,
+            OffState = p.OffState,
             HasParameter = p.HasParameter,
             Name = p.Name
         });

@@ -8,6 +8,7 @@ public class PointDto
     public Guid Id { get; set; }
 
     public Guid DeviceId { get; set; }
+    public string DeviceName { get; set; }
 
     public string Tag { get; set; } = default!;
 
@@ -17,14 +18,20 @@ public class PointDto
 
     public PointDataType DataType { get; set; }
     public PointType PointType { get; set; }
-
+    public string PointTypeTitle
+    { 
+        get
+        {
+            return PointType.ToString();
+        }
+    }
     public ushort? Address { get; set; }
 
     public string? Unit { get; set; }
 
     public string? Code { get; set; }
 
-    public ushort Length { get; set; }
+    public int Length { get; set; }
 
     public double Scale { get; set; }
 

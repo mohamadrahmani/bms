@@ -27,7 +27,6 @@ public class UpdatePointCommand : IRequest<ApiResponse<bool>>
     public double Scale { get; set; }
     public double Offset { get; set; }
 
-    public ushort? CommandAddress { get; set; }
     public ushort? FeedbackAddress { get; set; }
 
     public int ValidationRetryCount { get; set; }
@@ -35,7 +34,7 @@ public class UpdatePointCommand : IRequest<ApiResponse<bool>>
 
     public bool IsWritable { get; set; }
 
-    public RegisterType? RegisterType { get; set; }
+    public RegisterType RegisterType { get; set; }
     public ushort? RegisterAddress { get; set; }
     public int? BitIndex { get; set; }
     public ByteOrder? ByteOrder { get; set; }

@@ -38,6 +38,7 @@ public class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand, Api
             request.Title,
             request.Kind,
             request.PointType,
+            request.RegisterType,
             request.DataType,
             request.Address,
             request.Unit,
@@ -45,7 +46,6 @@ public class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand, Api
             request.Length,
             request.Scale,
             request.Offset,
-            request.CommandAddress,
             request.FeedbackAddress,
             request.ValidationRetryCount,
             request.ValidationDelayMs,
@@ -53,19 +53,19 @@ public class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand, Api
             location
         );
 
-        if (request.RegisterType.HasValue && request.RegisterAddress.HasValue)
+        //if (request.RegisterType && request.Address)
         {
             point.SetMapping(
-                request.RegisterType.Value,
-                (int)request.RegisterAddress.Value,
+                request.RegisterType,
+                request.Address,
                 request.BitIndex,
                 request.ByteOrder
             );
         }
-        else
-        {
-            point.ClearMapping();
-        }
+        //else
+        //{
+        //    point.ClearMapping();
+        //}
 
         await _repository.UpdateAsync(point);
 

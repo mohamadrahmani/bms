@@ -20,16 +20,18 @@ namespace BMS.Application.UseCases
         }
 
         public async Task<Guid> ExecuteAsync(
-            Guid deviceId,
+            Guid? deviceId,
+            Guid pointId,
             string commandName,
-            object? payload)
+            string? value)
         {
-            var command = new DeviceCommand();
-            //{
-            //    deviceId = deviceId,
-            //    commandName = commandName,
-            //    payload = payload
-            //};
+            var command = new DeviceCommand()
+            {
+                DeviceId = deviceId,
+                PointId = pointId,
+                //CommandName = commandName,
+                Value = value
+            };
 
             await _queue.EnqueueAsync(command);
 

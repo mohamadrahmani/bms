@@ -15,6 +15,8 @@ public class UpdateCommandDefinitionCommand : IRequest<ApiResponse<CommandDefini
     public string Code { get; set; }
     public CommandType CommandType { get; set; }
     public DeviceType DeviceType { get; set; }
+    public string? OnState { get; set; }
+    public string? OffState { get; set; }
     public bool HasParameter { get; set; }
     public string? ParameterType { get; set; }
 }

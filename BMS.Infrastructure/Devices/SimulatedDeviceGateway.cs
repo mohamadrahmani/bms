@@ -16,11 +16,15 @@ namespace BMS.Infrastructure.Devices
         {
             public Task<CommandResult> ExecuteAsync(
                 string deviceId,
+                string pointId,
                 string commandName,
-                object? payload)
+                string? value)
             {
-                // مثال: اگر فرمان restart باشد
-                if (commandName == "restart")
+            return Task.FromResult(
+                        CommandResult.Ok("Command recieved"));
+
+            // مثال: اگر فرمان restart باشد
+            if (commandName == "restart")
                 {
                     return Task.FromResult(
                         CommandResult.Ok("Device restarted"));
@@ -28,7 +32,7 @@ namespace BMS.Infrastructure.Devices
 
                 return Task.FromResult(
                     CommandResult.Fail("Unknown command"));
-            }
+                }
 
         public Task<bool> SendAsync(PointWriteCommand command, CancellationToken ct)
         {

@@ -44,7 +44,6 @@ public class GetPointsByDeviceQueryHandler : IRequestHandler<GetPointsByDeviceQu
             Offset = p.Offset,
             IsWritable = p.IsWritable,
             RegisterType = p.RegisterType,
-            RegisterAddress = p.RegisterAddress,
             BitIndex = p.BitIndex,
             ByteOrder = p.ByteOrder,
             SiteId = p.Location?.SiteId,

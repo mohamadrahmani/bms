@@ -9,8 +9,9 @@ namespace BMS.Application.Interfaces
     {
         Task<CommandResult> ExecuteAsync(
             string deviceId,
+            string pointId,
             string commandName,
-            object? payload);
+            string? value);
 
         Task<bool> SendAsync(PointWriteCommand command, CancellationToken ct);
     }

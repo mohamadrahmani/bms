@@ -14,4 +14,5 @@ public interface IControllerRepository
     Task<List<Controller>> GetAllAsync(CancellationToken cancellationToken);
     void Update(Controller controller);
     void Remove(Controller controller);
+    Task<List<Controller>> GetActiveWithDevicesAndPointsAsync(CancellationToken cancellationToken = default);
 }

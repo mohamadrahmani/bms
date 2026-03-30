@@ -19,7 +19,7 @@ public class Point : BaseEntity<Guid>
     public Point(
         Guid deviceId,        // شناسه کنترلری که این نقطه به آن تعلق دارد
         PointKind kind,           // نوع نقطه (DI, DO, AI, AO, TI …)
-        ushort? address,           // آدرس نقطه (مثلاً X0, Y0, CH1 ...)
+		ushort? address,           // آدرس نقطه (مثلاً X0, Y0, CH1 ...)
        string tag,               // برچسب مختصر و یکتا
         string? title,             // عنوان توصیفی نقطه
         PointDataType dataType,   // نوع داده نقطه (Boolean, Int32, Float32 …)
@@ -30,7 +30,6 @@ public class Point : BaseEntity<Guid>
     ushort length = 1,
     double scale = 1,
     double offset = 0,
-    ushort? commandAddress = null,
     ushort? feedbackAddress = null,
     int validationRetryCount = 3,
     int validationDelayMs = 200,
@@ -61,7 +60,6 @@ public class Point : BaseEntity<Guid>
         Scale = scale;
         Offset = offset;
 
-        CommandAddress = commandAddress;
         FeedbackAddress = feedbackAddress;
 
         ValidationRetryCount = validationRetryCount;
@@ -72,7 +70,7 @@ public class Point : BaseEntity<Guid>
         Quality = PointQuality.Unknown;
     }
 
-    public LocationReference? Location { get; private set; }
+    public LocationReference? Location { get; set; }
     // کد یکتا برای پوینت
     public string? Code { get; set; }
 
@@ -83,7 +81,6 @@ public class Point : BaseEntity<Guid>
     // آفست برای اصلاح مقدار بعد از Scale
     public double Offset { get; set; } = 0;
     // آدرس ارسال فرمان
-    public ushort? CommandAddress { get; set; }
     // آدرس دریافت فیدبک از PLC (مثلاً وضعیت واقعی خروجی)
     public ushort? FeedbackAddress { get; set; }
     // تعداد دفعات تلاش مجدد برای اعتبارسنجی فرمان
@@ -92,25 +89,25 @@ public class Point : BaseEntity<Guid>
     public int ValidationDelayMs { get; set; } = 200;
 
     // شناسه کنترلر و شیء کنترلر مرتبط
-    public Guid DeviceId { get; private set; }
-    public Device Device { get; private set; } = default!;
+    public Guid DeviceId { get; set; }
+    public Device Device { get; set; } = default!;
     // نوع پوینت در سیستم BMS
     // DI = Digital Input
     // DO = Digital Output
     // AI = Analog Input
     // AO = Analog Output
-    public PointKind Kind { get; private set; }
+    public PointKind Kind { get; set; }
 
     // اطلاعات PLC/Excel-friendly
     // آدرس منطقی پوینت در PLC
     public ushort? Address { get; set; } = default!;  // X0 / Y0 / CH1 ...
                                                       // نام کوتاه و یکتای پوینت (Tag مهندسی)
-    public string Tag { get; private set; } = default!;
+    public string Tag { get; set; } = default!;
     // عنوان قابل نمایش برای کاربر
-    public string? Title { get; private set; } = default!;
+    public string? Title { get; set; } = default!;
     // واحد اندازه‌گیری مقدار
     // مثال: °C ، bar ، m³/h
-    public string? Unit { get; private set; }       // واحد اندازه‌گیری (مثلاً °C یا m³/h)
+    public string? Unit { get; set; }       // واحد اندازه‌گیری (مثلاً °C یا m³/h)
                                                     // نوع داده پوینت
                                                     // Boolean / Int32 / Float32 / Float64 / String
     public PointDataType DataType { get; set; } // نوع داده
@@ -122,48 +119,46 @@ public class Point : BaseEntity<Guid>
     // اطلاعات Mapping صنعتی (برای ارتباط با Modbus یا PLC)
     // نوع رجیستر در پروتکل Modbus
     // Coil / DiscreteInput / HoldingRegister / InputRegister
-    public RegisterType? RegisterType { get; private set; }   // نوع رجیستر
+    public RegisterType? RegisterType { get; set; }   // نوع رجیستر
                                                               // آدرس رجیستر Modbus
-    public int? RegisterAddress { get; private set; }         // آدرس رجیستر
-                                                              // شماره بیت داخل رجیستر (برای سیگنال‌های دیجیتال)
-    public int? BitIndex { get; private set; }
+    public int? BitIndex { get; set; }
     // ترتیب بایت برای داده‌های چند بایتی
     // BigEndian / LittleEndian// بیت مرتبط (برای Coil یا DO)
-    public ByteOrder? ByteOrder { get; private set; }         // ترتیب بایت برای داده‌های چند بایتی
+    public ByteOrder? ByteOrder { get; set; }         // ترتیب بایت برای داده‌های چند بایتی
 
-    //public LocationReference Location { get; private set; } = default!;
+    //public LocationReference Location { get; set; } = default!;
 
     // مقدار فعلی پوینت به صورت رشته (برای نمایش عمومی یا انتقال)
     public string? Value { get; set; }
     // آخرین مقدار ذخیره‌شده (Snapshot / Realtime)
     // آخرین مقدار عددی پوینت (برای AI/AO)
-    public double? LastNumericValue { get; private set; }     // برای عددی‌ها
+    public double? LastNumericValue { get; set; }     // برای عددی‌ها
                                                               // آخرین مقدار بولین پوینت (برای DI/DO)
-    public bool? LastBooleanValue { get; private set; }       // برای بولی‌ها
+    public bool? LastBooleanValue { get; set; }       // برای بولی‌ها
                                                               // آخرین مقدار متنی پوینت (برای String points)
-    public string? LastTextValue { get; private set; }        // برای رشته‌ها
+    public string? LastTextValue { get; set; }        // برای رشته‌ها
                                                               // مقدار خام دریافت‌شده از PLC قبل از تبدیل
-    public string? LastRawValue { get; private set; }         // مقدار خام برای UI یا دیباگ
-    public DateTime? LastUpdatedAtUtc { get; private set; } = DateTime.UtcNow;  // زمان آخرین بروزرسانی
+    public string? LastRawValue { get; set; }         // مقدار خام برای UI یا دیباگ
+    public DateTime? LastUpdatedAtUtc { get; set; } = DateTime.UtcNow;  // زمان آخرین بروزرسانی
                                                                                 // کیفیت داده دریافتی
                                                                                 // Good / Bad / Unknown
-    public PointQuality Quality { get; private set; }         // کیفیت داده (Good, Bad, Unknown…)
+    public PointQuality Quality { get; set; }         // کیفیت داده (Good, Bad, Unknown…)
 
     // مقیاس‌بندی برای AI/AO/TI (مثلاً تبدیل raw → engineering unit)
-    //public PointScaling? Scaling { get; private set; }
+    //public PointScaling? Scaling { get; set; }
     public void UpdateLocation(LocationReference location)
     {
         Location = location;
         SetUpdated();
     }
     // تنظیم Mapping صنعتی
-    public void SetMapping(RegisterType registerType, int registerAddress, int? bitIndex = null, ByteOrder? byteOrder = null)
+    public void SetMapping(RegisterType registerType, ushort address, int? bitIndex = null, ByteOrder? byteOrder = null)
     {
-        if (registerAddress < 0) throw new ArgumentException("RegisterAddress is invalid.");
+        if (address < 0) throw new ArgumentException("Address is invalid.");
         if (bitIndex is < 0 or > 15) throw new ArgumentException("BitIndex must be between 0 and 15.");
 
+        Address = address;
         RegisterType = registerType;
-        RegisterAddress = registerAddress;
         BitIndex = bitIndex;
         ByteOrder = byteOrder;
         SetUpdated(); // علامت‌گذاری تغییر برای EF
@@ -173,7 +168,6 @@ public class Point : BaseEntity<Guid>
     public void ClearMapping()
     {
         RegisterType = null;
-        RegisterAddress = null;
         BitIndex = null;
         ByteOrder = null;
         SetUpdated();
@@ -233,14 +227,14 @@ public class Point : BaseEntity<Guid>
     string title,
     PointKind kind,
     PointType pointType,
+    RegisterType registerType,
     PointDataType dataType,
-    ushort address,
+    ushort? address,
     string? unit,
     string? code,
     ushort length,
     double scale,
     double offset,
-    ushort? commandAddress,
     ushort? feedbackAddress,
     int validationRetryCount,
     int validationDelayMs,
@@ -253,6 +247,7 @@ public class Point : BaseEntity<Guid>
         Kind = kind;
         PointType = pointType;
         DataType = dataType;
+        RegisterType = registerType;
         Address = address;
         Unit = unit;
 
@@ -261,7 +256,6 @@ public class Point : BaseEntity<Guid>
         Scale = scale;
         Offset = offset;
 
-        CommandAddress = commandAddress;
         FeedbackAddress = feedbackAddress;
 
         ValidationRetryCount = validationRetryCount;

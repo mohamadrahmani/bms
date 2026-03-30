@@ -24,6 +24,8 @@ public class CreateCommandDefinitionCommandHandler : IRequestHandler<CreateComma
             Name = request.Name,
             CommandType = request.CommandType,
             DeviceType = request.DeviceType,
+            OnState = request.OnState,
+            OffState = request.OffState,
             HasParameter = request.HasParameter,
             ParameterType = request.ParameterType
         };
