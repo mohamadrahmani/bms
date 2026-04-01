@@ -92,8 +92,8 @@ namespace BMS.Domain.Entities.BMS
         public ICollection<DeviceCommand> Commands { get; set; }
 
         // دسترسی فقط خواندنی به نقاط دستگاه
-        //public IReadOnlyCollection<Point> DevicePoints  => _devicePoints.AsReadOnly();
-        public ICollection<Point>? DevicePoints { get; set; } = new List<Point>();
+        public IReadOnlyCollection<Point> DevicePoints  => _devicePoints.AsReadOnly();
+        //public ICollection<Point>? DevicePoints { get; set; } = new List<Point>();
 
         // تعیین دستگاه والد
         //public void SetParent(Guid? parentDeviceId)
