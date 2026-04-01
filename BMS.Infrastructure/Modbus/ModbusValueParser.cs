@@ -1,7 +1,10 @@
-﻿using BMS.Application.Enum;
+﻿using BMS.Application.Common.Settings;
+using BMS.Application.Enum;
 using BMS.Application.Models;
 using BMS.Application.Points.Dtos;
 using BMS.Domain.Entities.BMS;
+using Newtonsoft.Json.Linq;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace BMS.Infrastructure.Modbus;
 
@@ -49,9 +52,11 @@ public static class ModbusValueParser
             _ => throw new NotSupportedException(
                 $"DataType {config.DataType} not supported")
         };
-
+        LinearScaler scaler=new LinearScaler(config.Scale, config.Offset);
+        return scaler.RawToDisplay(raw);
         // 🔵 Engineering conversion
-        return (raw * config.Scale) + config.Offset;
+        //return raw * config.Scale + config.Offset;// (raw * config.Scale) + config.Offset;
+
     }
 
     private static float ParseFloat(ushort[] registers)
@@ -74,8 +79,11 @@ public static class ModbusValueParser
         double engineeringValue,
         PointDto config)
     {
-        var rawValue =
-            (engineeringValue - config.Offset) / config.Scale;
+        LinearScaler scaler = new LinearScaler(config.Scale, config.Offset);
+        var rawValue = scaler.DisplayToRaw(engineeringValue);
+
+        //var rawValue =
+        //    (engineeringValue - config.Offset) / config.Scale;
 
         return config.DataType switch
         {

@@ -78,6 +78,9 @@ namespace BMS.Infrastructure.Repositories
                     ValidationRetryCount= p.ValidationRetryCount,
                     Scale=p.Scale,
                     IsWritable=p.IsWritable,
+                    DataType=p.DataType,
+                    RegisterType=p.RegisterType,
+                    Length=p.Length,
 
                     DeviceId = p.Device.Id,
                     DeviceCode = p.Device.Code,

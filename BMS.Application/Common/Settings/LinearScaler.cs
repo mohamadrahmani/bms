@@ -1,0 +1,34 @@
+﻿namespace BMS.Application.Common.Settings
+{
+    public class LinearScaler
+    {
+        public double Scale { get; set; }
+        public double Offset { get; set; }
+
+        // سازنده با وارد کردن Scale و Offset
+        public LinearScaler(double scale, double offset)
+        {
+            Scale = scale;
+            Offset = offset;
+        }
+
+        // سازنده با وارد کردن بازه‌ها (محاسبه خودکار Scale و Offset)
+        public LinearScaler(double displayMin, double displayMax, double rawMin, double rawMax)
+        {
+            Scale = (displayMax - displayMin) / (rawMax - rawMin);
+            Offset = displayMin - (rawMin * Scale);
+        }
+
+        // تبدیل Raw به Display
+        public double RawToDisplay(double raw)
+        {
+            return raw * Scale + Offset;
+        }
+
+        // تبدیل Display به Raw
+        public double DisplayToRaw(double display)
+        {
+            return (display - Offset) / Scale;
+        }
+    }
+}

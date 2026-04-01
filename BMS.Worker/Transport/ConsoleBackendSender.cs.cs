@@ -10,11 +10,12 @@ public class ConsoleBackendSender : IBackendSender
         foreach (var item in snapshot.Sensors)
         {
             Console.WriteLine($"Device: {snapshot.DeviceId}");
+            Console.WriteLine($"SensorId: {item.SensorId}");
             Console.WriteLine($"Time: {snapshot.Timestamp}");
-            Console.WriteLine($"Sensors: {snapshot.Sensors.Count}");
+            Console.WriteLine($"SensorsCount: {snapshot.Sensors.Count}");
             Console.WriteLine($"Value: {item.Value}");
-            Console.WriteLine($"Sensors: {item.Name}");
-            Console.WriteLine($"Sensors: {item.SensorId}");
+            Console.WriteLine($"SensorsName: {item.Name}");
+            Console.WriteLine($"SensorAddress: {item.Address}");
             Console.WriteLine("---------------------------------");
         }
 

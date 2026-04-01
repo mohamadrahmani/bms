@@ -122,7 +122,8 @@ public class ModbusAhuClient : IDeviceClient
             {
                 SensorId = point.Id,
                 Name = point.Code,
-                Value = value
+                Value = value,
+                Address=point.Address.Value
             });
         }
 
