@@ -6,6 +6,7 @@ using BMS.Application.Interfaces;
 using BMS.Domain.Events;
 using System.Threading.Tasks;
 using BMS.Infrastructure.Realtime.Hubs;
+using BMS.Domain.Entities.BMS;
 
 namespace BMS.Infrastructure.Realtime
 {
@@ -39,6 +40,9 @@ namespace BMS.Infrastructure.Realtime
             var dto = new RealtimeDataPointDto(
                 domainEvent.DeviceId,
                 domainEvent.Id,
+                domainEvent.Tag,
+                domainEvent.PointType,
+                ///domainEvent.CommandType,
                 domainEvent.Value,
                 domainEvent.TimestampUtc);
 

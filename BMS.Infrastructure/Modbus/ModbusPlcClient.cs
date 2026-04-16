@@ -39,28 +39,162 @@ public class ModbusPlcClient : IPlcClient
         }
     }
 
-    public async Task<IEnumerable<DeviceSnapshotDto>> PollAsync(CancellationToken token)
+    public async Task<IEnumerable<DeviceSnapshotDto>> PollAsync(CancellationToken ct)
     {
-        var results = new List<DeviceSnapshotDto>();
+        // همه Deviceها را یک بار به صورت Dictionary آماده می‌کنیم (برای lookup سریع + جلوگیری از First)
+        var deviceLookup = _devices.ToDictionary(d => d.DeviceId, d => d);
 
-        foreach (var device in _devices)
+        // جمع‌کردن تمام Points
+        var allPoints = _devices.SelectMany(d => d.Points).ToList();
+
+        // ساخت Batchها
+        var batches = new ModbusBatchBuilder().Build(allPoints);
+
+        // نتیجه نهایی polling
+        var snapshots = new Dictionary<Guid, List<SensorValueDto>>();
+
+        // اتصال به PLC
+        var master = await _connectionManager.GetMasterAsync(ct);
+
+        // پردازش Batchها
+        foreach (var batch in batches)
         {
             try
             {
-                var snapshot = await device.ReadAsync(token);
-                results.Add(snapshot);
+                ushort start = batch.StartAddress;
+                ushort len = batch.Length;
+
+                bool[] coilBuffer = null;
+                ushort[] regBuffer = null;
+
+                switch (batch.RegisterType)
+                {
+                    case RegisterType.Coil:
+                        coilBuffer = await _connectionManager.ExecuteWithRetryAsync(
+                            () => master.ReadCoilsAsync(1, start, len)
+                        );
+                        break;
+
+                    case RegisterType.HoldingRegister:
+                        regBuffer = await _connectionManager.ExecuteWithRetryAsync(
+                           () => master.ReadHoldingRegistersAsync(1, start, len)
+                        );
+                        break;
+                }
+
+                // Map every point inside the batch safely
+                foreach (var point in batch.Points)
+                {
+                    // DeviceId خراب / خالی
+                    if (point.DeviceId == Guid.Empty)
+                    {
+                        Console.WriteLine($"WARNING: Point {point.Id} has EMPTY DeviceId. Skipped.");
+                        continue;
+                    }
+
+                    // دستگاهی با این DeviceId وجود ندارد → Skip
+                    if (!deviceLookup.TryGetValue(point.DeviceId, out var device))
+                    {
+                        Console.WriteLine(
+                            $"WARNING: Point {point.Id} refers to UNKNOWN DeviceId {point.DeviceId}. Skipped.");
+                        continue;
+                    }
+
+                    int offset = point.Address.Value - batch.StartAddress;
+
+                    // Because point.Length is ushort (not nullable)
+                    int length = point.Length > 0 ? point.Length : 1;
+
+                    // Extract full slice based on point.Length
+                    object rawSlice = batch.RegisterType switch
+                    {
+                        RegisterType.Coil =>
+                            coilBuffer
+                                .Skip(offset)
+                                .Take(length)
+                                .ToArray(),
+
+                        RegisterType.HoldingRegister =>
+                            regBuffer
+                                .Skip(offset)
+                                .Take(length)
+                                .ToArray(),
+
+                    };
+
+                    // Engineering value
+                    double engValue = ModbusValueParser.Parse(rawSlice, point);
+
+                    var sensor = new SensorValueDto
+                    {
+                        SensorId = point.Id,
+                        Name = point.Code,
+                        Address = point.Address.Value,
+                        Value = engValue
+                    };
 
 
+                    if (!snapshots.ContainsKey(point.DeviceId))
+                        snapshots[point.DeviceId] = new List<SensorValueDto>();
+
+                    snapshots[point.DeviceId].Add(sensor);
+                }
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                // در production exception را نگه دار، ولی worker را نکُش
+                Console.WriteLine($"ERROR while polling batch: {ex.Message}");
             }
+        }
+
+        // تبدیل snapshot dictionary به خروجی نهایی
+        var results = new List<DeviceSnapshotDto>();
+
+        foreach (var kv in snapshots)
+        {
+            if (!deviceLookup.TryGetValue(kv.Key, out var device))
+            {
+                Console.WriteLine(
+                    $"WARNING: Snapshot produced for invalid DeviceId {kv.Key}. Skipped.");
+                continue;
+            }
+
+            results.Add(new DeviceSnapshotDto
+            {
+                DeviceId = device.DeviceId,
+                DeviceName = device.DeviceName,
+                Timestamp = DateTime.UtcNow,
+                Sensors = kv.Value
+            });
         }
 
         return results;
     }
+
+
+    //public async Task<IEnumerable<DeviceSnapshotDto>> PollAsync(CancellationToken token)
+    //{
+    //    var results = new List<DeviceSnapshotDto>();
+
+
+    //    foreach (var device in _devices)
+    //    {
+    //        try
+    //        {
+    //            var snapshot = await device.ReadAsync(token);
+    //            results.Add(snapshot);
+
+
+    //        }
+    //        catch (Exception ex)
+    //        {
+
+    //            throw ex;
+    //        }
+    //    }
+
+    //    return results;
+    //}
 
     //public async Task<bool> WriteAsync0(PointDto command, CancellationToken token)
     //{
@@ -165,71 +299,6 @@ public class ModbusPlcClient : IPlcClient
             default:
                 throw new ArgumentOutOfRangeException($"Unsupported RegisterType for writing: {point.RegisterType}");
         }
-        // 1️⃣ Write
-        //if (registers.Length == 1)
-        //{
-        //    await _connectionManager.ExecuteWithRetryAsync(() =>
-        //        master.WriteSingleRegisterAsync(
-        //            1,
-        //            point.Address.Value,
-        //            registers[0])
-        //    );
-        //}
-        //else
-        //{
-        //    await _connectionManager.ExecuteWithRetryAsync(() =>
-        //        master.WriteMultipleRegistersAsync(
-        //            1,
-        //            point.Address.Value,
-        //            registers)
-        //    );
-        //}
-
-
-        // 2️⃣ Validate
-        //for (int i = 0; i < point.ValidationRetryCount; i++)
-        //{
-        //    await Task.Delay(point.ValidationDelayMs, token);
-
-        //    var feedbackRegisters =
-        //        await _connectionManager.ExecuteWithRetryAsync(() =>
-        //            master.ReadHoldingRegistersAsync(
-        //                1,
-        //                feedbackAddress.Value,
-        //                readLength));
-        //    PointConfig p = new PointConfig
-        //    {
-        //        DataType = point.DataType,
-        //        Scale = point.Scale,
-        //        Offset = point.Offset,
-        //    };
-        //    var feedbackValue =
-        //        ModbusValueParser.Parse(feedbackRegisters, p);
-
-        //    if (Math.Abs(feedbackValue - engineeringValue) < 0.01)
-        //        return true;
-        //}
-
         return true;
     }
-
-    // 👇 این متد فقط برای تست ساده است
-    //public async Task TestReadAsync(CancellationToken token)
-    //{
-    //    foreach (var device in _devices)
-    //    {
-    //        var snapshot = await device.ReadAsync(token);
-
-    //        Console.WriteLine($"PLC: {Name}");
-    //        Console.WriteLine($"Device: {snapshot.DeviceId}");
-    //        Console.WriteLine($"Time: {snapshot.Timestamp}");
-
-    //        foreach (var sensor in snapshot.Sensors)
-    //        {
-    //            Console.WriteLine($"  Sensor: {sensor.SensorId} -> {sensor.Value}");
-    //        }
-
-    //        Console.WriteLine("----------------------------------");
-    //    }
-    //}
 }

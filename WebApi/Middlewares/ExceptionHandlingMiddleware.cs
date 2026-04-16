@@ -114,14 +114,25 @@ public class ExceptionHandlingMiddleware
         }
         else
         {
+            // todo:
+            //await context.Response.WriteAsync(
+            //    JsonSerializer.Serialize(new
+            //    {
+            //        errorId,
+            //        errors = new[]
+            //        {
+            //            "An unexpected error occurred. Please contact support with the provided error id."
+            //        }
+            //    })
+            //);
+
             await context.Response.WriteAsync(
                 JsonSerializer.Serialize(new
                 {
                     errorId,
-                    errors = new[]
-                    {
-                        "An unexpected error occurred. Please contact support with the provided error id."
-                    }
+                    message = ex.Message,
+                    stackTrace = ex.StackTrace,
+                    innerException = ex.InnerException?.Message
                 })
             );
         }

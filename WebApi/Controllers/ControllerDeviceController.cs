@@ -1,4 +1,5 @@
 using System.Drawing;
+using BMS.Application.Common.Interfaces;
 using BMS.Application.Interfaces;
 using BMS.Application.Models;
 using BMS.Application.UseCases;
@@ -21,10 +22,12 @@ namespace WebApi.Controllers
         private readonly IDeviceStateStore _store;
         private readonly IEventDispatcher _dispatcher;
         private readonly UpdateDataPointUseCase _useCase;
+        private IPointRepository _pointRepository;
         public ControllerDeviceController(ILogger<PointController> logger,// ITwinRealtimePublisher publisher, ITwinService twinService,
-            IDeviceStateStore store
-            ,IEventDispatcher dispatcher,
-            UpdateDataPointUseCase useCase
+            IDeviceStateStore store,
+            IEventDispatcher dispatcher,
+            UpdateDataPointUseCase useCase,
+            IPointRepository pointRepository
             )
         {
             _logger = logger;
@@ -33,21 +36,26 @@ namespace WebApi.Controllers
             _store = store;
             _dispatcher = dispatcher;
             _useCase = useCase;
+            _pointRepository = pointRepository;
         }
 
-        [HttpPost("{twinId}/update")]
+        [HttpPost("{deviceId}/update")]
         public async Task<IActionResult> Update(
-        Guid twinId,
+        Guid deviceId,
         [FromBody] TelemetryMessage request)
         {
-            var device = _store.Get(twinId);
+            var device = _store.Get(deviceId);
 
             foreach(var point in request.Points)
             {
-                device.RegisterPoint(point.Id, PointDataType.Int32);
+                if (!device.DevicePoints.Any(p => p.Id == point.Id))
+                {
+                    var _p = await _pointRepository.GetByIdAsync(point.Id);
+                    device.RegisterPoint(_p);
+                }
 
                 await _useCase.ExecuteAsync(
-                    twinId,
+                    deviceId,
                     point.Id,
                     point.Value.ToString());
 
@@ -60,11 +68,11 @@ namespace WebApi.Controllers
         public async Task<IActionResult> AutoUpdate(Guid twinId)
         {
             var device = _store.Get(twinId);
-            device.RegisterPoint(Guid.Parse("20239AF5-B49E-49CE-8503-1CCAF8303E3A"), PointDataType.Int32);
-            device.RegisterPoint(Guid.Parse("5805D680-28F0-4CE9-A6F3-20CC16681F5F"), PointDataType.Int32);
-            device.RegisterPoint(Guid.Parse("B090C2E1-8BFD-471A-9FD0-6B4D1EE96C1D"), PointDataType.Int32);
-            device.RegisterPoint(Guid.Parse("D6CFEAE7-A3A1-48DE-A37A-8DB40EB874A0"), PointDataType.Int32);
-            device.RegisterPoint(Guid.Parse("DD6E78F4-C1E2-4726-BE31-91D19E872FD6"), PointDataType.Int32);
+            //device.RegisterPoint(Guid.Parse("20239AF5-B49E-49CE-8503-1CCAF8303E3A"), PointDataType.Int32);
+            //device.RegisterPoint(Guid.Parse("5805D680-28F0-4CE9-A6F3-20CC16681F5F"), PointDataType.Int32);
+            //device.RegisterPoint(Guid.Parse("B090C2E1-8BFD-471A-9FD0-6B4D1EE96C1D"), PointDataType.Int32);
+            //device.RegisterPoint(Guid.Parse("D6CFEAE7-A3A1-48DE-A37A-8DB40EB874A0"), PointDataType.Int32);
+            //device.RegisterPoint(Guid.Parse("DD6E78F4-C1E2-4726-BE31-91D19E872FD6"), PointDataType.Int32);
             //device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000006"), PointDataType.Int32);
             //device.RegisterPoint(Guid.Parse("00000000-0000-0000-0000-000000000007"), PointDataType.Int32);
 

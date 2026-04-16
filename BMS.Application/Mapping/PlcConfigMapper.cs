@@ -50,7 +50,9 @@ public static class PlcConfigMapper
             Scale=point.Scale,
             IsWritable= point.IsWritable,
             RegisterType = point.RegisterType,
-            Length = point.Length
+            Length = point.Length,
+            Offset=point.Offset,
+            DeviceId = point.DeviceId,
         };
     }
 

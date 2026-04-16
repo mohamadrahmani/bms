@@ -50,32 +50,32 @@ namespace WebApi.Controllers
         }
 
 
-        [HttpPost("{twinId}/update")]
-        public async Task<IActionResult> Update(
-        Guid twinId,
-        [FromBody] UpdateRequest request)
-        {
-            //await _twinService.UpdateAsync(
-            //    twinId,
-            //    request.DataPointId,
-            //    Convert.ToInt32( request.Value.ToString()));
+        //[HttpPost("{twinId}/update")]
+        //public async Task<IActionResult> Update(
+        //Guid twinId,
+        //[FromBody] UpdateRequest request)
+        //{
+        //    //await _twinService.UpdateAsync(
+        //    //    twinId,
+        //    //    request.DataPointId,
+        //    //    Convert.ToInt32( request.Value.ToString()));
 
-            var device = _store.Get(twinId);
-            device.RegisterPoint(request.DataPointId, PointDataType.Int32);
-            //var domainEvent = device.UpdatePoint(request.DataPointId, Convert.ToInt32(request.Value.ToString()));
+        //    var device = _store.Get(twinId);
+        //    //device.RegisterPoint(request.DataPointId, PointDataType.Int32);
+        //    //var domainEvent = device.UpdatePoint(request.DataPointId, Convert.ToInt32(request.Value.ToString()));
 
-            await _useCase.ExecuteAsync(
-                twinId,
-                request.DataPointId,
-                request.Value.ToString());
+        //    await _useCase.ExecuteAsync(
+        //        twinId,
+        //        request.DataPointId,
+        //        request.Value.ToString());
 
-            //if (domainEvent == null)
-            //    return;
+        //    //if (domainEvent == null)
+        //    //    return;
 
-            //await _dispatcher.DispatchAsync(domainEvent);
+        //    //await _dispatcher.DispatchAsync(domainEvent);
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
 
         [HttpGet]

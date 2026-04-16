@@ -39,6 +39,8 @@ namespace BMS.Application.Auth.Commands.Login
                 .Trim()
                 .ToLowerInvariant();
 
+            var hashedPassword = _passwordHasher.Hash(request.Password);
+
             //return new LoginResponse(
             //    Guid.Empty,
             //    request.UserName,

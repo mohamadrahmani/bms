@@ -26,6 +26,7 @@ namespace BMS.Infrastructure.Realtime
 
             await _hubContext
                 .Clients.All
+                // todo:
                 //.Group(domainEvent.DeviceId)
                 .SendAsync("GetDeviceState", dto);
         }

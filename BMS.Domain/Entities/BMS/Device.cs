@@ -172,24 +172,15 @@ namespace BMS.Domain.Entities.BMS
         // Register
         // -----------------------------
 
-        public void RegisterPoint(
-            Guid pointId,
-            PointDataType type,
-            object? initialValue = null)
+        public void RegisterPoint(Point point)
         {
             lock (_sync)
             {
-                if (_devicePoints.Any(p => p.Id == pointId))
+                if (_devicePoints.Any(p => p.Id == point.Id))
                     //throw new InvalidOperationException($"Point '{pointId}' already exists.");
                     return;
 
-                Point p = new Point();
-                p.Id = pointId;
-                p.DataType = type;
-                
-                //new Point(pointId, type, initialValue)
-
-                _devicePoints.Add(p);
+                _devicePoints.Add(point);
             }
         }
 
@@ -203,7 +194,7 @@ namespace BMS.Domain.Entities.BMS
         {
             lock (_sync)
             {
-                var point = _devicePoints.FirstOrDefault(p => p.Id == pointId);
+                var point = _devicePoints?.FirstOrDefault(p => p.Id == pointId);
 
                 if (point == null)
                     throw new KeyNotFoundException($"Point '{pointId}' not found.");
@@ -217,6 +208,9 @@ namespace BMS.Domain.Entities.BMS
                 return new DataPointUpdatedDomainEvent(
                     Id,
                     pointId,
+                    point.Tag,
+                    point.PointType,
+                    //point.,
                     value,
                     point.LastUpdatedAtUtc.Value);
             }

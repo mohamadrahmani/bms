@@ -39,9 +39,6 @@ namespace BMS.Worker.Workers
         {
             _logger.LogInformation("PLC Polling Worker started.");
 
-            // 🔵 تست اولیه Write (فقط یکبار در شروع)
-            //await SendStartupTestCommand(stoppingToken);
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
@@ -59,7 +56,7 @@ namespace BMS.Worker.Workers
                 }
                 catch (Exception ex)
                 {
-                    //_logger.LogError(ex, "Unexpected worker error.");
+                    _logger.LogError(ex, "Unexpected worker error.");
                     await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
             }
@@ -138,7 +135,7 @@ namespace BMS.Worker.Workers
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "PLC {Name} polling failed.", plc.Name);
+                _logger.LogError(ex, "PLC {Name} polling failed.", plc.Name);
             }
         }
 

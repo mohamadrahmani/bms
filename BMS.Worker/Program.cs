@@ -128,7 +128,7 @@ builder.Services.AddSingleton<IEnumerable<IPlcClient>>(sp =>
         //    .GetRequiredService<IEnumerable<IDeviceClient>>();
         var deviceClients = config.Devices
     .Select(deviceConfig =>
-        (IDeviceClient)new ModbusAhuClient(
+        (IDeviceClient)new ModbusClient(
             config.Name,
             connectionManager,
             deviceConfig))
