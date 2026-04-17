@@ -21,6 +21,27 @@ namespace BMS.Application.Controllers.Handlers
             CancellationToken cancellationToken)
         {
             var controllers = _controllerRepository.Controllers;
+            // فیلترهای مکانی
+            if (request.SiteId.HasValue)
+                controllers = controllers.Where(c => c.Location.SiteId == request.SiteId);
+
+            if (request.BuildingId.HasValue)
+                controllers = controllers.Where(c => c.Location.BuildingId == request.BuildingId);
+
+            if (request.FloorId.HasValue)
+                controllers = controllers.Where(c => c.Location.FloorId == request.FloorId);
+
+            if (request.WardId.HasValue)
+                controllers = controllers.Where(c => c.Location.WardId == request.WardId);
+
+            if (request.RoomId.HasValue)
+                controllers = controllers.Where(c => c.Location.RoomId == request.RoomId);
+            // سرچ فقط روی Name
+            if (!string.IsNullOrWhiteSpace(request.Search))
+            {
+                controllers = controllers.Where(c =>
+                    c.Name.Contains(request.Search));
+            }
 
             var query = controllers.Select(c => new ControllerDto
             {
@@ -31,7 +52,18 @@ namespace BMS.Application.Controllers.Handlers
                 IpAddress = c.IpAddress,
                 Port = c.Port,
                 Protocol = c.Protocol,
-                Description = c.Description
+                Description = c.Description,
+                TimeoutMs = c.TimeoutMs,
+                RetryCount = c.RetryCount,
+                ScanIntervalMs = c.ScanIntervalMs,
+                FirmwareVersion = c.FirmwareVersion,
+                HealthStatus = c.HealthStatus,
+                IsActive = c.IsActive,
+                SiteId = c.Location.SiteId,
+                BuildingId = c.Location.BuildingId,
+                FloorId = c.Location.FloorId,
+                WardId = c.Location.WardId,
+                RoomId = c.Location.RoomId
             });
 
             return await query.ToPagedResultAsync(

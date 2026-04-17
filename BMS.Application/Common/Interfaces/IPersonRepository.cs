@@ -9,4 +9,6 @@ public interface IPersonRepository
     Task AddAsync(Person person, CancellationToken cancellationToken);
     Task<List<Person>> GetAll(CancellationToken cancellationToken);
     Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken);
+    Task DeleteAsync(Person person, CancellationToken cancellationToken);
+
 }

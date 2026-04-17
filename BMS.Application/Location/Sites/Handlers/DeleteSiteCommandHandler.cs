@@ -30,7 +30,7 @@ public sealed class DeleteSiteCommandHandler
 
         if (site is null)
             throw new NotFoundException(
-                $"Site with id '{request.Id}' not found.");
+                $"سایت مورد نظر پیدا نشد. '{request.Id}'");
 
         _siteRepository.Delete(site);
 

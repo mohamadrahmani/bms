@@ -1,6 +1,10 @@
-﻿using BMS.Application.Auth.Commands.Login;
+﻿using Azure.Core;
+using BMS.Application.Auth.Commands.Login;
+using BMS.Application.Auth.Commands.Logout;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/auth")]
@@ -16,7 +20,26 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginCommand command)
     {
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+        command = command with { IpAddress = ip };
         var result = await _mediator.Send(command);
         return Ok(result);
     }
+
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout()
+    {
+        var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        Guid.TryParse(userIdStr, out var userId);
+
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        await _mediator.Send(new LogoutCommand(userId, ip));
+
+        return Ok("Logout successful");
+    }
+
+
 }

@@ -22,6 +22,15 @@ public sealed class GetSitesListQueryHandler
         CancellationToken cancellationToken)
     {
         var sites = _siteRepository.Sites;
+        // Search
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            sites = sites.Where(s =>
+                s.Name.Contains(request.Search) ||
+                (s.Address != null && s.Address.Contains(request.Search)) ||
+                (s.Description != null && s.Description.Contains(request.Search)));
+        }
+
         var query = sites
             .Select(site => new SiteDto
             {

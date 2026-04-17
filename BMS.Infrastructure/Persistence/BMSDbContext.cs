@@ -2,6 +2,7 @@
 using BMS.Domain.Entities;
 using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
+using BMS.Domain.Entities.Logs;
 using BMS.Infrastructure.Persistence.Configurations;
 using BMS.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +34,7 @@ namespace BMS.Infrastructure.Persistence
         public DbSet<Floor> Floors { get; set; }
         public DbSet<Ward> Wards { get; set; }
         public DbSet<Room> Rooms { get; set; }
-
+        public DbSet<Log> Logs { get; set; }
 
 
         // ===== BMS Entities =====

@@ -9,5 +9,12 @@ using System.Threading.Tasks;
 
 namespace BMS.Application.Location.Rooms.Queries
 {
-    public class GetAllRoomsQuery() : PagedRequest, IRequest<PagedResult<RoomDto>>;
+    public class GetAllRoomsQuery() : PagedRequest, IRequest<PagedResult<RoomDto>>
+    {
+    public Guid? FloorId { get; set; }
+
+        public Guid? WardId { get; set; }
+
+        public string? Search { get; set; }
+    }
 }

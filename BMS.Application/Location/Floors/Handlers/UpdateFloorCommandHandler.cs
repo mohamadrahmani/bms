@@ -1,10 +1,8 @@
 ﻿using BMS.Application.Common.Interfaces;
 using BMS.Application.Location.Floors.Commands;
-using BMS.Application.Models;
-using BMS.Domain.Entities.BMS;
 using MediatR;
 
-public class UpdateFloorCommandHandler : IRequestHandler<UpdateFloorCommand, ApiResponse<bool>>
+public class UpdateFloorCommandHandler : IRequestHandler<UpdateFloorCommand>
 {
     private readonly IFloorRepository _repository;
     private readonly IBuildingRepository _buildingRepository;
@@ -20,18 +18,23 @@ public class UpdateFloorCommandHandler : IRequestHandler<UpdateFloorCommand, Api
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ApiResponse<bool>> Handle(
+    public async Task<Unit> Handle(
         UpdateFloorCommand request,
         CancellationToken cancellationToken)
     {
         var floor = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (floor == null)
-            throw new Exception("Floor not found");
+            throw new Exception("طبقه پیدا نشد..");
         var buildingExists = await _buildingRepository.ExistsAsync(request.BuildingId);
 
         if (!buildingExists)
             throw new Exception("Building not found");
+        // Track Changes
+        TrackChange(request, "BuildingId", floor.BuildingId.ToString(), request.BuildingId.ToString());
+        TrackChange(request, "Name", floor.Name, request.Name);
+        TrackChange(request, "LevelNumber", floor.LevelNumber.ToString(), request.LevelNumber.ToString());
+        TrackChange(request, "Description", floor.Description, request.Description);
 
         floor.Update(
             request.BuildingId,
@@ -43,6 +46,13 @@ public class UpdateFloorCommandHandler : IRequestHandler<UpdateFloorCommand, Api
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return ApiResponse<bool>.SuccessResponse(true, "طبقه به روزرسانی شد");
+        return Unit.Value;
+    }
+    private static void TrackChange(UpdateFloorCommand request, string field, string? oldValue, string? newValue)
+    {
+        if (oldValue != newValue)
+        {
+            request.Changes.Add((field, oldValue, newValue));
+        }
     }
 }

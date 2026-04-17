@@ -43,5 +43,10 @@ namespace BMS.Infrastructure.Repositories
             return await _context.Persons
                 .AnyAsync(x => x.Email == email, cancellationToken);
         }
+        public async Task DeleteAsync(Person person, CancellationToken cancellationToken)
+        {
+            _context.Persons.Remove(person);
+        }
+
     }
 }

@@ -2,9 +2,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using BMS.Application.Common.Interfaces;
 using BMS.Application.Common.Exceptions;
 using BMS.Domain.Exceptions;
+using BMS.Domain.Entities.Logs;
+using System.Text.Json;
 
 namespace BMS.Application.Auth.Commands.Login
 {
@@ -16,19 +19,25 @@ namespace BMS.Application.Auth.Commands.Login
         private readonly IJwtProvider _jwtProvider;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPermissionResolver _permissionResolver;
+        private readonly ILogger<LoginCommandHandler> _logger;
+        private readonly IAuditLogger _auditLogger;
 
         public LoginCommandHandler(
             IUserRepository userRepository,
             IPasswordHasher passwordHasher,
             IJwtProvider jwtProvider,
             IUnitOfWork unitOfWork,
-            IPermissionResolver permissionResolver)
+            IPermissionResolver permissionResolver,
+            ILogger<LoginCommandHandler> logger,
+            IAuditLogger auditLogger)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _jwtProvider = jwtProvider;
             _unitOfWork = unitOfWork;
             _permissionResolver = permissionResolver;
+            _logger = logger;
+            _auditLogger = auditLogger;
         }
 
         public async Task<LoginResponse> Handle(
@@ -52,7 +61,26 @@ namespace BMS.Application.Auth.Commands.Login
                 .GetActiveByUserNameAsync(normalizedUserName, cancellationToken);
 
             if (user is null)
+            {
+                _logger.LogWarning("Login failed. User not found: {UserName}", request.UserName);
+
+                _auditLogger.Add(new Log
+                {
+                    UserId = null,
+                    EventType = EventType.Login,
+                    ObjectName = "Users",
+                    //ObjectId = request.UserName,
+                    ObjectId = normalizedUserName,
+                    Result = OperationResult.Failed,
+                    ResultMessage = "تلاش ناموفق برای ورود - نام کاربری یافت نشد",
+                    LogDate = DateTime.UtcNow,
+                    IpAddress = request.IpAddress,
+                    Source = nameof(LoginCommandHandler),
+                    RequestBody = JsonSerializer.Serialize(new { Username = normalizedUserName, Password = "***" }),
+
+                });
                 throw new BusinessRuleException("نام کاربری یا رمز ورود نامعتبر می باشد");
+            }
 
             try
             {
@@ -66,29 +94,83 @@ namespace BMS.Application.Auth.Commands.Login
                 user.RegisterLoginResult(isValid);
 
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (!isValid)
+                {
+                    _logger.LogWarning("Login failed. Wrong password for user {UserName}", user.UserName);
+                    _auditLogger.Add(new Log
+                    {
+                        UserId = user.Id,
+                        EventType = EventType.Login,
+                        Result = OperationResult.Failed,
+                        ResultMessage = "تلاش ناموفق برای ورود - رمز عبور اشتباه است",
+                        IpAddress = request.IpAddress,
+                        //Source = "LoginCommandHandler",
+                        Source = nameof(LoginCommandHandler),
+                        LogDate = DateTime.UtcNow,
+                        ObjectName = "Users",
+                        ObjectId = user.Id.ToString(),
+                        RequestBody = JsonSerializer.Serialize(new { Username = normalizedUserName, Password = "***" })
+                    });
+
+                    throw new BusinessRuleException("نام کاربری یا رمز ورود نامعتبر می باشد");
+                }
             }
-            catch (UserDomainException)
+            catch (UserDomainException ex)
             {
-                // حتی در صورت خطا باید state ذخیره شود
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                _logger.LogError(ex, "Login error for user {UserName}", request.UserName);
+
+                _auditLogger.Add(new Log
+                {
+                    UserId = user?.Id,
+                    EventType = EventType.Login,
+                    Result = OperationResult.Error,
+                    ResultMessage = $"خطا در فرآیند ورود کاربر: {ex.Message}",
+                    IpAddress = request.IpAddress,
+                    //Source = "LoginCommandHandler",
+                    Source = nameof(LoginCommandHandler),
+                    LogDate = DateTime.UtcNow,
+                    ObjectName = "Users",
+                    ObjectId = user?.Id.ToString(),
+                    RequestBody = JsonSerializer.Serialize(new { Username = normalizedUserName, Password = "***" }) // Storing sanitized request body
+                });
+
                 throw;
             }
 
-            // 🔐 Resolve permissions (از Infrastructure)
             var permissions = await _permissionResolver
                 .ResolveAsync(user.Id, cancellationToken);
 
-            // 🎟 Generate JWT with permissions + PermissionVersion
             var (token, expiresAt) = _jwtProvider.GenerateToken(
                 user,
                 permissions,
                 user.PermissionVersion);
 
+            _logger.LogInformation("User {UserName} logged in successfully", user.UserName);
+
+            _auditLogger.Add(new Log
+            {
+                UserId = user.Id,
+                EventType = EventType.Login,
+                Result = OperationResult.Success,
+                ResultMessage = "ورود کاربر با موفقیت انجام شد",
+                IpAddress = request.IpAddress,
+                //Source = "LoginCommandHandler",
+                Source = nameof(LoginCommandHandler),
+                LogDate = DateTime.UtcNow,
+                ObjectName = "Users",
+                ObjectId = user.Id.ToString()
+
+            });
+
             return new LoginResponse(
                 user.Id,
                 user.UserName,
                 token,
-                expiresAt);
+                expiresAt,
+                permissions);
         }
     }
 }

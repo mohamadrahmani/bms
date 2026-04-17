@@ -1,10 +1,12 @@
-﻿using BMS.Application.Models;
+﻿using BMS.Application.Attributes;
+using BMS.Application.Models;
 using BMS.Application.Points.Dtos;
 using BMS.Domain.Entities.BMS;
+using BMS.Domain.Entities.Logs;
 using MediatR;
 
 namespace BMS.Application.Points.Commands;
-
+[Audit(EventType.AddData, "Points")]
 public class CreatePointCommand : IRequest<ApiResponse<Guid>>
 {
     public Guid DeviceId { get; set; }
@@ -51,4 +53,5 @@ public class CreatePointCommand : IRequest<ApiResponse<Guid>>
     public int? BitIndex { get; set; }
 
     public ByteOrder? ByteOrder { get; set; }
+    public Guid? CommandDefinitionId { get; set; }
 }

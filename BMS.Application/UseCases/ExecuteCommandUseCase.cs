@@ -1,4 +1,5 @@
 ﻿using BMS.Application.Abstraction;
+using BMS.Application.Common.Interfaces;
 using BMS.Domain.Entities;
 using BMS.Domain.Entities.BMS;
 using System;
@@ -12,11 +13,14 @@ namespace BMS.Application.UseCases
     public class ExecuteCommandUseCase
     {
         private readonly IDeviceCommandQueue _queue;
+        private readonly IPointRepository _pointRepository;
+        
+        
 
-        public ExecuteCommandUseCase(
-            IDeviceCommandQueue queue)
+        public ExecuteCommandUseCase(IDeviceCommandQueue queue, IPointRepository pointRepository)
         {
             _queue = queue;
+            _pointRepository = pointRepository;
         }
 
         public async Task<Guid> ExecuteAsync(
@@ -25,11 +29,18 @@ namespace BMS.Application.UseCases
             string commandName,
             string? value)
         {
+
+            var point = _pointRepository.Points.Where(p => p.DeviceId == deviceId && p.CommandDefinition != null && p.CommandDefinition!.Code == commandName).SingleOrDefault();
+
+            if (point == null)
+                throw new Exception("رجیستر مربوطه ثبت نشده است");
+
+
             var command = new DeviceCommand()
             {
                 DeviceId = deviceId,
-                PointId = pointId,
-                //CommandName = commandName,
+                PointId = point.Id,
+                CommandName = commandName,
                 Value = value
             };
 

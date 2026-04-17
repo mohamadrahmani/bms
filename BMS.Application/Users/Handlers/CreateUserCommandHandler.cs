@@ -38,16 +38,22 @@ public sealed class CreateUserCommandHandler
             .GetByIdAsync(request.PersonId, cancellationToken);
 
         if (person is null)
-            throw new NotFoundException(
-                $"Person with id '{request.PersonId}' not found.");
+            //throw new NotFoundException(
+            //    $"Person with id '{request.PersonId}' not found.");
+        throw new NotFoundException(
+                  $"شخصی با شناسه '{request.PersonId}' یافت نشد.");
+
 
         // 2️⃣ Prevent duplicate user for Person
         var userExistsForPerson = await _userRepository
             .ExistsByPersonIdAsync(request.PersonId, cancellationToken);
 
         if (userExistsForPerson)
+            //throw new BusinessRuleException(
+            //    "This person already has a user account.");
             throw new BusinessRuleException(
-                "This person already has a user account.");
+                 "برای این شخص قبلاً حساب کاربری ایجاد شده است.");
+
 
 
         // 3️⃣ Normalize username (same rule used in Domain)
@@ -62,8 +68,11 @@ public sealed class CreateUserCommandHandler
                 cancellationToken);
 
         if (usernameExists)
+            //throw new BusinessRuleException(
+            //    "Username already exists.");
             throw new BusinessRuleException(
-                "Username already exists.");
+                    "این نام کاربری قبلاً ثبت شده است.");
+
 
         // 5️⃣ Hash password
         var passwordHash = _passwordHasher.Hash(request.Password);

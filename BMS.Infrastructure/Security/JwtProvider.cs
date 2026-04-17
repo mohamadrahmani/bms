@@ -30,8 +30,12 @@ namespace BMS.Infrastructure.Security
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),   // 🆕 اضافه کن
+                new Claim(ClaimTypes.Name, user.UserName),                   // 🆕 اضافه کن
+
                 new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
-                new Claim("pv", permissionVersion.ToString())
+                //new Claim("pv", permissionVersion.ToString())
+                new Claim("permission_version", permissionVersion.ToString())
             };
 
             // 🔐 اضافه کردن Permission ها

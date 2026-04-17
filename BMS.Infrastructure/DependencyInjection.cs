@@ -6,6 +6,7 @@ using BMS.Domain.Events;
 using BMS.Infrastructure.Commanding;
 using BMS.Infrastructure.Devices;
 using BMS.Infrastructure.Historian;
+using BMS.Infrastructure.Logging;
 using BMS.Infrastructure.Persistence;
 using BMS.Infrastructure.Persistence.Repositories;
 using BMS.Infrastructure.Realtime;
@@ -49,6 +50,11 @@ namespace BMS.Infrastructure
             services.AddScoped<IWardRepository, WardRepository>();
             services.AddScoped<IRoomRepository, RoomRepository>();
             services.AddScoped<ICommandDefinitionRepository, CommandDefinitionRepository>();
+            services.AddScoped<ILogRepository, LogRepository>();
+            services.AddScoped<IAuditLogger, AuditLogger>();
+            services.AddScoped<IPermissionRepository, PermissionRepository>();
+            services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+
 
 
             // =======================

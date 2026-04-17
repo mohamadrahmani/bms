@@ -1,13 +1,16 @@
 ﻿
+using BMS.Application.Attributes;
 using BMS.Application.Devices.DTOs;
 using BMS.Application.Models;
 using BMS.Application.Points.Dtos;
 using BMS.Domain.Entities.BMS;
+using BMS.Domain.Entities.Logs;
 using BMS.Domain.Enums;
 using MediatR;
+using System.Text.Json.Serialization;
 
 namespace BMS.Application.Points.Commands;
-
+[Audit(EventType.UpdateData, "Points")]
 public class UpdatePointCommand : IRequest<ApiResponse<bool>>
 {
     public Guid Id { get; set; }
@@ -38,10 +41,12 @@ public class UpdatePointCommand : IRequest<ApiResponse<bool>>
     public ushort? RegisterAddress { get; set; }
     public int? BitIndex { get; set; }
     public ByteOrder? ByteOrder { get; set; }
-
+    public Guid? CommandDefinitionId { get; set; }
     public Guid? SiteId { get; set; }
     public Guid? BuildingId { get; set; }
     public Guid? FloorId { get; set; }
     public Guid? WardId { get; set; }
     public Guid? RoomId { get; set; }
+    [JsonIgnore]
+    public List<(string Field, string? OldValue, string? NewValue)> Changes { get; set; } = new();
 }

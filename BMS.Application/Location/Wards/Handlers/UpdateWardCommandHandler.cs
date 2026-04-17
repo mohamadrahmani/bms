@@ -1,11 +1,9 @@
 ﻿using BMS.Application.Common.Interfaces;
-using BMS.Application.Models;
-using BMS.Domain.Entities.BMS;
 using MediatR;
 
 namespace BMS.Application.Location.Wards.Commands;
 
-public class UpdateWardCommandHandler : IRequestHandler<UpdateWardCommand, ApiResponse<bool>>
+public class UpdateWardCommandHandler : IRequestHandler<UpdateWardCommand>
 {
     private readonly IWardRepository _repository;
     private readonly IFloorRepository _floorRepository;
@@ -21,18 +19,23 @@ public class UpdateWardCommandHandler : IRequestHandler<UpdateWardCommand, ApiRe
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ApiResponse<bool>> Handle(UpdateWardCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(UpdateWardCommand request, CancellationToken cancellationToken)
     {
         var ward = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (ward == null)
-            throw new Exception("Ward not found");
+            throw new Exception("بخش پیدا نشد.");
 
         // 1️⃣ چک کنیم Floor جدید وجود دارد
         var floorExists = await _floorRepository.ExistsAsync(request.FloorId);
 
         if (!floorExists)
-            throw new Exception("Floor not found");
+            throw new Exception("طبقه پیدا نشد.");
+        // Track Changes
+        TrackChange(request, "FloorId", ward.FloorId.ToString(), request.FloorId.ToString());
+        TrackChange(request, "Name", ward.Name, request.Name);
+        TrackChange(request, "Type", ward.Type, request.Type);
+        TrackChange(request, "Description", ward.Description, request.Description);
 
         // 2️⃣ بروزرسانی با FloorId جدید
         ward.Update(
@@ -46,6 +49,13 @@ public class UpdateWardCommandHandler : IRequestHandler<UpdateWardCommand, ApiRe
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return ApiResponse<bool>.SuccessResponse(true, "اطلاعات بخش بروزرسانی شد");
+        return Unit.Value;
+    }
+    private static void TrackChange(UpdateWardCommand request, string field, string? oldValue, string? newValue)
+    {
+        if (oldValue != newValue)
+        {
+            request.Changes.Add((field, oldValue, newValue));
+        }
     }
 }

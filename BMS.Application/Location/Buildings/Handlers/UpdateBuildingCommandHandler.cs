@@ -38,6 +38,22 @@ public sealed class UpdateBuildingCommandHandler
 
         if (codeExists)
             throw new Exception("Building code already exists");
+        // =============================
+        // Track Changes for Audit
+        // =============================
+
+        void TrackChange(string field, object? oldVal, object? newVal)
+        {
+            if ((oldVal?.ToString() ?? "") != (newVal?.ToString() ?? ""))
+            {
+                request.Changes.Add((field, oldVal?.ToString(), newVal?.ToString()));
+            }
+        }
+
+        TrackChange(nameof(building.SiteId), building.SiteId, request.SiteId);
+        TrackChange(nameof(building.Name), building.Name, request.Name);
+        TrackChange(nameof(building.Code), building.Code, request.Code);
+        TrackChange(nameof(building.Description), building.Description, request.Description);
 
         building.Update(
              request.SiteId,
