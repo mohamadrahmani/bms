@@ -25,7 +25,14 @@ public sealed class DeleteBuildingCommandHandler
         var building = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (building == null)
-            throw new Exception("Building not found");
+            //throw new Exception("Building not found");
+            throw new Exception("ساختمان مورد نظر پیدا نشد.");
+
+
+        if (building.SiteId != request.SiteId)
+            //throw new Exception("Building does not belong to this site");
+            throw new Exception("این ساختمان متعلق به سایت انتخاب‌شده نیست.");
+
 
         _repository.Delete(building);
 

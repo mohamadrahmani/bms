@@ -20,8 +20,27 @@ public class GetAllWardsQueryHandler : IRequestHandler<GetAllWardsQuery, PagedRe
     public async Task<PagedResult<WardDto>> Handle(GetAllWardsQuery request, CancellationToken cancellationToken)
     {
         var wards = _repository.Wards;
+        // filter by floor
+        if (request.FloorId.HasValue)
+        {
+            wards = wards.Where(w => w.FloorId == request.FloorId);
+        }
 
-        var query=wards.Select(w => new WardDto
+        // filter by type
+        if (!string.IsNullOrWhiteSpace(request.Type))
+        {
+            wards = wards.Where(w => w.Type == request.Type);
+        }
+
+        // search
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            wards = wards.Where(w =>
+                w.Name.Contains(request.Search) ||
+                (w.Type != null && w.Type.Contains(request.Search)));
+        }
+
+        var query =wards.Select(w => new WardDto
         {
             Id = w.Id,
             FloorId = w.FloorId,

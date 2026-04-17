@@ -1,10 +1,15 @@
-﻿using BMS.Application.Models;
+﻿using BMS.Application.Attributes;
+using BMS.Application.Models;
 using BMS.Domain.Entities.BMS;
+using BMS.Domain.Entities.Logs;
 using MediatR;
 using System;
+using System.Text.Json.Serialization;
 
 namespace BMS.Application.Controllers.Commands
 {
+
+    [Audit(EventType.UpdateData, "Controllers")]
     public class UpdateControllerCommand : IRequest<ApiResponse<bool>>
     {
         public Guid ControllerId { get; set; }
@@ -32,5 +37,9 @@ namespace BMS.Application.Controllers.Commands
         public Guid? FloorId { get; init; }
         public Guid? WardId { get; init; }
         public Guid? RoomId { get; init; }
+
+        [JsonIgnore]
+        public List<(string Field, string? OldValue, string? NewValue)> Changes { get; set; } = new();
+
     }
 }

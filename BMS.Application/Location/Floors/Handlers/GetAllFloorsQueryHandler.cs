@@ -20,6 +20,23 @@ public class GetAllFloorsQueryHandler
         CancellationToken cancellationToken)
     {
         var floors =  _repository.Floors;
+        // filter by building
+        if (request.BuildingId.HasValue)
+        {
+            floors = floors.Where(f => f.BuildingId == request.BuildingId);
+        }
+
+        // filter by level
+        if (request.LevelNumber.HasValue)
+        {
+            floors = floors.Where(f => f.LevelNumber == request.LevelNumber);
+        }
+        // search
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            floors = floors.Where(f =>
+                f.Name.Contains(request.Search));
+        }
 
         var query = floors.Select(x => new FloorDto
         {

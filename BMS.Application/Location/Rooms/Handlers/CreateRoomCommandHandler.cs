@@ -1,10 +1,9 @@
-﻿using BMS.Application.Common.Interfaces;
-using BMS.Application.Models;
-using BMS.Domain.Entities.BMS;
+﻿using MediatR;
 using BMS.Domain.Entities.Location;
-using MediatR;
+using BMS.Application.Common.Interfaces;
+using BMS.Application.Location.Rooms.Commands;
 
-public class CreateRoomCommandHandler : IRequestHandler<CreateRoomCommand, ApiResponse<Guid>>
+public class CreateRoomCommandHandler : IRequestHandler<CreateRoomCommand, Guid>
 {
     private readonly IRoomRepository _repository;
     private readonly IFloorRepository _floorRepository;
@@ -20,7 +19,7 @@ public class CreateRoomCommandHandler : IRequestHandler<CreateRoomCommand, ApiRe
         _wardRepository = wardRepository;
     }
 
-    public async Task<ApiResponse<Guid>> Handle(CreateRoomCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(CreateRoomCommand request, CancellationToken cancellationToken)
     {
         if (!await _floorRepository.ExistsAsync(request.FloorId))
             throw new Exception("Floor not found");
@@ -39,6 +38,6 @@ public class CreateRoomCommandHandler : IRequestHandler<CreateRoomCommand, ApiRe
 
         await _repository.AddAsync(room, cancellationToken);
 
-        return ApiResponse<Guid>.SuccessResponse(room.Id, "اتاق ایجاد شد");
+        return room.Id;
     }
 }

@@ -1,9 +1,7 @@
-﻿using BMS.Application.Common.Interfaces;
-using BMS.Application.Models;
-using BMS.Domain.Entities.BMS;
-using MediatR;
+﻿using MediatR;
+using BMS.Application.Common.Interfaces;
 
-public class UpdateRoomCommandHandler : IRequestHandler<UpdateRoomCommand, ApiResponse<bool>>
+public class UpdateRoomCommandHandler : IRequestHandler<UpdateRoomCommand>
 {
     private readonly IRoomRepository _repository;
     private readonly IFloorRepository _floorRepository;
@@ -19,7 +17,7 @@ public class UpdateRoomCommandHandler : IRequestHandler<UpdateRoomCommand, ApiRe
         _wardRepository = wardRepository;
     }
 
-    public async Task<ApiResponse<bool>> Handle(UpdateRoomCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(UpdateRoomCommand request, CancellationToken cancellationToken)
     {
         var room = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
@@ -31,6 +29,13 @@ public class UpdateRoomCommandHandler : IRequestHandler<UpdateRoomCommand, ApiRe
 
         if (!await _wardRepository.ExistsAsync(request.WardId))
             throw new Exception("Ward not found");
+        // Track Changes
+        TrackChange(request, "FloorId", room.FloorId.ToString(), request.FloorId.ToString());
+        TrackChange(request, "WardId", room.WardId.ToString(), request.WardId.ToString());
+        TrackChange(request, "Name", room.Name, request.Name);
+        TrackChange(request, "RoomNumber", room.RoomNumber, request.RoomNumber);
+        TrackChange(request, "Type", room.Type, request.Type);
+        TrackChange(request, "Area", room.Area.ToString(), request.Area.ToString());
 
         room.Update(
             request.FloorId,
@@ -43,6 +48,13 @@ public class UpdateRoomCommandHandler : IRequestHandler<UpdateRoomCommand, ApiRe
 
         await _repository.UpdateAsync(room, cancellationToken);
 
-        return ApiResponse<bool>.SuccessResponse(true, "اطلاعات طبقه بروزرسانی شد");
+        return Unit.Value;
+    }
+    private static void TrackChange(UpdateRoomCommand request, string field, string? oldValue, string? newValue)
+    {
+        if (oldValue != newValue)
+        {
+            request.Changes.Add((field, oldValue, newValue));
+        }
     }
 }

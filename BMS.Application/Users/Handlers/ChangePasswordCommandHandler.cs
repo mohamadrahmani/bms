@@ -27,11 +27,24 @@ public sealed class ChangePasswordCommandHandler
             .GetByIdAsync(request.UserId, cancellationToken);
 
         if (user is null)
-            throw new BusinessRuleException("User not found.");
+            //throw new BusinessRuleException("User not found.");
+            throw new BusinessRuleException("کاربر مورد نظر یافت نشد.");
+        // بررسی رمز فعلی
+        var isPasswordValid =
+            _passwordHasher.Verify(request.CurrentPassword, user.PasswordHash);
 
+        if (!isPasswordValid)
+            throw new BusinessRuleException("رمز عبور فعلی صحیح نیست.");
+
+        // هش رمز جدید
         var newHash = _passwordHasher.Hash(request.NewPassword);
 
         user.ChangePassword(newHash);
+
+
+        //var newHash = _passwordHasher.Hash(request.NewPassword);
+
+        //user.ChangePassword(newHash);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

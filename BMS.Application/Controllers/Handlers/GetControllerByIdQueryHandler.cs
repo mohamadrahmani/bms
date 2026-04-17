@@ -34,7 +34,19 @@ namespace BMS.Application.Controllers.Handlers
                 UnitId = controller.UnitId,
                 IpAddress = controller.IpAddress,
                 Port = controller.Port,
-                Protocol = controller.Protocol
+                Protocol = controller.Protocol,
+                Description = controller.Description,
+                TimeoutMs = controller.TimeoutMs,
+                RetryCount = controller.RetryCount,
+                ScanIntervalMs = controller.ScanIntervalMs,
+                FirmwareVersion = controller.FirmwareVersion,
+                HealthStatus = controller.HealthStatus,
+                IsActive = controller.IsActive,
+                SiteId = controller.Location.SiteId,
+                BuildingId = controller.Location.BuildingId,
+                FloorId = controller.Location.FloorId,
+                WardId = controller.Location.WardId,
+                RoomId = controller.Location.RoomId
             };
         }
     }

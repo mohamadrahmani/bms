@@ -4,6 +4,8 @@ using BMS.Application.Models;
 using BMS.Domain.Entities.BMS;
 using MediatR;
 
+namespace BMS.Application.Rooms.Handlers;   
+
 public class DeleteRoomCommandHandler : IRequestHandler<DeleteRoomCommand, ApiResponse<bool>>
 {
     private readonly IRoomRepository _repository;

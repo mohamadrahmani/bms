@@ -44,5 +44,6 @@ public interface IUserRepository
     string userName,
     CancellationToken cancellationToken);
 
+    Task DeleteAsync(User user);
 
 }

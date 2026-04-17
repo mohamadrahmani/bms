@@ -2,11 +2,14 @@
 using MediatR;
 using BMS.Application.Persons.Commands;
 using BMS.Application.Users.Queries;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BMS.API.Controllers;
 
 [ApiController]
 [Route("api/persons")]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class PersonsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -43,4 +46,11 @@ public class PersonsController : ControllerBase
         var users = await _mediator.Send(query);
         return Ok(users);
     }
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await _mediator.Send(new DeletePersonCommand(id));
+        return NoContent();
+    }
+
 }

@@ -1,12 +1,10 @@
-﻿using BMS.Application.Common.Exceptions;
+﻿using MediatR;
 using BMS.Application.Common.Interfaces;
-using BMS.Application.Models;
+using BMS.Domain.Entities;
+using BMS.Application.Common.Exceptions;
 using BMS.Application.Persons.Commands;
-using BMS.Domain.Entities;
-using BMS.Domain.Entities;
-using BMS.Domain.Entities.BMS;
 using BMS.Domain.Exceptions;
-using MediatR;
+using BMS.Application.Models;
 
 
 namespace BMS.Application.Persons.Handlers;
@@ -35,7 +33,9 @@ public sealed class CreatePersonCommandHandler
                 .ExistsByEmailAsync(request.Email, cancellationToken);
 
             if (exists)
-                throw new BusinessRuleException("Email already exists.");
+                //throw new BusinessRuleException("Email already exists.");
+                throw new BusinessRuleException("این ایمیل قبلاً ثبت شده است.");
+
         }
 
         var person = new Person(

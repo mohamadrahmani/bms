@@ -20,7 +20,18 @@ public sealed class GetAllBuildingsQueryHandler
         CancellationToken cancellationToken)
     {
         var buildings = _repository.Buildings;
-
+        // filter by site
+        if (request.SiteId.HasValue)
+        {
+            buildings = buildings.Where(b => b.SiteId == request.SiteId);
+        }
+        // search
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            buildings = buildings.Where(b =>
+                b.Name.Contains(request.Search) ||
+                b.Code.Contains(request.Search));
+        }
         var query = buildings.Select(x => new BuildingDto
         {
             Id = x.Id,

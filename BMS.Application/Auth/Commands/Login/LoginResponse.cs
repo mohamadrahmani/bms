@@ -4,5 +4,6 @@ public sealed record LoginResponse(
     Guid UserId,
     string UserName,
     string Token,
-    DateTime ExpiresAt
+    DateTime ExpiresAt,
+    IReadOnlyList<string> Permissions
 );

@@ -48,12 +48,19 @@ public class BuildingsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid siteId, Guid id)
     {
-        await _mediator.Send(new DeleteBuildingCommand { Id = id });
+        //await _mediator.Send(new DeleteBuildingCommand { Id = id });
+
+        await _mediator.Send(new DeleteBuildingCommand
+        {
+            Id = id,
+            SiteId = siteId
+        });
 
         return NoContent();
     }
+
     [HttpGet]
     [Route("/api/buildings")]
     public async Task<IActionResult> GetAll([FromQuery] GetAllBuildingsQuery query)

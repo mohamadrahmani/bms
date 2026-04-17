@@ -78,6 +78,9 @@ namespace BMS.Infrastructure.Repositories
             return await _context.Users
                 .AnyAsync(u => u.PersonId == personId, cancellationToken);
         }
+
+        // جستجوی کاربر فعال با نام کاربری مشخص و بارگذاری هم‌زمان نقش‌های کاربر (UserRoles) با استفاده از Include
+
         public async Task<User?> GetActiveByUserNameAsync(
         string userName,
         CancellationToken cancellationToken)
@@ -88,7 +91,11 @@ namespace BMS.Infrastructure.Repositories
                     u => u.UserName == userName && u.IsActive,
                     cancellationToken);
         }
-
+        public async Task DeleteAsync(User user)
+        {
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+        }
     }
 
 }

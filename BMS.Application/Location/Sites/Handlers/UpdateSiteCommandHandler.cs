@@ -29,8 +29,20 @@ public sealed class UpdateSiteCommandHandler
             .GetByIdAsync(request.Id, cancellationToken);
 
         if (site is null)
-            throw new NotFoundException(
-                $"Site with id '{request.Id}' not found.");
+            //throw new NotFoundException($"Site with id '{request.Id}' not found.");
+            throw new NotFoundException(($"سایت '{request.Id}'مورد نظر پیدا نشد."));
+
+        // Track Changes
+        void Track(string field, string? oldValue, string? newValue)
+        {
+            if (oldValue != newValue)
+                request.Changes.Add((field, oldValue, newValue));
+        }
+
+        Track("Name", site.Name, request.Name);
+        Track("Address", site.Address, request.Address);
+        Track("Description", site.Description, request.Description);
+
 
         site.Update(
             request.Name,

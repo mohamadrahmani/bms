@@ -1,9 +1,13 @@
-﻿using BMS.Application.Models;
+﻿using BMS.Application.Attributes;
+using BMS.Application.Models;
 using BMS.Domain.Entities.BMS;
+using BMS.Domain.Entities.Logs;
+
 using MediatR;
 
 namespace BMS.Application.Controllers.Commands
 {
+    [Audit(EventType.AddData, "Controllers")]
     public class CreateControllerCommand : IRequest<ApiResponse<Guid>>
     {
         public string Code { get; init; } = default!;

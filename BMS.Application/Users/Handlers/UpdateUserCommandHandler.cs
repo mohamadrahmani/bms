@@ -30,8 +30,9 @@ namespace BMS.Application.Users.Commands
                 .GetByIdWithRolesAsync(request.UserId, cancellationToken);
 
             if (user is null)
-                throw new NotFoundException(
-                    $"User with id '{request.UserId}' not found.");
+                //throw new NotFoundException($"User with id '{request.UserId}' not found.");
+                throw new NotFoundException($"کاربری با شناسه {request.UserId} یافت نشد.");
+
 
             var normalizedUserName = request.UserName
                 .Trim()
@@ -44,7 +45,19 @@ namespace BMS.Application.Users.Commands
                     request.UserId);
 
             if (exists)
-                throw new BusinessRuleException("Username already exists.");
+                //throw new BusinessRuleException("Username already exists.");
+                throw new BusinessRuleException("نام کاربری موجود است.");
+
+            // بررسی تغییرات
+            if (user.UserName != request.UserName)
+            {
+                request.Changes.Add(("UserName", user.UserName, request.UserName));
+            }
+            if (user.IsActive != request.IsActive)
+            {
+                request.Changes.Add(("IsActive", user.IsActive.ToString(), request.IsActive.ToString()));
+            }
+
 
             user.UpdateProfile(request.UserName, request.IsActive);
 

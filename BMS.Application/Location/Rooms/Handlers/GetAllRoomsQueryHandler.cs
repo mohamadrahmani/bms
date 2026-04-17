@@ -16,7 +16,26 @@ public class GetAllRoomsQueryHandler
 
     public async Task<PagedResult<RoomDto>> Handle(GetAllRoomsQuery request, CancellationToken cancellationToken)
     {
+
         var rooms = _roomRepository.Rooms;
+
+        if (request.FloorId.HasValue)
+        {
+            rooms = rooms.Where(r => r.FloorId == request.FloorId.Value);
+        }
+
+        if (request.WardId.HasValue)
+        {
+            rooms = rooms.Where(r => r.WardId == request.WardId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            rooms = rooms.Where(r =>
+                r.Name.Contains(request.Search) ||
+                r.RoomNumber.Contains(request.Search));
+        }
+
 
         var query = rooms.Select(r => new RoomDto
         {

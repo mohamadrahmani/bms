@@ -6,12 +6,13 @@ using BMS.Application.Users.Commands;
 using BMS.Application.Users.Queries;
 using BMS.Application.Users.Dtos;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 
 
 namespace BMS.API.Controllers
 {
-
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     [Route("api/users")]
     public class UsersController : ControllerBase
@@ -22,7 +23,7 @@ namespace BMS.API.Controllers
         {
             _mediator = mediator;
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserCommand command)
         {
@@ -53,8 +54,20 @@ namespace BMS.API.Controllers
             return NoContent();
         }
 
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteUser(Guid id)
+        {
+            var command = new DeleteUserCommand
+            {
+                Id = id
+            };
 
-   
+            await _mediator.Send(command);
+
+            return NoContent();
+        }
+
+
         [HttpGet]
         public async Task<IActionResult> GetList([FromQuery] GetUsersListQuery query)
         {

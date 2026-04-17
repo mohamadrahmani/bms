@@ -51,10 +51,21 @@ public sealed class SitesController : ControllerBase
         return NoContent();
     }
 
+    //[HttpDelete("{id:guid}")]
+    //public async Task<IActionResult> Delete(Guid id)
+    //{
+    //    await _mediator.Send(new DeleteSiteCommand(id));
+    //    return NoContent();
+    //}
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _mediator.Send(new DeleteSiteCommand(id));
+        await _mediator.Send(new DeleteSiteCommand
+        {
+            Id = id
+        });
+
         return NoContent();
     }
+
 }

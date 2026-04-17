@@ -22,7 +22,29 @@ namespace BMS.Application.Devices.Queries
             CancellationToken cancellationToken)
         {
             var devices = _repository.Devices;
+            // ---- فیلترهای مکانی ----
+            if (request.SiteId.HasValue)
+                devices = devices.Where(d => d.Location != null && d.Location.SiteId == request.SiteId);
 
+            if (request.BuildingId.HasValue)
+                devices = devices.Where(d => d.Location != null && d.Location.BuildingId == request.BuildingId);
+
+            if (request.FloorId.HasValue)
+                devices = devices.Where(d => d.Location != null && d.Location.FloorId == request.FloorId);
+
+            if (request.WardId.HasValue)
+                devices = devices.Where(d => d.Location != null && d.Location.WardId == request.WardId);
+
+            if (request.RoomId.HasValue)
+                devices = devices.Where(d => d.Location != null && d.Location.RoomId == request.RoomId);
+
+            // ---- سرچ فقط روی Name ----
+            if (!string.IsNullOrWhiteSpace(request.Search))
+            {
+                devices = devices.Where(d => d.Name.Contains(request.Search));
+                // اگر خواستی Code هم سرچ شود:
+                // devices = devices.Where(d => d.Name.Contains(request.Search) || d.Code.Contains(request.Search));
+            }
             var query = devices.Select(d => new DeviceDto
             {
                 Id = d.Id,

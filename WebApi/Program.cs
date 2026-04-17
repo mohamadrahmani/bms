@@ -31,6 +31,8 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using BMS.Infrastructure.Persistence;
 using BMS.Application.Common.Behaviors;
+using BMS.Infrastructure.Security.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +40,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMediatR(typeof(ApplicationAssemblyReference).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(ApplicationAssemblyReference).Assembly);
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddRealtimeInfrastructure();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -151,6 +155,9 @@ builder.Services
                     )
             };
     });
+builder.Services.AddAuthorization();
+
+builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 
 
 builder.Services.AddScoped<UpdateDataPointUseCase>();
@@ -192,7 +199,10 @@ builder.Services.AddTransient(
     typeof(ValidationBehavior<,>)
 );
 
-
+builder.Services.AddTransient(
+    typeof(IPipelineBehavior<,>),
+    typeof(AuditLoggingBehavior<,>)
+);
 builder.Services.AddInfrastructure(builder.Configuration);
 //builder.Services.AddInfrastructure2(connectionString);
 
@@ -221,11 +231,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
-app.MapFallbackToFile("index.html");
 
+app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.MapControllers();
 

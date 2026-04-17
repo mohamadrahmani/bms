@@ -1,9 +1,10 @@
-﻿using BMS.Application.Models;
+﻿using BMS.Application.Attributes;
+using BMS.Domain.Entities.Logs;
 using MediatR;
 
 namespace BMS.Application.Location.Wards.Commands;
-
-public class DeleteWardCommand : IRequest<ApiResponse<bool>>
+[Audit(EventType.DeleteData, "Wards")]
+public class DeleteWardCommand : IRequest
 {
     public Guid Id { get; set; }
 }

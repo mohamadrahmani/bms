@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using BMS.Application.Location.Rooms.Commands;
 using BMS.Application.Location.Rooms.Queries;
 using BMS.Application.Location.Rooms.Dtos;
+using BMS.Application.Attributes;
+using BMS.Domain.Entities.Logs;
 
 namespace BMS.WebApi.Controllers;
 
@@ -64,11 +66,12 @@ public class RoomsController : ControllerBase
         return NoContent();
     }
 
-    // DELETE: api/rooms/{id}
+    //DELETE: api/rooms/{id}
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _mediator.Send(new DeleteRoomCommand(id));
         return NoContent();
     }
+
 }
