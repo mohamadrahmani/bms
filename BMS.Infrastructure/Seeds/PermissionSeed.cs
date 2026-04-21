@@ -15,7 +15,11 @@ namespace Bms.Infrastructure.Seeds
             new Permission(3, "Dashboard.View", "مشاهده داشبورد", "Dashboard", 0),
 
             new Permission(4, "Controllers.View", "مشاهده کنترلرها", "Controllers", 0),
-            new Permission(5, "Controllers.Manage", "مدیریت کنترلرها", "Controllers", 2),
+            //new Permission(5, "Controllers.Manage", "مدیریت کنترلرها", "Controllers", 2),
+            new Permission(21, "Controllers.Create", "ایجاد کنترلر", "Controllers", 1),
+            new Permission(22, "Controllers.Update", "ویرایش کنترلر", "Controllers", 2),
+            new Permission(23, "Controllers.Delete", "حذف کنترلر", "Controllers", 3),
+
 
             new Permission(6, "Devices.View", "مشاهده تجهیزات", "Devices", 0),
             new Permission(7, "Devices.Definition.Manage", "مدیریت مشخصات/عکس تجهیزات", "Devices", 1),

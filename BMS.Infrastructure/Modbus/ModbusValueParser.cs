@@ -3,7 +3,7 @@ using BMS.Application.Enum;
 using BMS.Application.Models;
 using BMS.Application.Points.Dtos;
 using BMS.Domain.Entities.BMS;
-using Newtonsoft.Json.Linq;
+
 using static System.Formats.Asn1.AsnWriter;
 
 namespace BMS.Infrastructure.Modbus;

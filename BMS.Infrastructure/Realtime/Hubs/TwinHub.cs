@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
-
-namespace WebApi.Realtime.Hubs;
+﻿namespace WebApi.Realtime.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 public class DeviceStateHub : Hub
 {

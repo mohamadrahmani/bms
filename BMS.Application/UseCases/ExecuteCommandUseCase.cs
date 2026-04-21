@@ -25,7 +25,6 @@ namespace BMS.Application.UseCases
 
         public async Task<Guid> ExecuteAsync(
             Guid? deviceId,
-            Guid pointId,
             string commandName,
             string? value)
         {

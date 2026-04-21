@@ -25,7 +25,6 @@ public class CommandsController : ControllerBase
     {   
         var commandId = await _useCase.ExecuteAsync(
             command.DeviceId,
-            command.PointId,
             command.CommandName,
         command.Value);
 
@@ -33,7 +32,6 @@ public class CommandsController : ControllerBase
         new DeviceCommandCompletedDomainEvent(
             Guid.Empty,
             command.DeviceId,
-            command.PointId,
             command.CommandName,
             true,
             null,
@@ -47,7 +45,6 @@ public class CommandsController : ControllerBase
 public class aaaa
 {
     public Guid? DeviceId { get; set; }
-    public Guid PointId { get; set; }
     public string CommandName { get; set; }
     public string? Value { get; set; }
 }

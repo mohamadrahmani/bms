@@ -1,7 +1,7 @@
 ﻿using BMS.Application.Interfaces;
 using BMS.Application.UseCases;
-using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BMS.Infrastructure.Realtime.Hubs
 {

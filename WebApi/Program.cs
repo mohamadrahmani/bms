@@ -156,8 +156,11 @@ builder.Services
             };
     });
 builder.Services.AddAuthorization();
-
+// Permission system
 builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+
+//builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 
 
 builder.Services.AddScoped<UpdateDataPointUseCase>();
