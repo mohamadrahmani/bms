@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using WebApi.Models.Auth;
 
 [ApiController]
 [Route("api/auth")]
@@ -17,14 +18,32 @@ public class AuthController : ControllerBase
         _mediator = mediator;
     }
 
+    //[HttpPost("login")]
+    //public async Task<IActionResult> Login(LoginCommand command)
+    //{
+    //    var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+    //    command = command with { IpAddress = ip };
+    //    var result = await _mediator.Send(command);
+    //    return Ok(result);
+
+
+    //}
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginCommand command)
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        command = command with { IpAddress = ip };
+
+        var command = new LoginCommand(
+            request.UserName,
+            request.Password,
+            ip
+        );
+
         var result = await _mediator.Send(command);
+
         return Ok(result);
     }
+
 
     [HttpPost("logout")]
     [Authorize]

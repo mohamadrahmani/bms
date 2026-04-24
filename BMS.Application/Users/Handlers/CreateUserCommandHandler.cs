@@ -10,7 +10,7 @@ using MediatR;
 namespace BMS.Application.Users.Handlers;
 
 public sealed class CreateUserCommandHandler
-    : IRequestHandler<CreateUserCommand, ApiResponse<Guid>>
+    : IRequestHandler<CreateUserCommand, Guid>
 {
     private readonly IUserRepository _userRepository;
     private readonly IPersonRepository _personRepository;
@@ -29,7 +29,7 @@ public sealed class CreateUserCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ApiResponse<Guid>> Handle(
+    public async Task<Guid> Handle(
         CreateUserCommand request,
         CancellationToken cancellationToken)
     {
@@ -89,7 +89,8 @@ public sealed class CreateUserCommandHandler
         // 8️⃣ Persist
         await _userRepository.AddAsync(user, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return user.Id;
 
-        return ApiResponse<Guid>.SuccessResponse(user.Id, "کاربر ایجاد شد");
+        //return ApiResponse<Guid>.SuccessResponse(user.Id, "کاربر ایجاد شد");
     }
 }

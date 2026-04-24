@@ -10,7 +10,7 @@ using BMS.Application.Models;
 namespace BMS.Application.Persons.Handlers;
 
 public sealed class CreatePersonCommandHandler
-    : IRequestHandler<CreatePersonCommand, ApiResponse<Guid>>
+    : IRequestHandler<CreatePersonCommand, Guid>
 {
     private readonly IPersonRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
@@ -23,7 +23,7 @@ public sealed class CreatePersonCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ApiResponse<Guid>> Handle(
+    public async Task<Guid> Handle(
      CreatePersonCommand request,
      CancellationToken cancellationToken)
     {
@@ -46,8 +46,8 @@ public sealed class CreatePersonCommandHandler
 
         await _repository.AddAsync(person, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return ApiResponse<Guid>.SuccessResponse(person.Id, "شخص ایجاد شد");
+        return person.Id;
+       // return ApiResponse<Guid>.SuccessResponse(person.Id, "شخص ایجاد شد");
     }
 
 }
