@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace BMS.API.Controllers;
 
-[ApiController]
+//[ApiController]
 [Route("api/persons")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class PersonsController : ControllerBase

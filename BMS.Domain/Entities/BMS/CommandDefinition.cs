@@ -1,6 +1,4 @@
-﻿
-
-namespace BMS.Domain.Entities.BMS;
+﻿namespace BMS.Domain.Entities.BMS;
 
 public class CommandDefinition : BaseEntity<Guid>
 {
@@ -11,6 +9,6 @@ public class CommandDefinition : BaseEntity<Guid>
     public string? OnState { get; set; }
     public string? OffState { get; set; }
     public bool HasParameter { get; set; }
-
     public string? ParameterType { get; set; }
+    public List<Point> Points { get; set; }
 }

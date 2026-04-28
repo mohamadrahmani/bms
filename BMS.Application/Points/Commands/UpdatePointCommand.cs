@@ -41,7 +41,7 @@ public class UpdatePointCommand : IRequest<ApiResponse<bool>>
     public ushort? RegisterAddress { get; set; }
     public int? BitIndex { get; set; }
     public ByteOrder? ByteOrder { get; set; }
-
+    public Guid? CommandDefinitionId { get; set; }
     public Guid? SiteId { get; set; }
     public Guid? BuildingId { get; set; }
     public Guid? FloorId { get; set; }

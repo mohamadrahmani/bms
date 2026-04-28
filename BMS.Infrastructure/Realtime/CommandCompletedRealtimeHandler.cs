@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using BMS.Domain.Events;
+﻿using BMS.Domain.Events;
 using BMS.Application.Interfaces;
 using BMS.Infrastructure.Realtime.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BMS.Infrastructure.Realtime;
 

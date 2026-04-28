@@ -85,7 +85,8 @@ public class GetPointsQueryHandler : IRequestHandler<GetPointsQuery, PagedResult
             RoomId = p.Location != null ? p.Location!.RoomId : null,
             Value = p.Value,
             Quality = p.Quality.ToString(),
-            LastUpdatedAtUtc = p.LastUpdatedAtUtc
+            LastUpdatedAtUtc = p.LastUpdatedAtUtc,
+            CommandDefinitionId = p.CommandDefinitionId
         });
         return await query.ToPagedResultAsync(
             request.PageNumber,

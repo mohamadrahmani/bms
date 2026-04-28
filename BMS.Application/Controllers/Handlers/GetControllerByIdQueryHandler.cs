@@ -42,11 +42,11 @@ namespace BMS.Application.Controllers.Handlers
                 FirmwareVersion = controller.FirmwareVersion,
                 HealthStatus = controller.HealthStatus,
                 IsActive = controller.IsActive,
-                SiteId = controller.Location.SiteId,
-                BuildingId = controller.Location.BuildingId,
-                FloorId = controller.Location.FloorId,
-                WardId = controller.Location.WardId,
-                RoomId = controller.Location.RoomId
+                SiteId = controller.Location?.SiteId,
+                BuildingId = controller.Location?.BuildingId,
+                FloorId = controller.Location?.FloorId,
+                WardId = controller.Location?.WardId,
+                RoomId = controller.Location?.RoomId
             };
         }
     }

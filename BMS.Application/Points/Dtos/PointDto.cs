@@ -67,5 +67,6 @@ public class PointDto
     public string IpAddress { get; set; }
 
     public string DeviceCode { get; set; }
+    public Guid? CommandDefinitionId { get; set; }
 
 }

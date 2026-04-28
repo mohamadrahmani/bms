@@ -5,5 +5,5 @@ namespace BMS.Application.Auth.Commands.Login;
 public sealed record LoginCommand(
     string UserName,
     string Password,
-    string IpAddress
+    string? IpAddress
 ) : IRequest<LoginResponse>;

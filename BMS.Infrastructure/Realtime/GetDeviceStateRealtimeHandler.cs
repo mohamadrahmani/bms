@@ -1,10 +1,10 @@
 ﻿using BMS.Application.Interfaces;
 using BMS.Domain.Events;
 using BMS.Infrastructure.Realtime;
-using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 using BMS.Infrastructure.Realtime.Hubs;
 using BMS.Domain.Entities.BMS;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BMS.Infrastructure.Realtime
 {

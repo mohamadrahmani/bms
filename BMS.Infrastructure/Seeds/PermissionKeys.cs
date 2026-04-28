@@ -2,6 +2,19 @@
 {
     public static class PermissionKeys
     {
+        public static class Controllers
+        {
+            public const string View = "Controllers.View";
+            public const string Create = "Controllers.Create";
+            public const string Update = "Controllers.Update";
+            public const string Delete = "Controllers.Delete";
+        }
+
+        public static class Roles
+        {
+            public const string View = "Roles.View";
+            public const string Manage = "Roles.Manage";
+        }
         // دسترسی‌های پایه برای اپراتورها (Operator)
         public static readonly string[] OperatorPermissions =
         {
@@ -32,8 +45,13 @@
             "Roles.View",
             "Roles.Manage",
             "Dashboard.View",
-            "Controllers.View",
-            "Controllers.Manage",
+
+            PermissionKeys.Controllers.View,
+            PermissionKeys.Controllers.Create,
+            PermissionKeys.Controllers.Update,
+            PermissionKeys.Controllers.Delete,
+
+
             "Devices.View",
             "Devices.Definition.Manage",
             "Devices.Command.Execute",

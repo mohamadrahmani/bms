@@ -1,8 +1,10 @@
-﻿using BMS.Application.Controllers.Commands;
+﻿using Bms.Infrastructure.Seeds;
+using BMS.Application.Controllers.Commands;
 using BMS.Application.Controllers.Queries;
 using BMS.Application.Users.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Security.Authorization;
 
 
 namespace BMS.API.Controllers
@@ -19,6 +21,7 @@ namespace BMS.API.Controllers
         }
 
         // CREATE
+        [RequirePermission(PermissionKeys.Controllers.Create)]
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromBody] CreateControllerCommand command)
@@ -28,6 +31,7 @@ namespace BMS.API.Controllers
         }
 
         // UPDATE
+        [RequirePermission(PermissionKeys.Controllers.Update)]
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(
             Guid id,
@@ -39,6 +43,7 @@ namespace BMS.API.Controllers
         }
 
         // DELETE
+        [RequirePermission(PermissionKeys.Controllers.Delete)]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -51,6 +56,7 @@ namespace BMS.API.Controllers
         }
 
         // GET LIST
+        [RequirePermission(PermissionKeys.Controllers.View)]
         [HttpGet]
         public async Task<IActionResult> GetList([FromQuery] GetControllersListQuery query)
         {
@@ -60,6 +66,7 @@ namespace BMS.API.Controllers
         }
 
         // GET BY ID
+        [RequirePermission(PermissionKeys.Controllers.View)]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> Get(Guid id)
         {

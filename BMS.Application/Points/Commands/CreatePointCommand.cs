@@ -53,4 +53,5 @@ public class CreatePointCommand : IRequest<ApiResponse<Guid>>
     public int? BitIndex { get; set; }
 
     public ByteOrder? ByteOrder { get; set; }
+    public Guid? CommandDefinitionId { get; set; }
 }

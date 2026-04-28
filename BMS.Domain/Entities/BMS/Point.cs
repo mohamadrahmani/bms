@@ -24,6 +24,7 @@ public class Point : BaseEntity<Guid>
         string? title,             // عنوان توصیفی نقطه
         PointDataType dataType,   // نوع داده نقطه (Boolean, Int32, Float32 …)
         PointType pointType,
+        RegisterType? registerType,
         string? unit = null,
         LocationReference? location = null,
     string? code = null,
@@ -33,7 +34,8 @@ public class Point : BaseEntity<Guid>
     ushort? feedbackAddress = null,
     int validationRetryCount = 3,
     int validationDelayMs = 200,
-    bool isWritable = false)      // واحد اندازه‌گیری (اختیاری)
+    bool isWritable = false,
+    Guid? commandDefinitionId = null)      // واحد اندازه‌گیری (اختیاری)
     {
         // اعتبارسنجی پارامترها
         if (deviceId == Guid.Empty) throw new ArgumentException("DeviceId is required.");
@@ -48,6 +50,7 @@ public class Point : BaseEntity<Guid>
         Title = title.Trim();
         DataType = dataType;
         PointType = pointType;
+        RegisterType = registerType;
         Unit = string.IsNullOrWhiteSpace(unit) ? null : unit.Trim(); // حذف فاصله اضافی یا null
         Location = location;
         // آیا نقطه قابل نوشتن است؟ فقط DO و AO قابل نوشتن هستند
@@ -68,6 +71,7 @@ public class Point : BaseEntity<Guid>
         IsWritable = isWritable;
 
         Quality = PointQuality.Unknown;
+        CommandDefinitionId = commandDefinitionId;
     }
 
     public LocationReference? Location { get; set; }
@@ -87,6 +91,8 @@ public class Point : BaseEntity<Guid>
     public int ValidationRetryCount { get; set; } = 3;
     // فاصله زمانی بین تلاش‌های اعتبارسنجی (میلی‌ثانیه)
     public int ValidationDelayMs { get; set; } = 200;
+    public CommandDefinition CommandDefinition { get; set; }
+    public Guid? CommandDefinitionId { get; set; }
 
     // شناسه کنترلر و شیء کنترلر مرتبط
     public Guid DeviceId { get; set; }
@@ -239,7 +245,8 @@ public class Point : BaseEntity<Guid>
     int validationRetryCount,
     int validationDelayMs,
     bool isWritable,
-    LocationReference? location
+    LocationReference? location,
+    Guid? commandDefinitionId
 )
     {
         Tag = tag;
@@ -264,7 +271,7 @@ public class Point : BaseEntity<Guid>
         IsWritable = isWritable;
 
         Location = location;
-
+        CommandDefinitionId = commandDefinitionId;
         UpdatedAtUtc = DateTime.UtcNow;
     }
 

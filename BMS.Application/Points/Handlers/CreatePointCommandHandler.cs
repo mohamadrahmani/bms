@@ -37,6 +37,7 @@ public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, Api
            request.Title,
            request.DataType,
            request.PointType,
+           request.RegisterType,
            request.Unit,
            location,
         request.Code,
@@ -46,7 +47,8 @@ public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, Api
         request.FeedbackAddress,
         request.ValidationRetryCount,
         request.ValidationDelayMs,
-        request.IsWritable
+        request.IsWritable,
+        request.CommandDefinitionId
        );
         // تنظیم Mapping (رجیستر PLC)
         if (request.RegisterType.HasValue && request.RegisterAddress.HasValue)

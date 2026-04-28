@@ -80,7 +80,8 @@ public sealed class UpdatePointCommandHandler : IRequestHandler<UpdatePointComma
             request.ValidationRetryCount,
             request.ValidationDelayMs,
             request.IsWritable,
-            location
+            location,
+            request.CommandDefinitionId
         );
 
         //if (request.RegisterType && request.Address)

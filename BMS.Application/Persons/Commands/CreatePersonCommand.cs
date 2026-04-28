@@ -11,6 +11,6 @@ namespace BMS.Application.Persons.Commands
     string LastName,
     string? Email,
     string? Mobile
-) : IRequest<ApiResponse<Guid>>;
+) : IRequest<Guid>;// IRequest<ApiResponse<Guid>>;
 
 }

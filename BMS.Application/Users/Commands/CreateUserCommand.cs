@@ -16,4 +16,4 @@ public sealed record CreateUserCommand(
     string UserName,
     string Password,
     IReadOnlyCollection<int>? RoleIds
-) : IRequest<ApiResponse<Guid>>;
+) : IRequest<Guid>;//IRequest<ApiResponse<Guid>>;
