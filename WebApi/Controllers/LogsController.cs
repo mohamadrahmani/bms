@@ -1,7 +1,10 @@
-﻿using BMS.Application.Controllers.Queries;
+﻿using Bms.Infrastructure.Seeds;
+using BMS.Application.Controllers.Queries;
 using BMS.Application.Logs.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Security.Authorization;
+
 
 [ApiController]
 [Route("api/logs")]
@@ -14,6 +17,8 @@ public class LogsController : ControllerBase
         _mediator = mediator;
     }
 
+    // GET ALL LOGS
+    [RequirePermission(PermissionKeys.Logs.SystemLogsView)]
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] GetAllLogsQuery query)
     {
@@ -22,6 +27,7 @@ public class LogsController : ControllerBase
     }
 
     [HttpGet("{id:long}")]
+    [RequirePermission(PermissionKeys.Logs.SystemLogsView)]
     public async Task<IActionResult> GetById(Guid id)
     {
         var result = await _mediator.Send(new GetLogByIdQuery(id));

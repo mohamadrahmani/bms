@@ -12,6 +12,8 @@ using BMS.Application.Points.Commands;
 using BMS.Application.Points.Dtos;
 using BMS.Application.Points.Queries;
 using MediatR;
+using Bms.Infrastructure.Seeds;
+using WebApi.Security.Authorization;
 
 namespace WebApi.Controllers
 {
@@ -77,7 +79,8 @@ namespace WebApi.Controllers
         //    return Ok();
         //}
 
-
+        // GET ALL
+        [RequirePermission(PermissionKeys.Points.View)]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] GetPointsQuery query)
         {
@@ -85,6 +88,8 @@ namespace WebApi.Controllers
             return Ok(result);
         }
 
+        // CREATE
+        [RequirePermission(PermissionKeys.Points.Create)]
         [HttpPost]
         public async Task<IActionResult> Create(CreatePointCommand command)
         {
@@ -93,8 +98,8 @@ namespace WebApi.Controllers
             return Ok(id);
         }
 
-
-
+        // UPDATE
+        [RequirePermission(PermissionKeys.Points.Update)]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePoint(Guid id, UpdatePointCommand command)
         {
@@ -106,6 +111,8 @@ namespace WebApi.Controllers
             return StatusCode(res.StatusCode, res);
         }
 
+        // DELETE
+        [RequirePermission(PermissionKeys.Points.Delete)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -114,6 +121,8 @@ namespace WebApi.Controllers
             return Ok();
         }
 
+        // GET BY ID
+        [RequirePermission(PermissionKeys.Points.View)]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
@@ -125,6 +134,8 @@ namespace WebApi.Controllers
             return Ok(result);
         }
 
+        // GET BY DEVICE
+        [RequirePermission(PermissionKeys.Points.View)]
         [HttpGet("device/{deviceId}")]
         public async Task<IActionResult> GetByDevice(Guid deviceId)
         {

@@ -11,7 +11,8 @@ namespace BMS.Worker.Workers
     public class ModbusPollingWorker : BackgroundService
     {
         private readonly ILogger<ModbusPollingWorker> _logger;
-        private readonly IEnumerable<IPlcClient> _plcClients;
+        //private readonly IEnumerable<IPlcClient> _plcClients;
+        private readonly IPlcClientProvider _plcProvider;   // جایگزین _plcClients
         private readonly IBackendSender _sender;
         private readonly IPlcStateStore _stateStore;
         private readonly IPlcCommandDispatcher _dispatcher;
@@ -19,7 +20,8 @@ namespace BMS.Worker.Workers
         private readonly IServiceScopeFactory _scopeFactory;
         public ModbusPollingWorker(
             ILogger<ModbusPollingWorker> logger,
-            IEnumerable<IPlcClient> plcClients,
+            //IEnumerable<IPlcClient> plcClients,
+            IPlcClientProvider plcProvider,
             IBackendSender sender,
             IPlcStateStore stateStore,
             IPlcCommandDispatcher dispatcher,
@@ -27,7 +29,8 @@ namespace BMS.Worker.Workers
             IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
-            _plcClients = plcClients;
+            //_plcClients = plcClients;
+            _plcProvider = plcProvider;
             _sender = sender;
             _stateStore = stateStore;
             _dispatcher = dispatcher;
@@ -43,7 +46,10 @@ namespace BMS.Worker.Workers
             {
                 try
                 {
-                    var pollingTasks = _plcClients.Select(plc =>
+                    // دریافت لیست به‌روز از Provider (از کش یا DB)
+                    var plcClients = await _plcProvider.GetClientsAsync(stoppingToken);
+
+                    var pollingTasks = plcClients.Select(plc =>
                         PollPlcAsync(plc, stoppingToken));
 
                     await Task.WhenAll(pollingTasks);
@@ -63,6 +69,34 @@ namespace BMS.Worker.Workers
 
             _logger.LogInformation("PLC Polling Worker stopped.");
         }
+        //protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        //{
+        //    _logger.LogInformation("PLC Polling Worker started.");
+
+        //    while (!stoppingToken.IsCancellationRequested)
+        //    {
+        //        try
+        //        {
+        //            var pollingTasks = _plcClients.Select(plc =>
+        //                PollPlcAsync(plc, stoppingToken));
+
+        //            await Task.WhenAll(pollingTasks);
+
+        //            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+        //        }
+        //        catch (OperationCanceledException)
+        //        {
+        //            break;
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            _logger.LogError(ex, "Unexpected worker error.");
+        //            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+        //        }
+        //    }
+
+        //    _logger.LogInformation("PLC Polling Worker stopped.");
+        //}
 
         private async Task PollPlcAsync(IPlcClient plc, CancellationToken token)
         {

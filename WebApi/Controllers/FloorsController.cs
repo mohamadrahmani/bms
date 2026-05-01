@@ -1,7 +1,9 @@
-﻿using BMS.Application.Location.Floors.Commands;
+﻿using Bms.Infrastructure.Seeds;
+using BMS.Application.Location.Floors.Commands;
 using BMS.Application.Location.Floors.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Security.Authorization;
 
 [ApiController]
 public class FloorsController : ControllerBase
@@ -13,6 +15,8 @@ public class FloorsController : ControllerBase
         _mediator = mediator;
     }
 
+    // GET floors by building
+    [RequirePermission(PermissionKeys.Floors.View)]
     [HttpGet("api/buildings/{buildingId}/floors")]
     public async Task<IActionResult> GetByBuilding(Guid buildingId)
     {
@@ -22,6 +26,8 @@ public class FloorsController : ControllerBase
         return Ok(result);
     }
 
+    // GET all floors
+    [RequirePermission(PermissionKeys.Floors.View)]
     [HttpGet("api/floors")]
     public async Task<IActionResult> GetAll([FromQuery] GetAllFloorsQuery query)
     {
@@ -30,6 +36,9 @@ public class FloorsController : ControllerBase
         return Ok(result);
     }
 
+
+    // GET floor by id
+    [RequirePermission(PermissionKeys.Floors.View)]
     [HttpGet("api/floors/{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
@@ -39,6 +48,9 @@ public class FloorsController : ControllerBase
         return Ok(result);
     }
 
+
+    // CREATE floor under building
+    [RequirePermission(PermissionKeys.Floors.Create)]
     [HttpPost("api/buildings/{buildingId}/floors")]
     public async Task<IActionResult> Create(
         Guid buildingId,
@@ -51,6 +63,8 @@ public class FloorsController : ControllerBase
         return Ok(id);
     }
 
+    // UPDATE floor
+    [RequirePermission(PermissionKeys.Floors.Update)]
     [HttpPut("api/floors/{id}")]
     public async Task<IActionResult> Update(
         Guid id,
@@ -63,6 +77,9 @@ public class FloorsController : ControllerBase
         return NoContent();
     }
 
+
+    // DELETE floor
+    [RequirePermission(PermissionKeys.Floors.Delete)]
     [HttpDelete("api/floors/{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {

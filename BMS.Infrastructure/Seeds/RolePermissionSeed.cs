@@ -26,29 +26,29 @@ namespace Bms.Infrastructure.Seeds
                 );
             }
 
-            foreach (var permission in permissions
-                         .Where(p => PermissionKeys.OperatorPermissions.Contains(p.Key)))
-            {
-                rolePermissions.Add(
-                    new RolePermission(
-                        DeterministicGuid.Create(RoleSeed.OperatorId, permission.Id),
-                        RoleSeed.OperatorId,
-                        permission.Id
-                    )
-                );
-            }
+            //foreach (var permission in permissions
+            //             .Where(p => PermissionKeys.OperatorPermissions.Contains(p.Key)))
+            //{
+            //    rolePermissions.Add(
+            //        new RolePermission(
+            //            DeterministicGuid.Create(RoleSeed.OperatorId, permission.Id),
+            //            RoleSeed.OperatorId,
+            //            permission.Id
+            //        )
+            //    );
+            //}
 
-            foreach (var permission in permissions
-                         .Where(p => PermissionKeys.ViewerPermissions.Contains(p.Key)))
-            {
-                rolePermissions.Add(
-                    new RolePermission(
-                        DeterministicGuid.Create(RoleSeed.ViewerId, permission.Id),
-                        RoleSeed.ViewerId,
-                        permission.Id
-                    )
-                );
-            }
+            //foreach (var permission in permissions
+            //             .Where(p => PermissionKeys.ViewerPermissions.Contains(p.Key)))
+            //{
+            //    rolePermissions.Add(
+            //        new RolePermission(
+            //            DeterministicGuid.Create(RoleSeed.ViewerId, permission.Id),
+            //            RoleSeed.ViewerId,
+            //            permission.Id
+            //        )
+            //    );
+            //}
 
             modelBuilder.Entity<RolePermission>().HasData(rolePermissions);
         }
