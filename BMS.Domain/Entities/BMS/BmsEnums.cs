@@ -30,7 +30,8 @@ namespace BMS.Domain.Entities.BMS
         Pump = 5,         // پمپ
         Tank = 6,         // مخزن/منبع
         HeatExchanger = 7,// مبدل حرارتی
-        CoilUnit = 8      // یونیت کویلی (کویل سرمایش/گرمایش)
+        CoilUnit = 8,      // یونیت کویلی (کویل سرمایش/گرمایش)
+        Solar = 9 // پنل خورشیدی
     }
 
     public enum PointType
