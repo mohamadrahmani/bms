@@ -87,67 +87,72 @@ builder.Services.AddSingleton<IPlcCommandDispatcher, PlcCommandDispatcher>();
 //    }).ToList();
 //});
 
-builder.Services.AddSingleton<IEnumerable<IPlcClient>>(sp =>
-{
-    using var scope = sp.CreateScope();
-    var scoped = scope.ServiceProvider;
-    var scopedProvider = scope.ServiceProvider;
+// ---------------------------
+// PLC Client Provider (cache + DB)
+// ---------------------------
+builder.Services.AddSingleton<PlcClientProvider>();
+builder.Services.AddSingleton<IPlcClientProvider>(sp => sp.GetRequiredService<PlcClientProvider>());
+//builder.Services.AddSingleton<IEnumerable<IPlcClient>>(sp =>
+//{
+//    using var scope = sp.CreateScope();
+//    var scoped = scope.ServiceProvider;
+//    var scopedProvider = scope.ServiceProvider;
 
-    var logger = scopedProvider
-        .GetRequiredService<ILogger<Program>>();
+//    var logger = scopedProvider
+//        .GetRequiredService<ILogger<Program>>();
 
-    // ۱. گرفتن Repository
-    var controllerRepo = scopedProvider
-        .GetRequiredService<IControllerRepository>();
+//    // ۱. گرفتن Repository
+//    var controllerRepo = scopedProvider
+//        .GetRequiredService<IControllerRepository>();
 
-    var loggerFactory = scoped.GetRequiredService<ILoggerFactory>();
-    // ۲. خواندن از DB (sync در زمان بوت)
-    var controllers = controllerRepo
-        .GetActiveWithDevicesAndPointsAsync(CancellationToken.None)
-        .GetAwaiter().GetResult();
+//    var loggerFactory = scoped.GetRequiredService<ILoggerFactory>();
+//    // ۲. خواندن از DB (sync در زمان بوت)
+//    var controllers = controllerRepo
+//        .GetActiveWithDevicesAndPointsAsync(CancellationToken.None)
+//        .GetAwaiter().GetResult();
 
-    // ۳. تبدیل Domain به PlcConfig (Mapperی که در Application ساخته‌ای)
+//    // ۳. تبدیل Domain به PlcConfig (Mapperی که در Application ساخته‌ای)
 
-    var plcConfigs = PlcConfigMapper.ToConfigs(controllers);
+//    var plcConfigs = PlcConfigMapper.ToConfigs(controllers);
 
-    // ۴. ساختن PlcClient برای هر Config
-    var clients = plcConfigs.Select(config =>
-    {
-        var connectionLogger =
-    loggerFactory.CreateLogger<ModbusConnectionManager>();
-        // چیزهایی که ModbusPlcClient لازم دارد:
-        //var connectionManager = scopedProvider
-        //    .GetRequiredService<IModbusConnectionManager>();
-        var connectionManager = new ModbusConnectionManager(
-    config.IpAddress,
-    config.Port,
-    connectionLogger
-    );
+//    // ۴. ساختن PlcClient برای هر Config
+//    var clients = plcConfigs.Select(config =>
+//    {
+//        var connectionLogger =
+//    loggerFactory.CreateLogger<ModbusConnectionManager>();
+//        // چیزهایی که ModbusPlcClient لازم دارد:
+//        //var connectionManager = scopedProvider
+//        //    .GetRequiredService<IModbusConnectionManager>();
+//        var connectionManager = new ModbusConnectionManager(
+//    config.IpAddress,
+//    config.Port,
+//    connectionLogger
+//    );
 
-        //var deviceClients = scopedProvider
-        //    .GetRequiredService<IEnumerable<IDeviceClient>>();
-        var deviceClients = config.Devices
-    .Select(deviceConfig =>
-        (IDeviceClient)new ModbusClient(
-            config.Name,
-            connectionManager,
-            deviceConfig))
-    .ToList();
+//        //var deviceClients = scopedProvider
+//        //    .GetRequiredService<IEnumerable<IDeviceClient>>();
+//        var deviceClients = config.Devices
+//    .Select(deviceConfig =>
+//        (IDeviceClient)new ModbusClient(
+//            config.Name,
+//            connectionManager,
+//            deviceConfig))
+//    .ToList();
 
-        return (IPlcClient)new ModbusPlcClient(
-            config.Name,
-            connectionManager,
-            deviceClients /* یا فیلتر شده بر اساس config */
-        );
-    }).ToList();
+//        return (IPlcClient)new ModbusPlcClient(
+//            config.Name,
+//            connectionManager,
+//            deviceClients /* یا فیلتر شده بر اساس config */
+//        );
+//    }).ToList();
 
-    if (!clients.Any())
-    {
-        logger.LogWarning("No active PLC configurations found in DB.");
-    }
+//    if (!clients.Any())
+//    {
+//        logger.LogWarning("No active PLC configurations found in DB.");
+//    }
 
-    return clients;
-});
+//    return clients;
+//});
 
 // ---------------------------
 // Telemetry queue
@@ -267,5 +272,11 @@ app.MapPost("/api/commands/write-point",
             value=request.Value
         });
     });
-
+// ---------- Cache Invalidation Endpoint ----------
+app.MapPost("/api/cache/invalidate",
+    async (IPlcClientProvider provider, CancellationToken ct) =>
+    {
+        await provider.InvalidateAsync(ct);
+        return Results.Ok(new { message = "PLC cache invalidated." });
+    });
 await app.RunAsync();
