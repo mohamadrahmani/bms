@@ -137,8 +137,7 @@ builder.Services
             .GetSection("Jwt")
             .Get<JwtSettings>()!;
 
-        options.TokenValidationParameters =
-            new TokenValidationParameters
+        options.TokenValidationParameters =new TokenValidationParameters
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
