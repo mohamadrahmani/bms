@@ -63,7 +63,7 @@ namespace WebApi.Controllers
                 LogDate = DateTime.UtcNow,
                 ObjectName = "Users",
                 ObjectId = deviceId.ToString(),
-                RequestBody = JsonSerializer.Serialize(request.Points.Count)
+                RequestBody = JsonSerializer.Serialize(request.Points)
             });
 
             var device = _store.Get(deviceId);
