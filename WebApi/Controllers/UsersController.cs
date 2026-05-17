@@ -7,6 +7,8 @@ using BMS.Application.Users.Queries;
 using BMS.Application.Users.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Bms.Infrastructure.Seeds;
+using WebApi.Security.Authorization;
 
 
 
@@ -23,8 +25,10 @@ namespace BMS.API.Controllers
         {
             _mediator = mediator;
         }
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
         [HttpPost]
+        [RequirePermission(PermissionKeys.Users.Create)]
         public async Task<IActionResult> Create([FromBody] CreateUserCommand command)
         {
             var userId = await _mediator.Send(command);
@@ -33,6 +37,7 @@ namespace BMS.API.Controllers
 
 
         [HttpPut("{id:guid}")]
+        [RequirePermission(PermissionKeys.Users.Update)]
         public async Task<IActionResult> Update(
             Guid id,
             [FromBody] UpdateUserCommand command)
@@ -45,6 +50,7 @@ namespace BMS.API.Controllers
         }
 
         [HttpPut("{id:guid}/change-password")]
+        [RequirePermission(PermissionKeys.Users.Manage)]
         public async Task<IActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordCommand command)
         {
             command.UserId = id;
@@ -55,6 +61,7 @@ namespace BMS.API.Controllers
         }
 
         [HttpDelete("{id:guid}")]
+        [RequirePermission(PermissionKeys.Users.Delete)]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
             var command = new DeleteUserCommand
@@ -69,6 +76,8 @@ namespace BMS.API.Controllers
 
 
         [HttpGet]
+
+        [RequirePermission(PermissionKeys.Users.View)]
         public async Task<IActionResult> GetList([FromQuery] GetUsersListQuery query)
         {
             var users = await _mediator.Send(query);

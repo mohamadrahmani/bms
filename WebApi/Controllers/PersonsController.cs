@@ -4,6 +4,8 @@ using BMS.Application.Persons.Commands;
 using BMS.Application.Users.Queries;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Bms.Infrastructure.Seeds;
+using WebApi.Security.Authorization;
 
 namespace BMS.API.Controllers;
 
@@ -19,7 +21,10 @@ public class PersonsController : ControllerBase
         _mediator = mediator;
     }
 
+
+    // CREATE PERSON
     [HttpPost]
+    [RequirePermission(PermissionKeys.Persons.Create)]
     public async Task<IActionResult> Create(
         [FromBody] CreatePersonCommand command)
     {
@@ -27,6 +32,8 @@ public class PersonsController : ControllerBase
         return Ok(id);
     }
 
+    // UPDATE PERSON
+    [RequirePermission(PermissionKeys.Persons.Update)]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(
     Guid id,
@@ -40,12 +47,19 @@ public class PersonsController : ControllerBase
         return NoContent();
     }
 
+
+    // GET PERSONS LIST
+    [RequirePermission(PermissionKeys.Persons.View)]
     [HttpGet]
     public async Task<IActionResult> GetList([FromQuery] GetPersonsListQuery query)
     {
         var users = await _mediator.Send(query);
         return Ok(users);
     }
+
+
+    // DELETE PERSON
+    [RequirePermission(PermissionKeys.Persons.Delete)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {

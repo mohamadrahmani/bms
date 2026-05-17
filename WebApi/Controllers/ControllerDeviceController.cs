@@ -1,12 +1,13 @@
-using System.Drawing;
+﻿using System.Drawing;
 using BMS.Application.Common.Interfaces;
 using BMS.Application.Interfaces;
 using BMS.Application.Models;
 using BMS.Application.UseCases;
 using BMS.Domain.Entities;
 using BMS.Domain.Entities.BMS;
+using BMS.Domain.Entities.Logs;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using WebApi.Domain.Twin.Services;
 using WebApi.Realtime.Models;
 using WebApi.Realtime.Services;
@@ -23,11 +24,14 @@ namespace WebApi.Controllers
         private readonly IEventDispatcher _dispatcher;
         private readonly UpdateDataPointUseCase _useCase;
         private IPointRepository _pointRepository;
+        private readonly IAuditLogger _auditLogger;
+
         public ControllerDeviceController(ILogger<PointController> logger,// ITwinRealtimePublisher publisher, ITwinService twinService,
             IDeviceStateStore store,
             IEventDispatcher dispatcher,
             UpdateDataPointUseCase useCase,
-            IPointRepository pointRepository
+            IPointRepository pointRepository,
+            IAuditLogger auditLogger
             )
         {
             _logger = logger;
@@ -37,6 +41,7 @@ namespace WebApi.Controllers
             _dispatcher = dispatcher;
             _useCase = useCase;
             _pointRepository = pointRepository;
+            _auditLogger = auditLogger;
         }
 
         [HttpPost("{deviceId}/update")]
@@ -44,6 +49,23 @@ namespace WebApi.Controllers
         Guid deviceId,
         [FromBody] TelemetryMessage request)
         {
+// todo: Amini: remove log
+
+            await _auditLogger.Add(new Log
+            {
+                //UserId = user.Id,
+                EventType = EventType.Login,
+                Result = OperationResult.Failed,
+                ResultMessage = "Telemetry",
+                //IpAddress = request.IpAddress,
+                //Source = "LoginCommandHandler",
+                Source = "UpdateDeviceTelemetry",
+                LogDate = DateTime.UtcNow,
+                ObjectName = "Users",
+                ObjectId = deviceId.ToString(),
+                RequestBody = JsonSerializer.Serialize(request.Points)
+            });
+
             var device = _store.Get(deviceId);
 
             foreach(var point in request.Points)

@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using BMS.Application.Location.Sites.Commands;
 using BMS.Application.Location.Sites.Queries;
+using Bms.Infrastructure.Seeds;
+using WebApi.Security.Authorization;
 
 namespace BMS.API.Controllers;
 
@@ -16,14 +18,18 @@ public sealed class SitesController : ControllerBase
         _mediator = mediator;
     }
 
+    // GET LIST
     [HttpGet]
+    [RequirePermission(PermissionKeys.Sites.View)]
     public async Task<IActionResult> GetList([FromQuery] GetSitesListQuery query)
     {
         var result = await _mediator.Send(query);
         return Ok(result);
     }
 
+    // GET BY ID
     [HttpGet("{id:guid}")]
+    [RequirePermission(PermissionKeys.Sites.View)]
     public async Task<IActionResult> GetById(Guid id)
     {
         var result = await _mediator.Send(new GetSiteByIdQuery(id));
@@ -33,7 +39,9 @@ public sealed class SitesController : ControllerBase
 
         return Ok(result);
     }
-
+    // CREATE
+    [HttpPost]
+    [RequirePermission(PermissionKeys.Sites.Create)]
     [HttpPost]
     public async Task<IActionResult> Create(CreateSiteCommand command)
     {
@@ -41,7 +49,9 @@ public sealed class SitesController : ControllerBase
         return Ok(id);
     }
 
+    // UPDATE
     [HttpPut("{id:guid}")]
+    [RequirePermission(PermissionKeys.Sites.Update)]
     public async Task<IActionResult> Update(Guid id, UpdateSiteCommand command)
     {
         if (id != command.Id)
@@ -51,12 +61,8 @@ public sealed class SitesController : ControllerBase
         return NoContent();
     }
 
-    //[HttpDelete("{id:guid}")]
-    //public async Task<IActionResult> Delete(Guid id)
-    //{
-    //    await _mediator.Send(new DeleteSiteCommand(id));
-    //    return NoContent();
-    //}
+    // DELETE
+    [RequirePermission(PermissionKeys.Sites.Delete)]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {

@@ -18,16 +18,6 @@ public class AuthController : ControllerBase
         _mediator = mediator;
     }
 
-    //[HttpPost("login")]
-    //public async Task<IActionResult> Login(LoginCommand command)
-    //{
-    //    var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-    //    command = command with { IpAddress = ip };
-    //    var result = await _mediator.Send(command);
-    //    return Ok(result);
-
-
-    //}
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
@@ -57,7 +47,7 @@ public class AuthController : ControllerBase
 
         await _mediator.Send(new LogoutCommand(userId, ip));
 
-        return Ok("Logout successful");
+        return Ok("خروج با موفقیت انجام شد.");
     }
 
 

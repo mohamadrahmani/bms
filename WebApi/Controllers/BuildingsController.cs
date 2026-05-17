@@ -1,7 +1,9 @@
-﻿using BMS.Application.Location.Buildings.Commands;
+﻿using Bms.Infrastructure.Seeds;
+using BMS.Application.Location.Buildings.Commands;
 using BMS.Application.Location.Buildings.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Security.Authorization;
 
 [ApiController]
 [Route("api/sites/{siteId}/buildings")]
@@ -14,6 +16,8 @@ public class BuildingsController : ControllerBase
         _mediator = mediator;
     }
 
+    // GET buildings of a specific site
+    [RequirePermission(PermissionKeys.Buildings.View)]
     [HttpGet]
     public async Task<IActionResult> Get(Guid siteId)
     {
@@ -23,6 +27,8 @@ public class BuildingsController : ControllerBase
         return Ok(result);
     }
 
+    // CREATE building under a site
+    [RequirePermission(PermissionKeys.Buildings.Create)]
     [HttpPost]
     public async Task<IActionResult> Create(
         Guid siteId,
@@ -35,7 +41,10 @@ public class BuildingsController : ControllerBase
         return Ok(id);
     }
 
-    [HttpPut("{id}")]
+
+    // UPDATE building info
+    [HttpPut("{id:guid}")]
+    [RequirePermission(PermissionKeys.Buildings.Update)]
     public async Task<IActionResult> Update(
         Guid id,
         UpdateBuildingCommand command)
@@ -47,7 +56,9 @@ public class BuildingsController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
+    // DELETE building
+    [HttpDelete("{id:guid}")]
+    [RequirePermission(PermissionKeys.Buildings.Delete)]
     public async Task<IActionResult> Delete(Guid siteId, Guid id)
     {
         //await _mediator.Send(new DeleteBuildingCommand { Id = id });
@@ -61,8 +72,10 @@ public class BuildingsController : ControllerBase
         return NoContent();
     }
 
+    // GET all buildings (independent of site)
     [HttpGet]
     [Route("/api/buildings")]
+    [RequirePermission(PermissionKeys.Buildings.View)]
     public async Task<IActionResult> GetAll([FromQuery] GetAllBuildingsQuery query)
     {
         var result = await _mediator.Send(query);

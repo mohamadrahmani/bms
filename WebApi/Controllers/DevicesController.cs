@@ -1,9 +1,11 @@
-﻿using BMS.Application.Devices.Commands;
+﻿using Bms.Infrastructure.Seeds;
+using BMS.Application.Devices.Commands;
 using BMS.Application.Devices.DTOs;
 using BMS.Application.Devices.Queries;
 using BMS.Application.Users.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Security.Authorization;
 
 namespace BMS.API.Controllers
 {
@@ -18,6 +20,8 @@ namespace BMS.API.Controllers
             _mediator = mediator;
         }
 
+        // GET BY ID
+        [RequirePermission(PermissionKeys.Devices.View)]
         [HttpGet("{id}")]
         public async Task<ActionResult<DeviceDto>> GetById(Guid id)
         {
@@ -29,6 +33,8 @@ namespace BMS.API.Controllers
             return Ok(result);
         }
 
+        // GET BY CONTROLLER ID
+        [RequirePermission(PermissionKeys.Devices.View)]
         [HttpGet("controller/{controllerId}")]
         public async Task<ActionResult<List<DeviceDto>>> GetByController(Guid controllerId)
         {
@@ -36,6 +42,8 @@ namespace BMS.API.Controllers
             return Ok(result);
         }
 
+        // CREATE DEVICE
+        [RequirePermission(PermissionKeys.Devices.Create)]
         [HttpPost]
         public async Task<ActionResult<DeviceDto>> Create(CreateDeviceCommand command)
         {
@@ -44,12 +52,8 @@ namespace BMS.API.Controllers
             return Ok(id);
         }
 
-        //[HttpPut]
-        //public async Task<ActionResult<DeviceDto>> Update(UpdateDeviceDto dto)
-        //{
-        //    var result = await _mediator.Send(new UpdateDeviceCommand(dto));
-        //    return Ok(result);
-        //}
+        // UPDATE DEVICE
+        [RequirePermission(PermissionKeys.Devices.Update)]
         [HttpPut("{id}")]
         public async Task<ActionResult<DeviceDto>> Update(UpdateDeviceCommand command)
         {
@@ -57,6 +61,8 @@ namespace BMS.API.Controllers
             return Ok(result);
         }
 
+        // DELETE DEVICE
+        [RequirePermission(PermissionKeys.Devices.Delete)]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(Guid id)
         {
@@ -67,6 +73,9 @@ namespace BMS.API.Controllers
 
             return NoContent();
         }
+
+        // GET LIST
+        [RequirePermission(PermissionKeys.Devices.View)]
         [HttpGet]
         public async Task<IActionResult> GetDevices([FromQuery] GetDevicesQuery query)
         {
