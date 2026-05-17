@@ -12,7 +12,7 @@ namespace BMS.Application.Abstraction
         /// لیست فعلی PLC Clientها را برمی‌گرداند.
         /// اگر کش خالی باشد، از دیتابیس خوانده و ساخته می‌شود.
         /// </summary>
-        Task<IReadOnlyList<IPlcClient>> GetClientsAsync(CancellationToken cancellationToken = default);
+        Task<IEnumerable<IPlcClient>> GetClientsAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// کش را Invalid می‌کند.

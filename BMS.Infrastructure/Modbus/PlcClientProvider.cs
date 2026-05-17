@@ -26,7 +26,7 @@ namespace BMS.Infrastructure.Modbus
             _logger = logger;
         }
 
-        public async Task<IReadOnlyList<IPlcClient>> GetClientsAsync(CancellationToken ct = default)
+        public async Task<IEnumerable<IPlcClient>> GetClientsAsync(CancellationToken ct = default)
         {
             // سریع‌ترین مسیر: اگر کش پر است، بدون قفل برگرد
             if (_clients is not null)
@@ -133,5 +133,6 @@ namespace BMS.Infrastructure.Modbus
                 }
             }
         }
+
     }
 }
