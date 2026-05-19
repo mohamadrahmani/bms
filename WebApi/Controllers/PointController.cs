@@ -1,18 +1,18 @@
+using Bms.Infrastructure.Seeds;
 using BMS.Application.Interfaces;
+using BMS.Application.Points.Commands;
+using BMS.Application.Points.Dtos;
+using BMS.Application.Points.Queries;
 using BMS.Application.UseCases;
 using BMS.Domain.Entities;
 using BMS.Domain.Entities.BMS;
+using BMS.Infrastructure.Devices;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using WebApi.Domain.Twin.Services;
 using WebApi.Realtime.Models;
 using WebApi.Realtime.Services;
-
-using BMS.Application.Points.Commands;
-using BMS.Application.Points.Dtos;
-using BMS.Application.Points.Queries;
-using MediatR;
-using Bms.Infrastructure.Seeds;
 using WebApi.Security.Authorization;
 
 namespace WebApi.Controllers
@@ -22,13 +22,6 @@ namespace WebApi.Controllers
     public class PointController : ControllerBase
     {
         private readonly IMediator _mediator;
-
-        //private readonly ITwinRealtimePublisher _publisher;
-
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
 
         private readonly ILogger<PointController> _logger;
         private readonly ITwinService _twinService;
@@ -85,6 +78,7 @@ namespace WebApi.Controllers
         public async Task<IActionResult> GetAll([FromQuery] GetPointsQuery query)
         {
             var result = await _mediator.Send(query);
+
             return Ok(result);
         }
 
@@ -95,6 +89,21 @@ namespace WebApi.Controllers
         {
             var id = await _mediator.Send(command);
 
+            try
+            {
+                using var httpClient = new HttpClient();
+
+                var url = "http://localhost:5055/api/cache/invalidate";
+
+                var request = new WritePointCommandRequest
+                {
+
+                };
+
+                var response = await httpClient.PostAsJsonAsync(url, request);
+
+            }
+            catch { }
             return Ok(id);
         }
 
@@ -108,6 +117,23 @@ namespace WebApi.Controllers
 
             var res = await _mediator.Send(command);
 
+            if (res.Success)
+            {
+                try
+                {
+                    using var httpClient = new HttpClient();
+
+                    var url = "http://localhost:5055/api/cache/invalidate";
+
+                    var request = new WritePointCommandRequest
+                    {
+
+                    };
+
+                    var response = await httpClient.PostAsJsonAsync(url, request);
+                }
+                catch { }
+            }
             return StatusCode(res.StatusCode, res);
         }
 
@@ -117,7 +143,21 @@ namespace WebApi.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             await _mediator.Send(new DeletePointCommand(id));
+            try
+            {
+                using var httpClient = new HttpClient();
 
+                var url = "http://localhost:5055/api/cache/invalidate";
+
+                var request = new WritePointCommandRequest
+                {
+
+                };
+
+                var response = await httpClient.PostAsJsonAsync(url, request);
+
+            }
+            catch { }
             return Ok();
         }
 

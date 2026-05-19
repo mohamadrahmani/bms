@@ -34,6 +34,8 @@ namespace BMS.Application.UseCases
             if (point == null)
                 throw new Exception("رجیستر مربوطه ثبت نشده است");
 
+            if (!point.IsWritable)
+                throw new Exception("رجیستر مربوطه قابل مقداردهی نیست");
 
             var command = new DeviceCommand()
             {

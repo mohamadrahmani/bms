@@ -107,8 +107,8 @@ public class ExceptionHandlingMiddleware
                 {
                     errorId,
                     message = ex.Message,
-                    stackTrace = ex.StackTrace,
-                    innerException = ex.InnerException?.Message
+                    //stackTrace = ex.StackTrace,
+                    //innerException = ex.InnerException?.Message
                 })
             );
         }
