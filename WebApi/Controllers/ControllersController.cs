@@ -80,7 +80,8 @@ namespace BMS.API.Controllers
             {
                 ControllerId = id
             });
-            try {
+            try
+            {
                 using var httpClient = new HttpClient();
 
                 var url = "http://localhost:5055/api/cache/invalidate";
@@ -92,9 +93,9 @@ namespace BMS.API.Controllers
 
                 var response = await httpClient.PostAsJsonAsync(url, request);
 
-                return            }
+            }
             catch { }
-            NoContent();
+                return NoContent();
         }
 
         // GET LIST
