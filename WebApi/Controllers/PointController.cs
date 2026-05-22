@@ -1,3 +1,4 @@
+using Azure.Core;
 using Bms.Infrastructure.Seeds;
 using BMS.Application.Interfaces;
 using BMS.Application.Points.Commands;
@@ -9,6 +10,7 @@ using BMS.Domain.Entities.BMS;
 using BMS.Infrastructure.Devices;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
 using WebApi.Domain.Twin.Services;
 using WebApi.Realtime.Models;
@@ -28,12 +30,13 @@ namespace WebApi.Controllers
         private readonly IDeviceStateStore _store;
         private readonly IEventDispatcher _dispatcher;
         private readonly UpdateDataPointUseCase _useCase;
+        private readonly IMemoryCache _memoryCache;
         public PointController(ILogger<PointController> logger,// ITwinRealtimePublisher publisher, ITwinService twinService,
-            IDeviceStateStore store
-            , IEventDispatcher dispatcher,
+            IDeviceStateStore store,
+            IEventDispatcher dispatcher,
             UpdateDataPointUseCase useCase,
-            IMediator mediator
-            )
+            IMediator mediator,
+            IMemoryCache memoryCache)
         {
             _logger = logger;
             //_publisher = publisher;
@@ -42,6 +45,7 @@ namespace WebApi.Controllers
             _dispatcher = dispatcher;
             _useCase = useCase;
             _mediator = mediator;
+            _memoryCache = memoryCache;
         }
 
 
@@ -100,7 +104,7 @@ namespace WebApi.Controllers
 
                 };
 
-                var response = await httpClient.PostAsJsonAsync(url, request);
+                var response = httpClient.PostAsJsonAsync(url, request);
 
             }
             catch { }
@@ -121,6 +125,12 @@ namespace WebApi.Controllers
             {
                 try
                 {
+                    _memoryCache.Remove($"point_{id}");
+                }
+                catch { }
+                
+                try
+                {
                     using var httpClient = new HttpClient();
 
                     var url = "http://localhost:5055/api/cache/invalidate";
@@ -130,7 +140,7 @@ namespace WebApi.Controllers
 
                     };
 
-                    var response = await httpClient.PostAsJsonAsync(url, request);
+                    var response = httpClient.PostAsJsonAsync(url, request);
                 }
                 catch { }
             }
@@ -143,6 +153,13 @@ namespace WebApi.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             await _mediator.Send(new DeletePointCommand(id));
+            
+            try
+            {
+                _memoryCache.Remove($"point_{id}");
+            }
+            catch { }
+
             try
             {
                 using var httpClient = new HttpClient();
@@ -154,7 +171,7 @@ namespace WebApi.Controllers
 
                 };
 
-                var response = await httpClient.PostAsJsonAsync(url, request);
+                var response = httpClient.PostAsJsonAsync(url, request);
 
             }
             catch { }
