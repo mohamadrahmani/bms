@@ -51,6 +51,9 @@ public class GetPointsQueryHandler : IRequestHandler<GetPointsQuery, PagedResult
         if (request.DataType.HasValue)
             points = points.Where(p => p.DataType == request.DataType);
 
+        // فیلترهای داینامیک
+        points = points.ApplyDynamicFilters(request.Filters);
+
         // Search
         if (!string.IsNullOrWhiteSpace(request.Search))
         {

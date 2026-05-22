@@ -51,20 +51,20 @@ namespace WebApi.Controllers
         {
 // todo: Amini: remove log
 
-            await _auditLogger.Add(new Log
-            {
-                //UserId = user.Id,
-                EventType = EventType.Login,
-                Result = OperationResult.Failed,
-                ResultMessage = "Telemetry",
-                //IpAddress = request.IpAddress,
-                //Source = "LoginCommandHandler",
-                Source = "UpdateDeviceTelemetry",
-                LogDate = DateTime.UtcNow,
-                ObjectName = "Users",
-                ObjectId = deviceId.ToString(),
-                RequestBody = JsonSerializer.Serialize(request.Points)
-            });
+            //await _auditLogger.Add(new Log
+            //{
+            //    //UserId = user.Id,
+            //    EventType = EventType.Login,
+            //    Result = OperationResult.Failed,
+            //    ResultMessage = "Telemetry",
+            //    //IpAddress = request.IpAddress,
+            //    //Source = "LoginCommandHandler",
+            //    Source = "UpdateDeviceTelemetry",
+            //    LogDate = DateTime.UtcNow,
+            //    ObjectName = "Users",
+            //    ObjectId = deviceId.ToString(),
+            //    RequestBody = JsonSerializer.Serialize(request.Points)
+            //});
 
             var device = _store.Get(deviceId);
 

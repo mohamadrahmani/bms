@@ -30,7 +30,7 @@ namespace WebApi.Controllers
         private readonly UpdateDataPointUseCase _useCase;
         public PointController(ILogger<PointController> logger,// ITwinRealtimePublisher publisher, ITwinService twinService,
             IDeviceStateStore store
-            ,IEventDispatcher dispatcher,
+            , IEventDispatcher dispatcher,
             UpdateDataPointUseCase useCase,
             IMediator mediator
             )
@@ -191,3 +191,4 @@ namespace WebApi.Controllers
         public object? Value { get; set; }
     }
 }
+
