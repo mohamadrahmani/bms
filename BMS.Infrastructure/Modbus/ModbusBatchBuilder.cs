@@ -1,4 +1,5 @@
 ﻿using BMS.Application.Models;
+using BMS.Application.Points.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace BMS.Infrastructure.Modbus
             _maxAddressGap = maxAddressGap;
         }
 
-        public List<ModbusBatch> Build(IReadOnlyCollection<PointConfig> points)
+        public List<ModbusBatch> Build(IReadOnlyCollection<PointDto> points)
         {
             var result = new List<ModbusBatch>();
 
@@ -39,7 +40,7 @@ namespace BMS.Infrastructure.Modbus
                         {
                             RegisterType = group.Key.Value,
                             StartAddress = pt.Address.Value,
-                            Length = pt.Length
+                            Length = (ushort)pt.Length
                         };
                         current.Points.Add(pt);
                         result.Add(current);
@@ -63,7 +64,7 @@ namespace BMS.Infrastructure.Modbus
                         {
                             RegisterType = group.Key.Value,
                             StartAddress = pt.Address.Value,
-                            Length = pt.Length
+                            Length = (ushort)pt.Length
                         };
                         current.Points.Add(pt);
                         result.Add(current);

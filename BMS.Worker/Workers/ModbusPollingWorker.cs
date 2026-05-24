@@ -5,6 +5,7 @@ using BMS.Application.Models;
 using BMS.Infrastructure.Modbus;
 using BMS.Worker.Abstractions;
 using System.Threading.Channels;
+using System.Diagnostics;
 
 namespace BMS.Worker.Workers
 {
@@ -102,8 +103,11 @@ namespace BMS.Worker.Workers
         {
             try
             {
+                //var isOnline = await plc.TestConnectionAsync(token);
+                var swTest = Stopwatch.StartNew();
                 var isOnline = await plc.TestConnectionAsync(token);
-
+                swTest.Stop();
+                Console.WriteLine($"[DIAG] PLC={plc.Name} TestConnection took {swTest.ElapsedMilliseconds} ms, Online={isOnline}");
                 //var statusMsg = new TelemetryMessage
                 //{
                 //    Type = "plcStatus",
@@ -145,7 +149,7 @@ namespace BMS.Worker.Workers
                         }).ToList()
 
                     };
-                    await _sender.SendAsync(snapshot, token);
+                    //await _sender.SendAsync(snapshot, token);
                     if (!_telemetryWriter.TryWrite(msg))
                         _logger.LogWarning("Telemetry queue is full. Dropped message for PLC {Plc}", plc.Name);
                 }
