@@ -27,6 +27,9 @@ public class ModbusConnectionManager : IModbusConnectionManager
     public ConnectionState State => _state;
     public DateTime? LastSuccessfulRead => _lastSuccessfulRead;
     public int ConsecutiveFailures => _consecutiveFailures;
+    private readonly IAsyncPolicy _readPolicy;
+
+    // در سازنده، بعد از تعریف circuitBreakerPolicy و timeoutPolicy اصلی:
 
     public ModbusConnectionManager(string ip, int port, ILogger<ModbusConnectionManager> logger)
     {
@@ -48,7 +51,7 @@ public class ModbusConnectionManager : IModbusConnectionManager
                 });
 
         var timeoutPolicy = Policy.TimeoutAsync(
-            TimeSpan.FromSeconds(3),
+            TimeSpan.FromMilliseconds(500),
             TimeoutStrategy.Pessimistic);
 
         var circuitBreakerPolicy = Policy
@@ -81,8 +84,37 @@ public class ModbusConnectionManager : IModbusConnectionManager
             retryPolicy,
             timeoutPolicy
         );
+        _readPolicy = Policy.WrapAsync(circuitBreakerPolicy, timeoutPolicy);
+
     }
 
+    public async Task<T> ExecuteReadAsync<T>(Func<Task<T>> action)
+    {
+        try
+        {
+            var result = await _readPolicy.ExecuteAsync(action);
+            _state = ConnectionState.Online;
+            _lastSuccessfulRead = DateTime.UtcNow;
+            _consecutiveFailures = 0;
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Read execution failed.");
+            _consecutiveFailures++;
+            throw;
+        }
+    }
+
+    // overload برای Action بدون بازگشت (void)
+    public async Task ExecuteReadAsync(Func<Task> action)
+    {
+        await ExecuteReadAsync<object>(async () =>
+        {
+            await action().ConfigureAwait(false);
+            return null!;
+        });
+    }
     public async Task<IModbusMaster> GetMasterAsync(CancellationToken cancellationToken)
     {
         if (_master != null && _client?.Connected == true)
@@ -162,5 +194,57 @@ public class ModbusConnectionManager : IModbusConnectionManager
     {
         _master = null;
         _client?.Dispose();
+    }
+    public async Task<bool> PingAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(TimeSpan.FromMilliseconds(300)); // حداکثر ۵۰۰ میلی‌ثانیه
+
+            using var client = new TcpClient();
+            await client.ConnectAsync(_ip, _port, cts.Token);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<IModbusMaster> GetMasterForReadAsync(CancellationToken cancellationToken)
+    {
+        // اگر اتصال قبلی هنوز برقرار است، از همان استفاده کن
+        if (_master != null && _client?.Connected == true)
+            return _master;
+
+        try
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(TimeSpan.FromMilliseconds(500)); // نهایت ۵۰۰ میلی‌ثانیه برای اتصال
+
+            var client = new TcpClient();
+            await client.ConnectAsync(_ip, _port, cts.Token);
+
+            var factory = new ModbusFactory();
+            var newMaster = factory.CreateMaster(client);
+
+            // ذخیره کن تا بعداً دوباره استفاده شود
+            lock (_lock)
+            {
+                _client?.Dispose();
+                _client = client;
+                _master = newMaster;
+                _state = ConnectionState.Online;
+                _lastSuccessfulRead = DateTime.UtcNow;
+                _consecutiveFailures = 0;
+            }
+            return _master;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Fast master connection failed for read.");
+            throw;
+        }
     }
 }

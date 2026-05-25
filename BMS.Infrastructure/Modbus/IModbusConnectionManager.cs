@@ -15,5 +15,8 @@ public interface IModbusConnectionManager : IDisposable
     DateTime? LastSuccessfulRead { get; }
 
     int ConsecutiveFailures { get; }
+    Task<T> ExecuteReadAsync<T>(Func<Task<T>> action);
+    Task<bool> PingAsync(CancellationToken cancellationToken);
+    Task<IModbusMaster> GetMasterForReadAsync(CancellationToken cancellationToken)ک
 }
 
