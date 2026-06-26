@@ -87,6 +87,7 @@ namespace BMS.Infrastructure.Repositories
         {
             return await _context.Users
                 .Include(u => u.UserRoles)
+                .Include(p=> p.Person)
                 .FirstOrDefaultAsync(
                     u => u.UserName == userName && u.IsActive,
                     cancellationToken);

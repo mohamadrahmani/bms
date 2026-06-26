@@ -2,6 +2,7 @@
 
 public sealed record LoginResponse(
     Guid UserId,
+    string FullName,
     string UserName,
     string Token,
     DateTime ExpiresAt,

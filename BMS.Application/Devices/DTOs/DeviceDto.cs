@@ -16,6 +16,7 @@ namespace BMS.Application.Devices.DTOs
         public string? Description { get; set; } = default!;
 
         public DeviceType? Type { get; set; }
+        public String? TypeName { get; set; }
 
         public bool? EnableAlarming { get; set; }
 

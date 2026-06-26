@@ -39,6 +39,18 @@
             public const string CommandExecute = "Devices.Command.Execute";
         }
 
+
+        // دستورات دستگاه ‌ها (CommandDefinition)
+        public static class CommandDefinition
+        {
+            public const string View = "CommandDefinitions.View";
+            public const string Create = "CommandDefinitions.Create";
+            public const string Update = "CommandDefinitions.Update";
+            public const string Delete = "CommandDefinitions.Delete";
+            public const string DefinitionManage = "CommandDefinitions.Definition.Manage";
+            public const string CommandExecute = "CommandDefinitions.Command.Execute";
+        }
+
         // نقاط (Points)
         public static class Points
         {
