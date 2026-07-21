@@ -51,12 +51,18 @@ public class GetPointsQueryHandler : IRequestHandler<GetPointsQuery, PagedResult
         if (request.DataType.HasValue)
             points = points.Where(p => p.DataType == request.DataType);
 
+        // فیلترهای داینامیک
+        points = points.ApplyDynamicFilters(request.Filters);
+
         // Search
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             points = points.Where(p =>
-                p.Tag.Contains(request.Search) ||
-                p.Title.Contains(request.Search));
+                p.Tag.Contains(request.Search)
+                || p.Title.Contains(request.Search)
+                || p.Code.Contains(request.Search)
+                || p.Address.ToString() == request.Search
+                || p.Device.Name.Contains(request.Search));
         }
         var query = points.Select(p => new PointDto
         {

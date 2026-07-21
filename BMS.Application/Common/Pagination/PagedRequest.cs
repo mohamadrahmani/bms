@@ -8,7 +8,7 @@ namespace BMS.Application.Common.Pagination
 {
     public class PagedRequest
     {
-        private const int MaxPageSize = 100;
+        private const int MaxPageSize = 200;
 
         public int PageNumber { get; set; } = 1;
 

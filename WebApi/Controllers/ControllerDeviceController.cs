@@ -44,29 +44,32 @@ namespace WebApi.Controllers
             _auditLogger = auditLogger;
         }
 
-        [HttpPost("{deviceId}/update")]
+        [HttpPost("update")]
         public async Task<IActionResult> Update(
-        Guid deviceId,
+        //Guid deviceId,
         [FromBody] TelemetryMessage request)
         {
-// todo: Amini: remove log
+            // todo: Amini: remove log
 
-            await _auditLogger.Add(new Log
-            {
-                //UserId = user.Id,
-                EventType = EventType.Login,
-                Result = OperationResult.Failed,
-                ResultMessage = "Telemetry",
-                //IpAddress = request.IpAddress,
-                //Source = "LoginCommandHandler",
-                Source = "UpdateDeviceTelemetry",
-                LogDate = DateTime.UtcNow,
-                ObjectName = "Users",
-                ObjectId = deviceId.ToString(),
-                RequestBody = JsonSerializer.Serialize(request.Points)
-            });
+            //await _auditLogger.Add(new Log
+            //{
+            //    //UserId = user.Id,
+            //    EventType = EventType.Login,
+            //    Result = OperationResult.Failed,
+            //    ResultMessage = "Telemetry",
+            //    //IpAddress = request.IpAddress,
+            //    //Source = "LoginCommandHandler",
+            //    Source = "UpdateDeviceTelemetry",
+            //    LogDate = DateTime.UtcNow,
+            //    ObjectName = "Users",
+            //    ObjectId = deviceId.ToString(),
+            //    RequestBody = JsonSerializer.Serialize(request.Points)
+            //});
 
-            var device = _store.Get(deviceId);
+            if(request.DeviceId == null)
+                return Ok();
+
+            var device = _store.Get(request.DeviceId.Value);
 
             foreach(var point in request.Points)
             {
@@ -77,7 +80,7 @@ namespace WebApi.Controllers
                 }
 
                 await _useCase.ExecuteAsync(
-                    deviceId,
+                    request.DeviceId.Value,
                     point.Id,
                     point.Value.ToString());
 

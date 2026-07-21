@@ -167,6 +167,7 @@ namespace BMS.Application.Auth.Commands.Login
 
             return new LoginResponse(
                 user.Id,
+                user.Person.FirstName + " " + user.Person.LastName,
                 user.UserName,
                 token,
                 expiresAt,

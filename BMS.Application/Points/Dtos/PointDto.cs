@@ -10,7 +10,7 @@ public class PointDto
     public Guid DeviceId { get; set; }
     public string DeviceName { get; set; }
 
-    public string Tag { get; set; } = default!;
+    public string? Tag { get; set; }
 
     public string Title { get; set; } = default!;
 

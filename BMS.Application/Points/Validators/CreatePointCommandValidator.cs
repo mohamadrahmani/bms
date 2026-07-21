@@ -15,7 +15,7 @@ namespace BMS.Application.Points.Validators
                 .NotNull();
 
             RuleFor(x => x.Tag)
-                .NotEmpty()
+                //.NotEmpty()
                 .MaximumLength(50);
 
             RuleFor(x => x.DeviceId)

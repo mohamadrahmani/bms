@@ -20,11 +20,11 @@ namespace BMS.Infrastructure.State
             return _devices.GetOrAdd(deviceId, id => new Device(id));
         }
 
-        public void Update(Guid deviceId, Guid pointId, string? value)
-        {
-            var device = GetOrCreate(deviceId);
-            device.UpdatePoint(pointId, value);
-        }
+        //public void Update(Guid deviceId, Guid pointId, string? value)
+        //{
+        //    var device = GetOrCreate(deviceId);
+        //    device.UpdatePoint(point, value);
+        //}
 
         public Device Get(Guid id)
     => _devices.GetOrAdd(id, _ => new Device(id));

@@ -52,6 +52,7 @@ namespace BMS.Application.Devices.Queries
                 Code = d.Code,
                 Name = d.Name,
                 Type = d.Type,
+                TypeName = d.Type.ToString(),
                 EnableAlarming = d.EnableAlarming,
                 EnableTrending = d.EnableTrending,
                 IsActive = d.IsActive,

@@ -3,6 +3,7 @@ using BMS.Application.Devices.Commands;
 using BMS.Application.Devices.DTOs;
 using BMS.Application.Devices.Queries;
 using BMS.Application.Users.Queries;
+using BMS.Infrastructure.Devices;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Security.Authorization;
@@ -49,6 +50,20 @@ namespace BMS.API.Controllers
         {
             //var result = await _mediator.Send(new CreateDeviceCommand(dto));
             var id = await _mediator.Send(command);
+            try
+            {
+                using var httpClient = new HttpClient();
+
+                var url = "http://localhost:5055/api/cache/invalidate";
+
+                var request = new WritePointCommandRequest
+                {
+
+                };
+
+                var response = httpClient.PostAsJsonAsync(url, request);
+            }
+            catch { }
             return Ok(id);
         }
 
@@ -58,6 +73,20 @@ namespace BMS.API.Controllers
         public async Task<ActionResult<DeviceDto>> Update(UpdateDeviceCommand command)
         {
             var result = await _mediator.Send(command);
+            try
+            {
+                using var httpClient = new HttpClient();
+
+                var url = "http://localhost:5055/api/cache/invalidate";
+
+                var request = new WritePointCommandRequest
+                {
+
+                };
+
+                var response = httpClient.PostAsJsonAsync(url, request);
+            }
+            catch { }
             return Ok(result);
         }
 
@@ -70,7 +99,20 @@ namespace BMS.API.Controllers
 
             if (!result)
                 return NotFound();
+            try
+            {
+                using var httpClient = new HttpClient();
 
+                var url = "http://localhost:5055/api/cache/invalidate";
+
+                var request = new WritePointCommandRequest
+                {
+
+                };
+
+                var response = httpClient.PostAsJsonAsync(url, request);
+            }
+            catch { }
             return NoContent();
         }
 

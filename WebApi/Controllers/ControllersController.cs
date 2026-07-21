@@ -2,6 +2,7 @@
 using BMS.Application.Controllers.Commands;
 using BMS.Application.Controllers.Queries;
 using BMS.Application.Users.Queries;
+using BMS.Infrastructure.Devices;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Security.Authorization;
@@ -27,6 +28,21 @@ namespace BMS.API.Controllers
             [FromBody] CreateControllerCommand command)
         {
             var id = await _mediator.Send(command);
+
+            try
+            {
+                using var httpClient = new HttpClient();
+
+                var url = "http://localhost:5055/api/cache/invalidate";
+
+                var request = new WritePointCommandRequest
+                {
+
+                };
+
+                var response = httpClient.PostAsJsonAsync(url, request);
+            }
+            catch { }
             return Ok(id);
         }
 
@@ -39,6 +55,19 @@ namespace BMS.API.Controllers
         {
             command.ControllerId = id;
             await _mediator.Send(command);
+            try { 
+            using var httpClient = new HttpClient();
+
+            var url = "http://localhost:5055/api/cache/invalidate";
+
+            var request = new WritePointCommandRequest
+            {
+
+            };
+
+            var response = httpClient.PostAsJsonAsync(url, request);
+            }
+            catch { }
             return NoContent();
         }
 
@@ -51,8 +80,22 @@ namespace BMS.API.Controllers
             {
                 ControllerId = id
             });
+            try
+            {
+                using var httpClient = new HttpClient();
 
-            return NoContent();
+                var url = "http://localhost:5055/api/cache/invalidate";
+
+                var request = new WritePointCommandRequest
+                {
+
+                };
+
+                var response = httpClient.PostAsJsonAsync(url, request);
+
+            }
+            catch { }
+                return NoContent();
         }
 
         // GET LIST

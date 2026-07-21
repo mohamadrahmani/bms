@@ -23,16 +23,19 @@ namespace BMS.Application.Logs.Handlers
         {
             var logs = _logRepository.Logs.AsQueryable();
             // Filtering
-            if (request.UserId.HasValue)
-                logs = logs.Where(x => x.UserId == request.UserId);
+            //if (request.UserId.HasValue)
+            //    logs = logs.Where(x => x.UserId == request.UserId);
 
-            if (!string.IsNullOrWhiteSpace(request.EventType))
-                logs = logs.Where(x => x.EventType.ToString() == request.EventType);
+            //if (!string.IsNullOrWhiteSpace(request.EventType))
+            //    logs = logs.Where(x => x.EventType.ToString() == request.EventType);
             ///////
-            var query = logs
-                .OrderByDescending(x => x.LogDate);
-
-            return await query.ToPagedResultAsync(
+            //var query = logs
+            //    .OrderByDescending(x => x.LogDate);
+            //logs = logs.Select(p => new
+            //{
+            //    Id = p.Id
+            //});
+            return await logs.ToPagedResultAsync(
                 request.PageNumber,
                 request.PageSize,
                 cancellationToken);

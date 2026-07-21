@@ -20,7 +20,7 @@ public class Point : BaseEntity<Guid>
         Guid deviceId,        // شناسه کنترلری که این نقطه به آن تعلق دارد
         PointKind kind,           // نوع نقطه (DI, DO, AI, AO, TI …)
 		ushort? address,           // آدرس نقطه (مثلاً X0, Y0, CH1 ...)
-       string tag,               // برچسب مختصر و یکتا
+       string? tag,               // برچسب مختصر و یکتا
         string? title,             // عنوان توصیفی نقطه
         PointDataType dataType,   // نوع داده نقطه (Boolean, Int32, Float32 …)
         PointType pointType,
@@ -40,7 +40,7 @@ public class Point : BaseEntity<Guid>
         // اعتبارسنجی پارامترها
         if (deviceId == Guid.Empty) throw new ArgumentException("DeviceId is required.");
         if (address == null) throw new ArgumentException("Address is required.");
-        if (string.IsNullOrWhiteSpace(tag)) throw new ArgumentException("Tag is required.");
+        //if (string.IsNullOrWhiteSpace(tag)) throw new ArgumentException("Tag is required.");
         if (string.IsNullOrWhiteSpace(title)) throw new ArgumentException("Title is required.");
 
         DeviceId = deviceId;
@@ -108,7 +108,7 @@ public class Point : BaseEntity<Guid>
     // آدرس منطقی پوینت در PLC
     public ushort? Address { get; set; } = default!;  // X0 / Y0 / CH1 ...
                                                       // نام کوتاه و یکتای پوینت (Tag مهندسی)
-    public string Tag { get; set; } = default!;
+    public string? Tag { get; set; }
     // عنوان قابل نمایش برای کاربر
     public string? Title { get; set; } = default!;
     // واحد اندازه‌گیری مقدار
@@ -229,7 +229,7 @@ public class Point : BaseEntity<Guid>
     }
 
     public void Update(
-    string tag,
+    string? tag,
     string title,
     PointKind kind,
     PointType pointType,

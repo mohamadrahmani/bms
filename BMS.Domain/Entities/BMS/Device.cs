@@ -189,28 +189,27 @@ namespace BMS.Domain.Entities.BMS
         // -----------------------------
 
         public DataPointUpdatedDomainEvent? UpdatePoint(
-            Guid pointId,
+            Point point,
             string? value)
         {
             lock (_sync)
             {
-                var point = _devicePoints?.FirstOrDefault(p => p.Id == pointId);
+                var _point = _devicePoints?.FirstOrDefault(p => p.Id == point!.Id);
 
-                if (point == null)
-                    throw new KeyNotFoundException($"Point '{pointId}' not found.");
+                if (_point == null)
+                    throw new KeyNotFoundException($"Point '{point.Id}' not found.");
 
-                if (Equals(point.Value, value))
+                if (Equals(_point.Value, value))
                     return null;
 
                 //point.Update(value);
-                point.Value = value;
+                _point.Value = value;
 
                 return new DataPointUpdatedDomainEvent(
                     Id,
-                    pointId,
+                    point.Id,
                     point.Tag,
                     point.PointType,
-                    //point.,
                     value,
                     point.LastUpdatedAtUtc.Value);
             }
