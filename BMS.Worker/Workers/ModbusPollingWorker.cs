@@ -55,7 +55,7 @@ namespace BMS.Worker.Workers
 
                     await Task.WhenAll(pollingTasks);
 
-                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                    await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -123,7 +123,16 @@ namespace BMS.Worker.Workers
 
                 if (!isOnline)
                 {
-                    _logger.LogWarning("PLC {Name} OFFLINE", plc.Name);
+                    //_logger.LogWarning("PLC {Name} OFFLINE", plc.Name);
+                    _telemetryWriter.TryWrite(new TelemetryMessage
+                    {
+                        Type = "telemetry",
+                        PlcName = plc.Name,
+                        IsOnline = false,
+                        TimestampUtc = DateTime.UtcNow,
+                        Points = new()
+                    });
+
                     return;
                 }
 

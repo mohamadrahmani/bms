@@ -1,11 +1,12 @@
-﻿using NModbus;
+﻿using BMS.Application.Enum;
+using Microsoft.Extensions.Logging;
+using NModbus;
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
 using Polly.Timeout;
+using System.Diagnostics;
 using System.Net.Sockets;
-using Microsoft.Extensions.Logging;
-using BMS.Application.Enum;
 
 namespace BMS.Infrastructure.Modbus;
 
@@ -200,7 +201,7 @@ public class ModbusConnectionManager : IModbusConnectionManager
         try
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            cts.CancelAfter(TimeSpan.FromMilliseconds(300)); // حداکثر ۵۰۰ میلی‌ثانیه
+            cts.CancelAfter(TimeSpan.FromMilliseconds(1500)); // حداکثر ۵۰۰ میلی‌ثانیه
 
             using var client = new TcpClient();
             await client.ConnectAsync(_ip, _port, cts.Token);
@@ -220,15 +221,19 @@ public class ModbusConnectionManager : IModbusConnectionManager
 
         try
         {
+            var sw = Stopwatch.StartNew();
+
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            cts.CancelAfter(TimeSpan.FromMilliseconds(500)); // نهایت ۵۰۰ میلی‌ثانیه برای اتصال
+            cts.CancelAfter(TimeSpan.FromMilliseconds(1500)); // نهایت ۵۰۰ میلی‌ثانیه برای اتصال
 
             var client = new TcpClient();
             await client.ConnectAsync(_ip, _port, cts.Token);
 
             var factory = new ModbusFactory();
             var newMaster = factory.CreateMaster(client);
+            sw.Stop();
 
+            Console.WriteLine($"[DIAG] PLC={_ip} Connect={sw.ElapsedMilliseconds}ms");
             // ذخیره کن تا بعداً دوباره استفاده شود
             lock (_lock)
             {
@@ -240,6 +245,7 @@ public class ModbusConnectionManager : IModbusConnectionManager
                 _consecutiveFailures = 0;
             }
             return _master;
+
         }
         catch (Exception ex)
         {

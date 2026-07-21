@@ -76,9 +76,9 @@ public sealed class TelemetryForwarderWorker : BackgroundService
             {
                 try
                 {
-                    var url = urlTemplate.Replace("{DeviceId}", msg.DeviceId.ToString());
+                    //var url = urlTemplate.Replace("{DeviceId}", msg.DeviceId.ToString());
 
-                    var response = await http.PostAsJsonAsync(url, msg, stoppingToken);
+                    var response = await http.PostAsJsonAsync(urlTemplate, msg, stoppingToken);
 
                     if (response.IsSuccessStatusCode)
                     {
