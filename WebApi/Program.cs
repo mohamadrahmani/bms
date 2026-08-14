@@ -29,6 +29,7 @@ using System.Text;
 using BMS.Application.Common.Behaviors;
 using BMS.Infrastructure.Security.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +38,14 @@ builder.Services.AddMediatR(typeof(ApplicationAssemblyReference).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(ApplicationAssemblyReference).Assembly);
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
+builder.Services.Configure<PmFileOptions>(
+    builder.Configuration.GetSection(PmFileOptions.SectionName));
+
+var pmMaxFileSize = builder.Configuration.GetValue<long>(
+    "PmFiles:MaxFileSizeBytes",
+    PmFileOptions.DefaultMaxFileSizeBytes);
+builder.Services.Configure<FormOptions>(options =>
+    options.MultipartBodyLengthLimit = pmMaxFileSize);
 
 builder.Services.AddRealtimeInfrastructure();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

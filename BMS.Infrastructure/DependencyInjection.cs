@@ -1,10 +1,11 @@
-﻿using BMS.Application.Abstraction;
+using BMS.Application.Abstraction;
 using BMS.Application.Common.Interfaces;
 using BMS.Application.Interfaces;
 using BMS.Application.Models;
 using BMS.Domain.Events;
 using BMS.Infrastructure.Commanding;
 using BMS.Infrastructure.Devices;
+using BMS.Infrastructure.Files;
 using BMS.Infrastructure.Historian;
 using BMS.Infrastructure.Logging;
 using BMS.Infrastructure.Persistence;
@@ -55,7 +56,11 @@ namespace BMS.Infrastructure
             services.AddScoped<IPermissionRepository, PermissionRepository>();
             services.AddScoped<IUserRoleRepository, UserRoleRepository>();
             services.AddScoped<IDeviceScheduleRepository, DeviceScheduleRepository>();
+            services.AddScoped<IPmRepository, PmRepository>();
             services.AddMemoryCache();
+            services.AddSingleton(TimeProvider.System);
+            services.AddSingleton<IPmFilePolicy, ConfiguredPmFilePolicy>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 
             // =======================

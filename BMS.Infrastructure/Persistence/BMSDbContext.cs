@@ -3,6 +3,7 @@ using BMS.Domain.Entities;
 using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
 using BMS.Domain.Entities.Logs;
+using BMS.Domain.Entities.PreventiveMaintenance;
 using BMS.Infrastructure.Persistence.Configurations;
 using BMS.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,9 @@ namespace BMS.Infrastructure.Persistence
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Log> Logs { get; set; }
         public DbSet<DeviceSchedule> DeviceSchedules { get; set; }
+        public DbSet<PmSchedule> PmSchedules { get; set; }
+        public DbSet<PmServiceHistory> PmServiceHistories { get; set; }
+        public DbSet<PmAttachment> PmAttachments { get; set; }
 
 
 

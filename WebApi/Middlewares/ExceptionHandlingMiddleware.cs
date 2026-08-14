@@ -38,6 +38,16 @@ public class ExceptionHandlingMiddleware
             await HandleBadRequest(context, ex.Message);
         }
 
+        catch (NotFoundException ex)
+        {
+            await HandleError(context, HttpStatusCode.NotFound, ex.Message);
+        }
+
+        catch (ConflictException ex)
+        {
+            await HandleError(context, HttpStatusCode.Conflict, ex.Message);
+        }
+
         catch (DomainException ex)
         {
             await HandleBadRequest(context, ex.Message);
@@ -87,6 +97,20 @@ public class ExceptionHandlingMiddleware
                 errors = new[] { message }
             })
         );
+    }
+
+    private static async Task HandleError(
+        HttpContext context,
+        HttpStatusCode statusCode,
+        string message)
+    {
+        context.Response.StatusCode = (int)statusCode;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsync(
+            JsonSerializer.Serialize(new
+            {
+                errors = new[] { message }
+            }));
     }
 
     private async Task HandleUnhandledException(HttpContext context, Exception ex)
