@@ -5,6 +5,7 @@ using BMS.Application.Models;
 using BMS.Infrastructure.Modbus;
 using BMS.Worker.Abstractions;
 using System.Threading.Channels;
+using System.Diagnostics;
 
 namespace BMS.Worker.Workers
 {
@@ -54,7 +55,7 @@ namespace BMS.Worker.Workers
 
                     await Task.WhenAll(pollingTasks);
 
-                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                    await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -102,8 +103,11 @@ namespace BMS.Worker.Workers
         {
             try
             {
+                //var isOnline = await plc.TestConnectionAsync(token);
+                var swTest = Stopwatch.StartNew();
                 var isOnline = await plc.TestConnectionAsync(token);
-
+                swTest.Stop();
+                Console.WriteLine($"[DIAG] PLC={plc.Name} TestConnection took {swTest.ElapsedMilliseconds} ms, Online={isOnline}");
                 //var statusMsg = new TelemetryMessage
                 //{
                 //    Type = "plcStatus",
@@ -119,7 +123,16 @@ namespace BMS.Worker.Workers
 
                 if (!isOnline)
                 {
-                    _logger.LogWarning("PLC {Name} OFFLINE", plc.Name);
+                    //_logger.LogWarning("PLC {Name} OFFLINE", plc.Name);
+                    _telemetryWriter.TryWrite(new TelemetryMessage
+                    {
+                        Type = "telemetry",
+                        PlcName = plc.Name,
+                        IsOnline = false,
+                        TimestampUtc = DateTime.UtcNow,
+                        Points = new()
+                    });
+
                     return;
                 }
 
@@ -145,7 +158,7 @@ namespace BMS.Worker.Workers
                         }).ToList()
 
                     };
-                    await _sender.SendAsync(snapshot, token);
+                    //await _sender.SendAsync(snapshot, token);
                     if (!_telemetryWriter.TryWrite(msg))
                         _logger.LogWarning("Telemetry queue is full. Dropped message for PLC {Plc}", plc.Name);
                 }

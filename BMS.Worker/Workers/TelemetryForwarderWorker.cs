@@ -54,21 +54,21 @@ public sealed class TelemetryForwarderWorker : BackgroundService
             }
 
             // ذخیره پیام در فایل برای مشاهده سریع
-            try
-            {
-                var json = JsonSerializer.Serialize(msg);
+            //try
+            //{
+            //    var json = JsonSerializer.Serialize(msg);
 
-                var line = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} | {json}";
+            //    var line = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} | {json}";
 
-                await File.AppendAllTextAsync(
-                    _logPath,
-                    line + Environment.NewLine,
-                    stoppingToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to write telemetry log.");
-            }
+            //    await File.AppendAllTextAsync(
+            //        _logPath,
+            //        line + Environment.NewLine,
+            //        stoppingToken);
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex, "Failed to write telemetry log.");
+            //}
 
             var delivered = false;
 
@@ -76,9 +76,9 @@ public sealed class TelemetryForwarderWorker : BackgroundService
             {
                 try
                 {
-                    var url = urlTemplate.Replace("{DeviceId}", msg.DeviceId.ToString());
+                    //var url = urlTemplate.Replace("{DeviceId}", msg.DeviceId.ToString());
 
-                    var response = await http.PostAsJsonAsync(url, msg, stoppingToken);
+                    var response = await http.PostAsJsonAsync(urlTemplate, msg, stoppingToken);
 
                     if (response.IsSuccessStatusCode)
                     {
