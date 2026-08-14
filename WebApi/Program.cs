@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using WebApi.Realtime.Extensions;
 using WebApi.Realtime.Hubs;
 
-using Microsoft.Extensions.DependencyInjection;
 using BMS.Infrastructure.State;
 using BMS.Application;
 using FluentValidation;
@@ -27,9 +26,6 @@ using BMS.Infrastructure.Security;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
-using System;
-using BMS.Infrastructure.Persistence;
 using BMS.Application.Common.Behaviors;
 using BMS.Infrastructure.Security.Authorization;
 using Microsoft.AspNetCore.Authorization;

@@ -11,6 +11,7 @@ namespace BMS.Infrastructure.Persistence.Repositories
     public class DeviceScheduleRepository : IDeviceScheduleRepository
     {
         private readonly BMSDbContext _context; // نام کلاس DbContext شما
+        public IQueryable<DeviceSchedule> DeviceSchedules => _context.DeviceSchedules;
 
         public DeviceScheduleRepository(BMSDbContext context)
         {
@@ -28,6 +29,11 @@ namespace BMS.Infrastructure.Persistence.Repositories
             return await _context.DeviceSchedules
                 .Where(x => x.DeviceId == deviceId && !x.IsDeleted)
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task AddAsync(DeviceSchedule deviceSchedule, CancellationToken cancellationToken = default)
+        {
+            await _context.DeviceSchedules.AddAsync(deviceSchedule, cancellationToken);
         }
     }
 }

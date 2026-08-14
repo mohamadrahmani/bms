@@ -1,4 +1,5 @@
 ﻿using BMS.Application.Common.Filters;
+using System.Globalization;
 using System.Linq.Expressions;
 
 public static class QueryableFilterExtensions
@@ -7,7 +8,7 @@ public static class QueryableFilterExtensions
         this IQueryable<T> query,
         List<FilterDto>? filters)
     {
-        if (filters == null || !filters.Any())
+        if (filters == null || filters.Count == 0)
             return query;
 
         foreach (var filter in filters)
@@ -15,28 +16,9 @@ public static class QueryableFilterExtensions
             var parameter = Expression.Parameter(typeof(T), "x");
             var property = Expression.PropertyOrField(parameter, filter.Key);
 
-            // دریافت نوع فیلد (مثلاً Guid یا string)
-            Type propertyType = property.Type;
+            object? value = ConvertToType(filter.Value, property.Type);
 
-            object? typedValue;
-
-            // هندلینگ ویژه برای Guid
-            if (propertyType == typeof(Guid))
-            {
-                typedValue = Guid.Parse(filter.Value);
-            }
-            // هندلینگ ویژه برای Guid? (Nullable)
-            else if (propertyType == typeof(Guid?))
-            {
-                typedValue = string.IsNullOrEmpty(filter.Value) ? null : Guid.Parse(filter.Value);
-            }
-            else
-            {
-                // برای سایر موارد مثل string, int و ...
-                typedValue = Convert.ChangeType(filter.Value, propertyType);
-            }
-
-            var constant = Expression.Constant(typedValue, propertyType);
+            var constant = Expression.Constant(value, property.Type);
             var body = Expression.Equal(property, constant);
 
             var lambda = Expression.Lambda<Func<T, bool>>(body, parameter);
@@ -45,5 +27,45 @@ public static class QueryableFilterExtensions
         }
 
         return query;
+    }
+
+    private static object? ConvertToType(string? value, Type targetType)
+    {
+        // Nullable<T>
+        Type actualType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            if (Nullable.GetUnderlyingType(targetType) != null)
+                return null;
+
+            throw new InvalidOperationException($"Value cannot be null for type {targetType.Name}");
+        }
+
+        // Enum
+        if (actualType.IsEnum)
+        {
+            return Enum.Parse(actualType, value, ignoreCase: true);
+        }
+
+        // Guid
+        if (actualType == typeof(Guid))
+        {
+            return Guid.Parse(value);
+        }
+
+        // DateTime
+        if (actualType == typeof(DateTime))
+        {
+            return DateTime.Parse(value, CultureInfo.InvariantCulture);
+        }
+
+        // TimeSpan
+        if (actualType == typeof(TimeSpan))
+        {
+            return TimeSpan.Parse(value, CultureInfo.InvariantCulture);
+        }
+
+        return Convert.ChangeType(value, actualType, CultureInfo.InvariantCulture);
     }
 }

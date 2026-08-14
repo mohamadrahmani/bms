@@ -26,10 +26,11 @@ namespace BMS.Application.UseCases
         public async Task<Guid> ExecuteAsync(
             Guid? deviceId,
             string commandName,
+            Guid? pointId,
             string? value)
         {
 
-            var point = _pointRepository.Points.Where(p => p.DeviceId == deviceId && p.CommandDefinition != null && p.CommandDefinition!.Code == commandName).SingleOrDefault();
+            var point = _pointRepository.Points.Where(p => (pointId != null && p.Id == pointId) || (p.DeviceId == deviceId && p.CommandDefinition != null && p.CommandDefinition!.Code == commandName)).SingleOrDefault();
 
             if (point == null)
                 throw new Exception("رجیستر مربوطه ثبت نشده است");

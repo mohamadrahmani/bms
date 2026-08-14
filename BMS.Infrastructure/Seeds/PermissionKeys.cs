@@ -28,6 +28,17 @@
             public const string Delete = "Controllers.Delete";
         }
 
+        
+
+        public static class DeviceSchedules
+        {
+            public const string View = "DeviceSchedules.View";
+            public const string Create = "DeviceSchedules.Create";
+            public const string Update = "DeviceSchedules.Update";
+            public const string Delete = "DeviceSchedules.Delete";
+        }
+
+
         // دستگاه‌ها (Devices)
         public static class Devices
         {

@@ -3,6 +3,7 @@ using BMS.Application.UseCases;
 using BMS.Application.Interfaces;
 using BMS.Infrastructure.Events;
 using BMS.Domain.Events;
+using BMS.Domain.Entities.BMS;
 
 namespace WebApi.Controllers;   
 
@@ -21,11 +22,12 @@ public class CommandsController : ControllerBase
 
     [HttpPost]
     public async Task<IActionResult> Execute(
-        [FromBody]  aaaa command)
+        [FromBody] SensorCommand command)
     {   
         var commandId = await _useCase.ExecuteAsync(
             command.DeviceId,
             command.CommandName,
+            null,
         command.Value);
 
         await eventDispatcher.DispatchAsync(
@@ -40,11 +42,4 @@ public class CommandsController : ControllerBase
 
         return Ok(new { commandId });
     }
-}
-
-public class aaaa
-{
-    public Guid? DeviceId { get; set; }
-    public string CommandName { get; set; }
-    public string? Value { get; set; }
 }

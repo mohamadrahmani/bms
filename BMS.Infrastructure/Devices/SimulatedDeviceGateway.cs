@@ -39,11 +39,19 @@ namespace BMS.Infrastructure.Devices
                 Value = value
             };
 
+            try
+            {
+
             var response = await httpClient.PostAsJsonAsync(url, request);
 
             //if (!response.IsSuccessStatusCode)
                 Task.FromResult(
                     CommandResult.Fail("Unknown command"));
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             //var result = await response.Content.ReadFromJsonAsync<WritePointCommandResponse>(cancellationToken: null);
 

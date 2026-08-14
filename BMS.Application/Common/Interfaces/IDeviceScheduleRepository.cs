@@ -7,10 +7,11 @@ namespace BMS.Application.Common.Interfaces
 {
     public interface IDeviceScheduleRepository
     {
-        // متد اصلی که در هندلر به آن نیاز دارید
+        IQueryable<DeviceSchedule> DeviceSchedules { get; }
+        
         Task<DeviceSchedule?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
-        // اگر در آینده برای لیست کردن نیاز به کوئری داشتید
         Task<List<DeviceSchedule>> GetByDeviceIdAsync(Guid deviceId, CancellationToken cancellationToken);
+        Task AddAsync(DeviceSchedule deviceSchedule, CancellationToken cancellationToken = default);
     }
 }
