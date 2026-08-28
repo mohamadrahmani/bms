@@ -91,6 +91,9 @@ namespace BMS.Domain.Entities.BMS
 
         public ICollection<DeviceCommand> Commands { get; set; }
 
+        public ICollection<PmSchedule> PmSchedules { get; set; }
+    = new List<PmSchedule>();
+
         // دسترسی فقط خواندنی به نقاط دستگاه
         public IReadOnlyCollection<Point> DevicePoints  => _devicePoints.AsReadOnly();
         //public ICollection<Point>? DevicePoints { get; set; } = new List<Point>();

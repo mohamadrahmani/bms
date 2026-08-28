@@ -64,14 +64,6 @@ namespace BMS.Application.Devices.Queries
                 RoomId = d.Location != null ? d.Location!.RoomId : null
             });
 
-            try
-            {
-                var asdfa = query.ToList();
-            }
-            catch(Exception ex)
-            {
-
-            }
             return await query.ToPagedResultAsync(
                 request.PageNumber,
                 request.PageSize,
