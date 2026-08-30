@@ -56,6 +56,7 @@ namespace BMS.Infrastructure
             services.AddScoped<IUserRoleRepository, UserRoleRepository>();
             services.AddScoped<IDeviceScheduleRepository, DeviceScheduleRepository>();
             services.AddScoped<IPmRepository, PmRepository>();
+            services.AddScoped<IFileRepository, FileRepository>();
             services.AddMemoryCache();
 
 

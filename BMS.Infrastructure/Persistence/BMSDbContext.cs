@@ -3,6 +3,7 @@ using BMS.Domain.Entities;
 using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
 using BMS.Domain.Entities.Logs;
+using BMS.Domain.Entities.Files;
 using BMS.Infrastructure.Persistence.Configurations;
 using BMS.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +39,11 @@ namespace BMS.Infrastructure.Persistence
         public DbSet<DeviceSchedule> DeviceSchedules { get; set; }
         public DbSet<PmSchedule> PmSchedules { get; set; }
         public DbSet<PmServiceHistory> PmServiceHistories { get; set; }
+        public DbSet<BMS.Domain.Entities.Files.File> Files { get; set; }
+        public DbSet<FileContent> FileContents { get; set; }
+        public DbSet<FileAttachment> FileAttachments { get; set; }
+        public DbSet<FileEntityType> FileEntityTypes { get; set; }
+        public DbSet<BMS.Domain.Entities.Files.FileEntityTypeConfiguration> FileEntityTypeConfigurations { get; set; }
 
 
         // ===== BMS Entities =====
@@ -53,6 +59,7 @@ namespace BMS.Infrastructure.Persistence
             PermissionSeed.Seed(modelBuilder);
             RoleSeed.Seed(modelBuilder);
             RolePermissionSeed.Seed(modelBuilder);
+            FileSeed.Seed(modelBuilder);
 
             base.OnModelCreating(modelBuilder);
         }
