@@ -21,6 +21,9 @@ public static class FileSeed
             Id = PmEntityTypeId,
             Code = "PM",
             Name = "Preventive Maintenance",
+            TableName = "PmSchedules",
+            DisplayNameFa = "تعمیرات پیشگیرانه",
+            DisplayNameEn = "Preventive Maintenance",
             IsActive = true,
             IsDeleted = false,
             CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
@@ -44,6 +47,9 @@ public static class FileSeed
             Id = PmOperationHistoryEntityTypeId,
             Code = "PM_OPERATION_HISTORY",
             Name = "PM Operation History",
+            TableName = "PmServiceHistories",
+            DisplayNameFa = "سوابق عملیات تعمیرات پیشگیرانه",
+            DisplayNameEn = "PM Operation History",
             IsActive = true,
             IsDeleted = false,
             CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)

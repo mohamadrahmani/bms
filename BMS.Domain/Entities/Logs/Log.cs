@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using BMS.Domain.Entities;
 
 namespace BMS.Domain.Entities.Logs
@@ -8,9 +9,14 @@ namespace BMS.Domain.Entities.Logs
     public class Log : BaseEntity<Guid>
     {
         public Guid? ParentLogId { get; set; }
+        [JsonIgnore]
         public Log? ParentLog { get; set; }
         public ICollection<Log>? Children { get; set; }
         public Guid? UserId { get; set; }
+        [NotMapped]
+        public string? UserName { get; set; }
+        [NotMapped]
+        public string? EntityDisplayName { get; set; }
         public EventType? EventType { get; set; }// نوع رویداد ثبت شده در سیستم (افزودن، ویرایش، حذف، ورود، خروج)
         public string? ObjectName { get; set; } // اسم جدولی که تغییر کرده
         public string? ObjectId { get; set; } // شناسه ردیفی که تغییر کرده

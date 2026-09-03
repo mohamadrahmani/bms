@@ -21,24 +21,28 @@ namespace BMS.Application.Logs.Handlers
             GetAllLogsQuery request,
             CancellationToken cancellationToken)
         {
-            var logs = _logRepository.Logs.AsQueryable();
-            // Filtering
-            //if (request.UserId.HasValue)
-            //    logs = logs.Where(x => x.UserId == request.UserId);
+            var logs = _logRepository.Logs
+                .Where(x => x.ParentLogId == null)
+                .OrderByDescending(x => x.LogDate);
 
-            //if (!string.IsNullOrWhiteSpace(request.EventType))
-            //    logs = logs.Where(x => x.EventType.ToString() == request.EventType);
-            ///////
-            //var query = logs
-            //    .OrderByDescending(x => x.LogDate);
-            //logs = logs.Select(p => new
-            //{
-            //    Id = p.Id
-            //});
-            return await logs.ToPagedResultAsync(
+            if (request.UserId.HasValue)
+                logs = logs.Where(x => x.UserId == request.UserId)
+                    .OrderByDescending(x => x.LogDate);
+
+            if (!string.IsNullOrWhiteSpace(request.EventType) &&
+                System.Enum.TryParse<EventType>(request.EventType, true, out var eventType))
+            {
+                logs = logs.Where(x => x.EventType == eventType)
+                    .OrderByDescending(x => x.LogDate);
+            }
+
+            var result = await logs.ToPagedResultAsync(
                 request.PageNumber,
                 request.PageSize,
                 cancellationToken);
+
+            await _logRepository.EnrichAsync(result.Items, cancellationToken);
+            return result;
         }
     }
 }

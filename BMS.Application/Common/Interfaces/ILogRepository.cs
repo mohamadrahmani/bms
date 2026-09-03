@@ -1,6 +1,7 @@
 ﻿using BMS.Domain.Entities.Logs;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace BMS.Application.Common.Interfaces
 {
@@ -8,6 +9,7 @@ namespace BMS.Application.Common.Interfaces
     {
         IQueryable<Log> Logs { get; }
         Task<Log?> GetByIdAsync(Guid id);
+        Task EnrichAsync(IEnumerable<Log> logs, CancellationToken cancellationToken = default);
         //Task WriteAsync(Log log);
         //void Add(Log log);
         Task AddAsync(Log log);

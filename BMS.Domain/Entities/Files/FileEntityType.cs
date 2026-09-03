@@ -20,6 +20,9 @@ public class FileEntityType : BaseEntity<Guid>
 
     public string Code { get; private set; } = null!;
     public string Name { get; private set; } = null!;
+    public string? TableName { get; private set; }
+    public string? DisplayNameFa { get; private set; }
+    public string? DisplayNameEn { get; private set; }
     public bool IsActive { get; private set; }
 
     public FileEntityTypeConfiguration? Configuration { get; private set; }

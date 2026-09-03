@@ -26,7 +26,7 @@ public class LogsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("{id:long}")]
+    [HttpGet("{id:guid}")]
     [RequirePermission(PermissionKeys.Logs.SystemLogsView)]
     public async Task<IActionResult> GetById(Guid id)
     {

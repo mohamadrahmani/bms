@@ -42,7 +42,8 @@ namespace BMS.Infrastructure.Persistence
         public DbSet<BMS.Domain.Entities.Files.File> Files { get; set; }
         public DbSet<FileContent> FileContents { get; set; }
         public DbSet<FileAttachment> FileAttachments { get; set; }
-        public DbSet<FileEntityType> FileEntityTypes { get; set; }
+        // Kept under the legacy property name for upload-module compatibility.
+        public DbSet<FileEntityType> EntityTypes { get; set; }
         public DbSet<BMS.Domain.Entities.Files.FileEntityTypeConfiguration> FileEntityTypeConfigurations { get; set; }
 
 
