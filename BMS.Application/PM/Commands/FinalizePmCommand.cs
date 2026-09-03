@@ -5,7 +5,7 @@ using MediatR;
 namespace BMS.Application.Pm.Commands
 {
     public class FinalizePmCommand
-        : IRequest<ApiResponse<bool>>
+        : IRequest<ApiResponse<Guid>>
     {
         public Guid PmScheduleId { get; set; }
 

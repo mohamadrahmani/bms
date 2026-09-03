@@ -24,9 +24,11 @@ namespace BMS.Application.Common.Interfaces
         Task<List<PmServiceHistory>> GetHistoryByDeviceIdAsync(
             Guid deviceId, string tag);
 
+        Task<PmServiceHistory?> GetHistoryByIdAsync(Guid id);
+
         Task SaveChangesAsync();
 
-        Task<bool> FinalizeAsync(
+        Task<Guid?> FinalizeAsync(
             Guid pmScheduleId,
             PmServiceStatus status,
             DateTime actionDateUtc,

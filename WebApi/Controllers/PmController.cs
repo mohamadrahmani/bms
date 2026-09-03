@@ -90,5 +90,14 @@ namespace BMS.Api.Controllers
 
             return Ok(result);
         }
+
+        [HttpPut("history/{id:guid}")]
+        public async Task<IActionResult> UpdateHistory(
+            Guid id,
+            [FromBody] UpdatePmHistoryCommand command)
+        {
+            command.Id = id;
+            return Ok(await _mediator.Send(command));
+        }
     }
 }

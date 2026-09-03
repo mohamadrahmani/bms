@@ -9,7 +9,7 @@ namespace BMS.Application.Pm.Handlers
     public class FinalizePmCommandHandler
         : IRequestHandler<
             FinalizePmCommand,
-            ApiResponse<bool>>
+            ApiResponse<Guid>>
     {
         private readonly IPmRepository _repository;
 
@@ -19,20 +19,20 @@ namespace BMS.Application.Pm.Handlers
             _repository = repository;
         }
 
-        public async Task<ApiResponse<bool>> Handle(
+        public async Task<ApiResponse<Guid>> Handle(
             FinalizePmCommand request,
             CancellationToken cancellationToken)
         {
             if (request.Status != PmServiceStatus.Completed &&
                 request.Status != PmServiceStatus.Cancelled)
             {
-                return ApiResponse<bool>.FailResponse(null,
+                return ApiResponse<Guid>.FailResponse(null,
                     "Invalid PM service status.");
             }
 
             if (request.ActionDateUtc == default)
             {
-                return ApiResponse<bool>.FailResponse(null,
+                return ApiResponse<Guid>.FailResponse(null,
                     "Action date is required.");
             }
 
@@ -46,14 +46,14 @@ namespace BMS.Application.Pm.Handlers
                 null  // CreatedByUserId
             );
 
-            if (!result)
+            if (!result.HasValue)
             {
-                return ApiResponse<bool>.FailResponse(null,
+                return ApiResponse<Guid>.FailResponse(null,
                     "PM not found or already finalized.");
             }
 
-            return ApiResponse<bool>.SuccessResponse(
-                true,
+            return ApiResponse<Guid>.SuccessResponse(
+                result.Value,
                 "PM finalized successfully.");
         }
     }

@@ -77,5 +77,13 @@ namespace BMS.Domain.Entities.BMS
         // Navigation
 
         public PmSchedule PmSchedule { get; private set; } = null!;
+
+        public void Update(PmServiceStatus status, DateTime actionDateUtc, string? description)
+        {
+            Status = status;
+            ActionDateUtc = actionDateUtc;
+            Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+            SetUpdated();
+        }
     }
 }

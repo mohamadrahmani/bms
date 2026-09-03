@@ -59,7 +59,13 @@ namespace BMS.Infrastructure.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<bool> FinalizeAsync(
+        public async Task<PmServiceHistory?> GetHistoryByIdAsync(Guid id)
+        {
+            return await _context.PmServiceHistories
+                .FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<Guid?> FinalizeAsync(
             Guid pmScheduleId,
             PmServiceStatus status,
             DateTime actionDateUtc,
@@ -82,7 +88,7 @@ namespace BMS.Infrastructure.Persistence.Repositories
                 if (pm == null)
                 {
                     await transaction.RollbackAsync();
-                    return false;
+                    return null;
                 }
 
                 var history = new PmServiceHistory(
@@ -104,7 +110,7 @@ namespace BMS.Infrastructure.Persistence.Repositories
 
                 await transaction.CommitAsync();
 
-                return true;
+                return history.Id;
             }
             catch
             {
