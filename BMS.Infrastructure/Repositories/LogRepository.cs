@@ -100,7 +100,7 @@ namespace BMS.Infrastructure.Repositories
             }
             catch(Exception ex)
             {
-               
+               // todo: Log in file
             }
         }
     }

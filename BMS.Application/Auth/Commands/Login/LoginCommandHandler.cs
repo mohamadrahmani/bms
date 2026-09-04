@@ -64,7 +64,7 @@ namespace BMS.Application.Auth.Commands.Login
             {
                 _logger.LogWarning("Login failed. User not found: {UserName}", request.UserName);
 
-                _auditLogger.Add(new Log
+                await _auditLogger.Add(new Log
                 {
                     UserId = null,
                     EventType = EventType.Login,
@@ -78,7 +78,7 @@ namespace BMS.Application.Auth.Commands.Login
                     Source = nameof(LoginCommandHandler),
                     RequestBody = JsonSerializer.Serialize(new { Username = normalizedUserName, Password = "***" }),
 
-                });
+                }, cancellationToken);
                 throw new BusinessRuleException("نام کاربری یا رمز ورود نامعتبر می باشد");
             }
 
@@ -98,7 +98,7 @@ namespace BMS.Application.Auth.Commands.Login
                 if (!isValid)
                 {
                     _logger.LogWarning("Login failed. Wrong password for user {UserName}", user.UserName);
-                    _auditLogger.Add(new Log
+                    await _auditLogger.Add(new Log
                     {
                         UserId = user.Id,
                         EventType = EventType.Login,
@@ -111,7 +111,7 @@ namespace BMS.Application.Auth.Commands.Login
                         ObjectName = "Users",
                         ObjectId = user.Id.ToString(),
                         RequestBody = JsonSerializer.Serialize(new { Username = normalizedUserName, Password = "***" })
-                    });
+                    }, cancellationToken);
 
                     throw new BusinessRuleException("نام کاربری یا رمز ورود نامعتبر می باشد");
                 }
@@ -122,7 +122,7 @@ namespace BMS.Application.Auth.Commands.Login
 
                 _logger.LogError(ex, "Login error for user {UserName}", request.UserName);
 
-                _auditLogger.Add(new Log
+                await _auditLogger.Add(new Log
                 {
                     UserId = user?.Id,
                     EventType = EventType.Login,
@@ -135,7 +135,7 @@ namespace BMS.Application.Auth.Commands.Login
                     ObjectName = "Users",
                     ObjectId = user?.Id.ToString(),
                     RequestBody = JsonSerializer.Serialize(new { Username = normalizedUserName, Password = "***" }) // Storing sanitized request body
-                });
+                }, cancellationToken);
 
                 throw;
             }
@@ -150,7 +150,7 @@ namespace BMS.Application.Auth.Commands.Login
 
             _logger.LogInformation("User {UserName} logged in successfully", user.UserName);
 
-            _auditLogger.Add(new Log
+            await _auditLogger.Add(new Log
             {
                 UserId = user.Id,
                 EventType = EventType.Login,
@@ -163,7 +163,7 @@ namespace BMS.Application.Auth.Commands.Login
                 ObjectName = "Users",
                 ObjectId = user.Id.ToString()
 
-            });
+            }, cancellationToken);
 
             return new LoginResponse(
                 user.Id,
