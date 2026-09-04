@@ -79,9 +79,17 @@ namespace Bms.Infrastructure.Seeds
             new Permission(46, PermissionKeys.Rooms.Update, "ویرایش اتاق", "Rooms", 2),
             new Permission(47, PermissionKeys.Rooms.Delete, "حذف اتاق", "Rooms", 3),
 
+            // Device Schedules
+            new Permission(60, PermissionKeys.DeviceSchedules.View, "مشاهده زمانبندی دستگاه ها", "DeviceShedules", 0),
+            new Permission(61, PermissionKeys.DeviceSchedules.Create, "ایجاد زمانبندی دستگاه ها", "DeviceShedules", 1),
+            new Permission(62, PermissionKeys.DeviceSchedules.Update, "ویرایش زمانبندی دستگاه ها", "DeviceShedules", 2),
+            new Permission(63, PermissionKeys.DeviceSchedules.Delete, "حذف زمانبندی دستگاه ها", "DeviceShedules", 3),
+
             // Logs
             new Permission(48, PermissionKeys.Logs.SystemLogsView, "مشاهده لاگ‌های سیستمی", "Logs", 1),
             new Permission(49, PermissionKeys.Logs.UserAuditView, "مشاهده تغییرات کاربران", "Logs", 2),
+            new Permission(64, PermissionKeys.Logs.SystemErrorLogsView, "مشاهده گزارش خطاهای سیستمی", "Logs", 3),
+            new Permission(65, PermissionKeys.Logs.SystemErrorLogsResolve, "بررسی و بستن خطاهای سیستمی", "Logs", 4),
 
             // Scheduler
             new Permission(50, PermissionKeys.Scheduler.View, "مشاهده زمان‌بندی‌ها", "Scheduler", 0),

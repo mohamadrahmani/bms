@@ -36,6 +36,7 @@ namespace BMS.Infrastructure.Persistence
         public DbSet<Ward> Wards { get; set; }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Log> Logs { get; set; }
+        public DbSet<SystemErrorLog> SystemErrorLogs { get; set; }
         public DbSet<DeviceSchedule> DeviceSchedules { get; set; }
         public DbSet<PmSchedule> PmSchedules { get; set; }
         public DbSet<PmServiceHistory> PmServiceHistories { get; set; }

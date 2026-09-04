@@ -102,6 +102,9 @@ builder.Services.AddScoped<IHistorianWriter, ChannelHistorianWriter>();
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("Jwt")
 );
+builder.Services.Configure<SystemErrorLogOptions>(
+    builder.Configuration.GetSection(SystemErrorLogOptions.SectionName)
+);
 
 // --------------------
 // JWT Provider

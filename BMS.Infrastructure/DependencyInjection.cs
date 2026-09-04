@@ -51,6 +51,9 @@ namespace BMS.Infrastructure
             services.AddScoped<IRoomRepository, RoomRepository>();
             services.AddScoped<ICommandDefinitionRepository, CommandDefinitionRepository>();
             services.AddScoped<ILogRepository, LogRepository>();
+            services.AddScoped<ISystemErrorLogRepository, SystemErrorLogRepository>();
+            services.AddSingleton<ISystemErrorLogWriter, SystemErrorLogWriter>();
+            services.AddHostedService<SystemErrorLogCleanupService>();
             services.AddScoped<IAuditLogger, AuditLogger>();
             services.AddScoped<IPermissionRepository, PermissionRepository>();
             services.AddScoped<IUserRoleRepository, UserRoleRepository>();

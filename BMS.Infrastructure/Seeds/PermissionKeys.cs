@@ -138,6 +138,8 @@
         {
             public const string SystemLogsView = "SystemLogs.View";
             public const string UserAuditView = "UserAudit.View";
+            public const string SystemErrorLogsView = "SystemErrorLogs.View";
+            public const string SystemErrorLogsResolve = "SystemErrorLogs.Resolve";
         }
 
         // Scheduler (زمان‌بند)

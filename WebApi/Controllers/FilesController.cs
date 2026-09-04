@@ -21,7 +21,7 @@ public sealed class FilesController : ControllerBase
     [HttpPost]
     [RequestSizeLimit(2_500_000)]
     public async Task<IActionResult> Upload(
-        [FromForm] IFormFile file,
+        IFormFile file,
         [FromForm] Guid entityTypeId,
         [FromForm] Guid entityId,
         [FromForm] string? description,
