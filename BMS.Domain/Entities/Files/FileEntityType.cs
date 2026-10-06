@@ -2,13 +2,13 @@ using BMS.Domain.Entities;
 
 namespace BMS.Domain.Entities.Files;
 
-public class FileEntityType : BaseEntity<Guid>
+public class EntityType : BaseEntity<Guid>
 {
-    private FileEntityType()
+    private EntityType()
     {
     }
 
-    public FileEntityType(string code, string name)
+    public EntityType(string code, string name)
     {
         if (string.IsNullOrWhiteSpace(code))
             throw new ArgumentException("Entity type code is required.", nameof(code));

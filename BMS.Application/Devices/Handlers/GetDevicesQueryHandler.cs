@@ -45,6 +45,10 @@ namespace BMS.Application.Devices.Queries
                 // اگر خواستی Code هم سرچ شود:
                 // devices = devices.Where(d => d.Name.Contains(request.Search) || d.Code.Contains(request.Search));
             }
+
+            // فیلترهای داینامیک
+            devices = devices.ApplyDynamicFilters(request.Filters);
+
             var query = devices.Select(d => new DeviceDto
             {
                 Id = d.Id,

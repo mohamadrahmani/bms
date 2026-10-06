@@ -16,7 +16,7 @@ public static class FileSeed
 
     public static void Seed(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<FileEntityType>().HasData(new
+        modelBuilder.Entity<EntityType>().HasData(new
         {
             Id = PmEntityTypeId,
             Code = "PM",
@@ -42,7 +42,7 @@ public static class FileSeed
             CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         });
 
-        modelBuilder.Entity<FileEntityType>().HasData(new
+        modelBuilder.Entity<EntityType>().HasData(new
         {
             Id = PmOperationHistoryEntityTypeId,
             Code = "PM_OPERATION_HISTORY",

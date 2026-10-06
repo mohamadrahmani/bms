@@ -31,5 +31,5 @@ public class FileEntityTypeConfiguration : BaseEntity<Guid>
     public string AllowedExtensions { get; private set; } = null!;
     public string AllowedContentTypes { get; private set; } = null!;
 
-    public FileEntityType EntityType { get; private set; } = null!;
+    public EntityType EntityType { get; private set; } = null!;
 }

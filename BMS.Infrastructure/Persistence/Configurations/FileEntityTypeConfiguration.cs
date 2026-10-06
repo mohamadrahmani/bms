@@ -1,12 +1,13 @@
 using BMS.Domain.Entities.Files;
+using BMS.Domain.Entities.Logs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace BMS.Infrastructure.Persistence.Configurations;
 
-public class FileEntityTypeConfiguration : IEntityTypeConfiguration<FileEntityType>
+public class FileEntityTypeConfigurationConfiguration : IEntityTypeConfiguration<EntityType>
 {
-    public void Configure(EntityTypeBuilder<FileEntityType> builder)
+    public void Configure(EntityTypeBuilder<EntityType> builder)
     {
         builder.ToTable("EntityTypes");
         builder.HasKey(x => x.Id);
@@ -19,7 +20,10 @@ public class FileEntityTypeConfiguration : IEntityTypeConfiguration<FileEntityTy
         builder.Property(x => x.IsActive).IsRequired();
         builder.HasIndex(x => x.Code).IsUnique();
         builder.HasOne(x => x.Configuration).WithOne(x => x.EntityType)
-            .HasForeignKey<Domain.Entities.Files.FileEntityTypeConfiguration>(x => x.EntityTypeId)
+            .HasForeignKey<FileEntityTypeConfiguration>(x => x.EntityTypeId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.HasMany<Log>().WithOne()
+            .HasForeignKey(x => x.EntityTypeId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

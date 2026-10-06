@@ -23,7 +23,7 @@ namespace BMS.Infrastructure.Logging
         //}
         public async Task Add(Log log, CancellationToken cancellationToken = default)
         {
-            await _logRepository.AddAsync(log);
+            await _logRepository.AddAsync(log, cancellationToken);
         }
 
     }

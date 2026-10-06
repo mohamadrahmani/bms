@@ -33,6 +33,25 @@ namespace BMS.Infrastructure.Repositories
             return log;
         }
 
+        public async Task<string?> GetObjectDisplayNameAsync(
+            string objectName, Guid id, CancellationToken cancellationToken = default)
+        {
+            return objectName switch
+            {
+                "Sites" => await _context.Sites.AsNoTracking().Where(x => x.Id == id).Select(x => x.Name).FirstOrDefaultAsync(cancellationToken),
+                "Buildings" => await _context.Buildings.AsNoTracking().Where(x => x.Id == id).Select(x => x.Name).FirstOrDefaultAsync(cancellationToken),
+                "Floors" => await _context.Floors.AsNoTracking().Where(x => x.Id == id).Select(x => x.Name).FirstOrDefaultAsync(cancellationToken),
+                "Wards" => await _context.Wards.AsNoTracking().Where(x => x.Id == id).Select(x => x.Name).FirstOrDefaultAsync(cancellationToken),
+                "Rooms" => await _context.Rooms.AsNoTracking().Where(x => x.Id == id).Select(x => x.Name).FirstOrDefaultAsync(cancellationToken),
+                "Controllers" => await _context.Controllers.AsNoTracking().Where(x => x.Id == id).Select(x => x.Name).FirstOrDefaultAsync(cancellationToken),
+                "Devices" => await _context.Devices.AsNoTracking().Where(x => x.Id == id).Select(x => x.Name).FirstOrDefaultAsync(cancellationToken),
+                "Points" => await _context.Points.AsNoTracking().Where(x => x.Id == id).Select(x => x.Title).FirstOrDefaultAsync(cancellationToken),
+                "Persons" => await _context.Persons.AsNoTracking().Where(x => x.Id == id).Select(x => x.FirstName + " " + x.LastName).FirstOrDefaultAsync(cancellationToken),
+                "Users" => await _context.Users.AsNoTracking().Where(x => x.Id == id).Select(x => x.UserName).FirstOrDefaultAsync(cancellationToken),
+                _ => null
+            };
+        }
+
         public async Task EnrichAsync(
             IEnumerable<Log> logs,
             CancellationToken cancellationToken = default)
@@ -45,8 +64,8 @@ namespace BMS.Infrastructure.Repositories
                 .Select(x => x.UserId!.Value)
                 .Distinct()
                 .ToList();
-            var objectNames = items.Where(x => !string.IsNullOrWhiteSpace(x.ObjectName))
-                .Select(x => x.ObjectName!)
+            var entityTypeIds = items.Where(x => x.EntityTypeId.HasValue)
+                .Select(x => x.EntityTypeId!.Value)
                 .Distinct()
                 .ToList();
 
@@ -59,13 +78,15 @@ namespace BMS.Infrastructure.Repositories
                     x => $"{x.Person.FirstName} {x.Person.LastName}",
                     cancellationToken);
 
-            var entityTypes = await _context.Set<FileEntityType>()
+            var entityTypes = await _context.Set<EntityType>()
                 .AsNoTracking()
-                .Where(x => objectNames.Contains(x.Code))
+                .Where(x => entityTypeIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.DisplayNameFa, x.DisplayNameEn, x.Name })
                 .ToDictionaryAsync(
-                    x => x.Code,
-                    x => x.DisplayNameFa ?? x.Name ?? x.Code,
-                    cancellationToken);
+                    x => x.Id,
+                x => !string.IsNullOrWhiteSpace(x.DisplayNameFa) ? x.DisplayNameFa :
+                     !string.IsNullOrWhiteSpace(x.DisplayNameEn) ? x.DisplayNameEn : x.Name,
+                cancellationToken);
 
             foreach (var log in items)
             {
@@ -74,8 +95,8 @@ namespace BMS.Infrastructure.Repositories
                     ? userName
                     : (log.UserId.HasValue ? "کاربر نامشخص" : "سیستم");
 
-                log.EntityDisplayName = !string.IsNullOrWhiteSpace(log.ObjectName) &&
-                                        entityTypes.TryGetValue(log.ObjectName, out var entityName)
+                log.EntityDisplayName = log.EntityTypeId.HasValue &&
+                                        entityTypes.TryGetValue(log.EntityTypeId.Value, out var entityName)
                     ? entityName
                     : log.ObjectName;
             }
@@ -91,12 +112,22 @@ namespace BMS.Infrastructure.Repositories
         //                            // SaveChanges انجام نمی‌شود
         //    _context.SaveChangesAsync();
         //}
-        public async Task AddAsync(Log log)
+        public async Task AddAsync(Log log, CancellationToken cancellationToken = default)
         {
-            await _context.Logs.AddAsync(log);
+            if (!log.EntityTypeId.HasValue && !string.IsNullOrWhiteSpace(log.ObjectName))
+            {
+                log.EntityTypeId = await _context.Set<EntityType>()
+                    .AsNoTracking()
+                    .Where(x => x.TableName == log.ObjectName ||
+                                (x.TableName == null && x.Code == log.ObjectName))
+                    .Select(x => (Guid?)x.Id)
+                    .FirstOrDefaultAsync(cancellationToken);
+            }
+
+            await _context.Logs.AddAsync(log, cancellationToken);
             try
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
             catch(Exception ex)
             {

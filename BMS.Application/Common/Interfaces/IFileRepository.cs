@@ -5,7 +5,7 @@ namespace BMS.Application.Common.Interfaces;
 
 public interface IFileRepository
 {
-    Task<FileEntityType?> GetTypeWithConfigurationAsync(Guid entityTypeId, CancellationToken cancellationToken);
+    Task<EntityType?> GetTypeWithConfigurationAsync(Guid entityTypeId, CancellationToken cancellationToken);
     Task<int> CountActiveAttachmentsAsync(Guid entityTypeId, Guid entityId, CancellationToken cancellationToken);
     Task<bool> HasActiveAttachmentAsync(Guid fileId, Guid entityTypeId, Guid entityId, CancellationToken cancellationToken);
     Task AddAsync(FileEntity file, FileContent content, FileAttachment attachment, CancellationToken cancellationToken);

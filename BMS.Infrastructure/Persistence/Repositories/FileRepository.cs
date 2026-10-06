@@ -11,9 +11,9 @@ public sealed class FileRepository : IFileRepository
 
     public FileRepository(BMSDbContext context) => _context = context;
 
-    public Task<FileEntityType?> GetTypeWithConfigurationAsync(
+    public Task<EntityType?> GetTypeWithConfigurationAsync(
         Guid entityTypeId, CancellationToken cancellationToken) =>
-        _context.Set<FileEntityType>()
+        _context.Set<EntityType>()
             .Include(x => x.Configuration)
             .SingleOrDefaultAsync(x => x.Id == entityTypeId && x.IsActive, cancellationToken);
 

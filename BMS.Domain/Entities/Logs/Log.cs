@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using BMS.Domain.Entities;
+using BMS.Domain.Entities.Files;
 
 namespace BMS.Domain.Entities.Logs
 {
@@ -19,7 +21,10 @@ namespace BMS.Domain.Entities.Logs
         public string? EntityDisplayName { get; set; }
         public EventType? EventType { get; set; }// نوع رویداد ثبت شده در سیستم (افزودن، ویرایش، حذف، ورود، خروج)
         public string? ObjectName { get; set; } // اسم جدولی که تغییر کرده
+        public Guid? EntityTypeId { get; set; }
         public string? ObjectId { get; set; } // شناسه ردیفی که تغییر کرده
+        [MaxLength(300)]
+        public string? ObjectDisplayName { get; set; }
         public string? FieldName { get; set; } // نام فیلد یا ستونی که تغییر کرده
         public string? OldValue { get; set; } // مقدار قدیم
         public string? NewValue { get; set; } // مقدار جدید

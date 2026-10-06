@@ -1,4 +1,5 @@
-﻿using BMS.Application.Common.Pagination;
+﻿using BMS.Application.Common.Filters;
+using BMS.Application.Common.Pagination;
 using BMS.Application.Devices.DTOs;
 using BMS.Domain.Entities.BMS;
 using MediatR;
@@ -21,5 +22,6 @@ namespace BMS.Application.Devices.Queries
 
         // سرچ (اینجا فقط Name؛ اگر خواستی Code هم اضافه می‌کنیم)
         public string? Search { get; set; }
+        public List<FilterDto>? Filters { get; set; }
     }
 }

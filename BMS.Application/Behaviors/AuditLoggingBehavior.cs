@@ -14,13 +14,16 @@ public class AuditLoggingBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
     private readonly IAuditLogger _auditLogger;
+    private readonly ILogRepository _logRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public AuditLoggingBehavior(
         IAuditLogger auditLogger,
+        ILogRepository logRepository,
         IHttpContextAccessor httpContextAccessor)
     {
         _auditLogger = auditLogger;
+        _logRepository = logRepository;
         _httpContextAccessor = httpContextAccessor;
     }
 
@@ -58,10 +61,27 @@ public class AuditLoggingBehavior<TRequest, TResponse>
         var rawBody = JsonSerializer.Serialize(request);
         var requestBody = LogSanitizer.Sanitize(rawBody);
 
+        var objectId = ExtractObjectId(request);
+        string? deletedObjectName = null;
+        if (auditAttr.EventType == EventType.DeleteData && Guid.TryParse(objectId, out var deletedId))
+            deletedObjectName = await _logRepository.GetObjectDisplayNameAsync(auditAttr.ObjectName, deletedId, cancellationToken);
+
 
         try
         {
             var response = await next();
+
+            if (auditAttr.EventType == EventType.AddData)
+            {
+                var createdId = response is Guid guid ? guid : response?.GetType().GetProperty("Data")?.GetValue(response);
+                if (createdId is Guid id && id != Guid.Empty)
+                    objectId = id.ToString();
+            }
+
+            var objectDisplayName = deletedObjectName ?? ExtractObjectDisplayName(request);
+            if (string.IsNullOrWhiteSpace(objectDisplayName) && Guid.TryParse(objectId, out var recordId))
+                objectDisplayName = await _logRepository.GetObjectDisplayNameAsync(auditAttr.ObjectName, recordId, cancellationToken);
+            objectDisplayName = TruncateDisplayName(objectDisplayName);
 
             stopwatch.Stop();
 
@@ -76,7 +96,8 @@ public class AuditLoggingBehavior<TRequest, TResponse>
                 UserId = userId,
                 EventType = auditAttr.EventType,
                 ObjectName = auditAttr.ObjectName,
-                ObjectId = ExtractObjectId(request),
+                ObjectId = objectId,
+                ObjectDisplayName = objectDisplayName,
 
                 Result = OperationResult.Success,
                 ResultMessage = "عملیات با موفقیت انجام شد",
@@ -114,7 +135,8 @@ public class AuditLoggingBehavior<TRequest, TResponse>
                             UserId = userId,
                             EventType = auditAttr.EventType,
                             ObjectName = auditAttr.ObjectName,
-                            ObjectId = ExtractObjectId(request),
+                            ObjectId = objectId,
+                            ObjectDisplayName = objectDisplayName,
 
                             FieldName = change.Field,
                             OldValue = change.OldValue,
@@ -147,6 +169,7 @@ public class AuditLoggingBehavior<TRequest, TResponse>
                 EventType = auditAttr.EventType,
                 ObjectName = auditAttr.ObjectName,
                 ObjectId = ExtractObjectId(request),
+                ObjectDisplayName = TruncateDisplayName(deletedObjectName ?? ExtractObjectDisplayName(request)),
                 Result = OperationResult.Error,
                 ResultMessage = $"خطا: {ex.Message}",
                 LogDate = DateTime.UtcNow,
@@ -184,5 +207,31 @@ public class AuditLoggingBehavior<TRequest, TResponse>
         var value = prop?.GetValue(request);
 
         return value?.ToString();
+    }
+
+    private static string? ExtractObjectDisplayName(TRequest request)
+    {
+        var type = request.GetType();
+        var name = type.GetProperty("Name")?.GetValue(request)?.ToString()
+            ?? type.GetProperty("Title")?.GetValue(request)?.ToString()
+            ?? type.GetProperty("UserName")?.GetValue(request)?.ToString();
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            var firstName = type.GetProperty("FirstName")?.GetValue(request)?.ToString();
+            var lastName = type.GetProperty("LastName")?.GetValue(request)?.ToString();
+            name = string.Join(" ", new[] { firstName, lastName }.Where(value => !string.IsNullOrWhiteSpace(value)));
+        }
+
+        return TruncateDisplayName(name);
+    }
+
+    private static string? TruncateDisplayName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return null;
+
+        name = name.Trim();
+        return name.Length > 300 ? name[..300] : name;
     }
 }

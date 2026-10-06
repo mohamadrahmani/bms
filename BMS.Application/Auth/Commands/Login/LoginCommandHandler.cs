@@ -71,6 +71,7 @@ namespace BMS.Application.Auth.Commands.Login
                     ObjectName = "Users",
                     //ObjectId = request.UserName,
                     ObjectId = normalizedUserName,
+                    ObjectDisplayName = normalizedUserName,
                     Result = OperationResult.Failed,
                     ResultMessage = "تلاش ناموفق برای ورود - نام کاربری یافت نشد",
                     LogDate = DateTime.UtcNow,
@@ -110,6 +111,7 @@ namespace BMS.Application.Auth.Commands.Login
                         LogDate = DateTime.UtcNow,
                         ObjectName = "Users",
                         ObjectId = user.Id.ToString(),
+                        ObjectDisplayName = user.UserName,
                         RequestBody = JsonSerializer.Serialize(new { Username = normalizedUserName, Password = "***" })
                     }, cancellationToken);
 
@@ -134,6 +136,7 @@ namespace BMS.Application.Auth.Commands.Login
                     LogDate = DateTime.UtcNow,
                     ObjectName = "Users",
                     ObjectId = user?.Id.ToString(),
+                    ObjectDisplayName = user?.UserName,
                     RequestBody = JsonSerializer.Serialize(new { Username = normalizedUserName, Password = "***" }) // Storing sanitized request body
                 }, cancellationToken);
 
@@ -161,7 +164,8 @@ namespace BMS.Application.Auth.Commands.Login
                 Source = nameof(LoginCommandHandler),
                 LogDate = DateTime.UtcNow,
                 ObjectName = "Users",
-                ObjectId = user.Id.ToString()
+                ObjectId = user.Id.ToString(),
+                ObjectDisplayName = user.UserName
 
             }, cancellationToken);
 

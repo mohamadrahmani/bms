@@ -9,13 +9,16 @@ public sealed class LogoutCommandHandler
     : IRequestHandler<LogoutCommand, Unit>
 {
     private readonly IAuditLogger _auditLogger;
+    private readonly ILogRepository _logRepository;
     private readonly ILogger<LogoutCommandHandler> _logger;
 
     public LogoutCommandHandler(
         IAuditLogger auditLogger,
+        ILogRepository logRepository,
         ILogger<LogoutCommandHandler> logger)
     {
         _auditLogger = auditLogger;
+        _logRepository = logRepository;
         _logger = logger;
     }
 
@@ -27,6 +30,8 @@ public sealed class LogoutCommandHandler
             "User {UserId} logged out",
             request.UserId);
 
+        var userName = await _logRepository.GetObjectDisplayNameAsync("Users", request.UserId, cancellationToken);
+
         await _auditLogger.Add(new Log
         {
             UserId = request.UserId,
@@ -37,7 +42,8 @@ public sealed class LogoutCommandHandler
             Source = nameof(LogoutCommandHandler),
             LogDate = DateTime.UtcNow,
             ObjectName = "Users",
-            ObjectId = request.UserId.ToString()
+            ObjectId = request.UserId.ToString(),
+            ObjectDisplayName = userName
         });
 
         return Unit.Value;
