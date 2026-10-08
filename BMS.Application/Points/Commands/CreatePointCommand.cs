@@ -46,6 +46,8 @@ public class CreatePointCommand : IRequest<ApiResponse<Guid>>
 
     public bool IsWritable { get; set; }
 
+    public bool StoreHistory { get; set; }
+
     public RegisterType? RegisterType { get; set; }
 
     public int? RegisterAddress { get; set; }

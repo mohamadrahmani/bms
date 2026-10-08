@@ -80,6 +80,7 @@ public class GetPointsQueryHandler : IRequestHandler<GetPointsQuery, PagedResult
             Scale = p.Scale,
             Offset = p.Offset,
             IsWritable = p.IsWritable,
+            StoreHistory = p.StoreHistory,
             RegisterType = p.RegisterType,
             PointType = p.PointType,
             BitIndex = p.BitIndex,

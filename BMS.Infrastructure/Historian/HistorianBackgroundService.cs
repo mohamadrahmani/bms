@@ -31,7 +31,6 @@ namespace BMS.Infrastructure.Historian
         protected override async Task ExecuteAsync(
             CancellationToken stoppingToken)
         {
-            return;
             var buffer = new List<DataPointHistoryEntity>(BatchSize);
             var timer = new PeriodicTimer(
                 TimeSpan.FromMilliseconds(FlushIntervalMs));

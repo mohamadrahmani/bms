@@ -37,6 +37,8 @@ public class UpdatePointCommand : IRequest<ApiResponse<bool>>
 
     public bool IsWritable { get; set; }
 
+    public bool? StoreHistory { get; set; }
+
     public RegisterType RegisterType { get; set; }
     public ushort? RegisterAddress { get; set; }
     public int? BitIndex { get; set; }

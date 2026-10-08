@@ -49,6 +49,7 @@ public static class PlcConfigMapper
             Unit = point.Unit,
             Scale=point.Scale,
             IsWritable= point.IsWritable,
+            StoreHistory = point.StoreHistory,
             RegisterType = point.RegisterType,
             Length = point.Length,
             Offset=point.Offset,

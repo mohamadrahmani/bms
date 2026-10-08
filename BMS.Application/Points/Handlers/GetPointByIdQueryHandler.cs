@@ -46,6 +46,7 @@ public class GetPointByIdQueryHandler : IRequestHandler<GetPointByIdQuery, Point
             Scale = point.Scale,
             Offset = point.Offset,
             IsWritable = point.IsWritable,
+            StoreHistory = point.StoreHistory,
             RegisterType = point.RegisterType,
             BitIndex = point.BitIndex,
             ByteOrder = point.ByteOrder,

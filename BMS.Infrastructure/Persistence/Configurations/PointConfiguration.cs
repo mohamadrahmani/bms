@@ -10,6 +10,10 @@ public class PointConfiguration : IEntityTypeConfiguration<Point>
 
         builder.HasKey(p => p.Id);
 
+        builder.Property(p => p.StoreHistory)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         builder.HasOne(p => p.Device)
             .WithMany(d => d.DevicePoints)
             .HasForeignKey(p => p.DeviceId)

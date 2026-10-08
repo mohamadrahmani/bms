@@ -1,5 +1,6 @@
 ﻿using BMS.Application.Common.Interfaces;
 using BMS.Application.Interfaces;
+using BMS.Application.Models;
 using BMS.Domain.Entities.BMS;
 using BMS.Domain.Events;
 using MediatR;
@@ -15,23 +16,27 @@ namespace BMS.Application.UseCases
         private readonly IEventDispatcher _dispatcher;
         private readonly IMemoryCache _memoryCache;
         private readonly IPointRepository _repository;
+        private readonly IHistorianWriter _historianWriter;
 
         public UpdateDataPointUseCase(
             IDeviceStateStore store,
             IEventDispatcher dispatcher,
              IMemoryCache memoryCache,
-             IPointRepository repository)
+             IPointRepository repository,
+             IHistorianWriter historianWriter)
         {
             _store = store;
             _dispatcher = dispatcher;
             _memoryCache = memoryCache;
             _repository = repository;
+            _historianWriter = historianWriter;
         }
 
         public async Task ExecuteAsync(
             Guid deviceId,
             Guid pointId,
-            string? value)
+            string? value,
+            DateTime? timestampUtc = null)
         {
             var device = _store.Get(deviceId);
 
@@ -53,6 +58,27 @@ namespace BMS.Application.UseCases
 
                     _memoryCache.Set(cacheKey, point, cacheEntryOptions);
                 }
+            }
+
+            if (point == null)
+                return;
+
+            var receivedAtUtc = timestampUtc.HasValue
+                ? timestampUtc.Value.Kind switch
+                {
+                    DateTimeKind.Utc => timestampUtc.Value,
+                    DateTimeKind.Local => timestampUtc.Value.ToUniversalTime(),
+                    _ => DateTime.SpecifyKind(timestampUtc.Value, DateTimeKind.Utc)
+                }
+                : DateTime.UtcNow;
+
+            if (point.StoreHistory)
+            {
+                _historianWriter.Enqueue(new DataPointDeltaModel(
+                    deviceId,
+                    pointId,
+                    value,
+                    receivedAtUtc));
             }
 
             var domainEvent = device.UpdatePoint(point, value);

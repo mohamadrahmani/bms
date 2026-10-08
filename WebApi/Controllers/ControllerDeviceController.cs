@@ -2,6 +2,7 @@
 using BMS.Application.Common.Interfaces;
 using BMS.Application.Interfaces;
 using BMS.Application.Models;
+using System.Globalization;
 using BMS.Application.UseCases;
 using BMS.Domain.Entities;
 using BMS.Domain.Entities.BMS;
@@ -70,6 +71,14 @@ namespace WebApi.Controllers
                 return Ok();
 
             var device = _store.Get(request.DeviceId.Value);
+            var receivedAtUtc = request.TimestampUtc == default
+                ? DateTime.UtcNow
+                : request.TimestampUtc.Kind switch
+                {
+                    DateTimeKind.Utc => request.TimestampUtc,
+                    DateTimeKind.Local => request.TimestampUtc.ToUniversalTime(),
+                    _ => DateTime.SpecifyKind(request.TimestampUtc, DateTimeKind.Utc)
+                };
 
             foreach(var point in request.Points)
             {
@@ -82,7 +91,8 @@ namespace WebApi.Controllers
                 await _useCase.ExecuteAsync(
                     request.DeviceId.Value,
                     point.Id,
-                    point.Value.ToString());
+                    point.Value.ToString(CultureInfo.InvariantCulture),
+                    receivedAtUtc);
 
             }
             return Ok();

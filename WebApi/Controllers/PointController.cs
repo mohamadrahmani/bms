@@ -107,7 +107,9 @@ namespace WebApi.Controllers
                 var response = httpClient.PostAsJsonAsync(url, request);
 
             }
-            catch { }
+            catch 
+            { 
+            }
             return Ok(id);
         }
 
@@ -127,7 +129,9 @@ namespace WebApi.Controllers
                 {
                     _memoryCache.Remove($"point_{id}");
                 }
-                catch { }
+                catch 
+                { 
+                }
                 
                 try
                 {
@@ -142,7 +146,9 @@ namespace WebApi.Controllers
 
                     var response = httpClient.PostAsJsonAsync(url, request);
                 }
-                catch { }
+                catch 
+                { 
+                }
             }
             return StatusCode(res.StatusCode, res);
         }
@@ -158,7 +164,9 @@ namespace WebApi.Controllers
             {
                 _memoryCache.Remove($"point_{id}");
             }
-            catch { }
+            catch 
+            { 
+            }
 
             try
             {
@@ -174,7 +182,9 @@ namespace WebApi.Controllers
                 var response = httpClient.PostAsJsonAsync(url, request);
 
             }
-            catch { }
+            catch 
+            { 
+            }
             return Ok();
         }
 

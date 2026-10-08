@@ -6,16 +6,21 @@ using BMS.Application.Points.Dtos;
 using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
 using MediatR;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace BMS.Application.Points.Handlers;
 
 public sealed class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand, ApiResponse<bool>>
 {
     private readonly IPointRepository _repository;
+    private readonly IMemoryCache _memoryCache;
 
-    public UpdatePointCommandHandler(IPointRepository repository)
+    public UpdatePointCommandHandler(
+        IPointRepository repository,
+        IMemoryCache memoryCache)
     {
         _repository = repository;
+        _memoryCache = memoryCache;
     }
 
     public async Task<ApiResponse<bool>> Handle(UpdatePointCommand request, CancellationToken cancellationToken)
@@ -39,6 +44,7 @@ public sealed class UpdatePointCommandHandler : IRequestHandler<UpdatePointComma
            request.WardId,
            request.RoomId
        );
+        var storeHistory = request.StoreHistory ?? point.StoreHistory;
         TrackChange(nameof(point.Tag), point.Tag, request.Tag);
         TrackChange(nameof(point.Title), point.Title, request.Title);
         TrackChange(nameof(point.Kind), point.Kind, request.Kind);
@@ -53,6 +59,7 @@ public sealed class UpdatePointCommandHandler : IRequestHandler<UpdatePointComma
         TrackChange(nameof(point.ValidationRetryCount), point.ValidationRetryCount, request.ValidationRetryCount);
         TrackChange(nameof(point.ValidationDelayMs), point.ValidationDelayMs, request.ValidationDelayMs);
         TrackChange(nameof(point.IsWritable), point.IsWritable, request.IsWritable);
+        TrackChange(nameof(point.StoreHistory), point.StoreHistory, storeHistory);
 
         //*************************
         //var location = new LocationReference(
@@ -81,7 +88,8 @@ public sealed class UpdatePointCommandHandler : IRequestHandler<UpdatePointComma
             request.ValidationDelayMs,
             request.IsWritable,
             location,
-            request.CommandDefinitionId
+            request.CommandDefinitionId,
+            storeHistory
         );
 
         //if (request.RegisterType && request.Address)
@@ -99,6 +107,7 @@ public sealed class UpdatePointCommandHandler : IRequestHandler<UpdatePointComma
         //}
 
         await _repository.UpdateAsync(point);
+        _memoryCache.Remove($"point_{point.Id}");
 
         var dto = new PointDto
         {

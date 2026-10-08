@@ -63,7 +63,9 @@ namespace BMS.API.Controllers
 
                 var response = httpClient.PostAsJsonAsync(url, request);
             }
-            catch { }
+            catch 
+            { 
+            }
             return Ok(id);
         }
 
@@ -86,7 +88,9 @@ namespace BMS.API.Controllers
 
                 var response = httpClient.PostAsJsonAsync(url, request);
             }
-            catch { }
+            catch 
+            { 
+            }
             return Ok(result);
         }
 
@@ -112,7 +116,9 @@ namespace BMS.API.Controllers
 
                 var response = httpClient.PostAsJsonAsync(url, request);
             }
-            catch { }
+            catch 
+            { 
+            }
             return NoContent();
         }
 

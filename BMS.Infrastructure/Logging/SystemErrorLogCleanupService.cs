@@ -35,9 +35,9 @@ public sealed class SystemErrorLogCleanupService : BackgroundService
             {
                 await Task.Delay(delay, stoppingToken);
             }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            catch (OperationCanceledException ex) when (stoppingToken.IsCancellationRequested)
             {
-                break;
+                    break;
             }
 
             if (stoppingToken.IsCancellationRequested ||

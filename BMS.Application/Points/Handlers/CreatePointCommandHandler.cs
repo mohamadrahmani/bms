@@ -48,7 +48,8 @@ public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, Api
         request.ValidationRetryCount,
         request.ValidationDelayMs,
         request.IsWritable,
-        request.CommandDefinitionId
+        request.CommandDefinitionId,
+        request.StoreHistory
        );
         // تنظیم Mapping (رجیستر PLC)
         if (request.RegisterType.HasValue && request.RegisterAddress.HasValue)

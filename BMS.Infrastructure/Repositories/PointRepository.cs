@@ -78,6 +78,7 @@ namespace BMS.Infrastructure.Repositories
                     ValidationRetryCount= p.ValidationRetryCount,
                     Scale=p.Scale,
                     IsWritable=p.IsWritable,
+                    StoreHistory=p.StoreHistory,
                     DataType=p.DataType,
                     RegisterType=p.RegisterType,
                     Length=p.Length,

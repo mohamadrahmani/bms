@@ -35,7 +35,8 @@ public class Point : BaseEntity<Guid>
     int validationRetryCount = 3,
     int validationDelayMs = 200,
     bool isWritable = false,
-    Guid? commandDefinitionId = null)      // واحد اندازه‌گیری (اختیاری)
+    Guid? commandDefinitionId = null,
+    bool storeHistory = false)      // واحد اندازه‌گیری (اختیاری)
     {
         // اعتبارسنجی پارامترها
         if (deviceId == Guid.Empty) throw new ArgumentException("DeviceId is required.");
@@ -72,6 +73,7 @@ public class Point : BaseEntity<Guid>
 
         Quality = PointQuality.Unknown;
         CommandDefinitionId = commandDefinitionId;
+        StoreHistory = storeHistory;
     }
 
     public LocationReference? Location { get; set; }
@@ -121,6 +123,7 @@ public class Point : BaseEntity<Guid>
                                                 // مشخص می‌کند این پوینت قابل نوشتن است یا فقط خواندنی
                                                 // معمولاً DO و AO قابل نوشتن هستند
     public bool IsWritable { get; set; }    // آیا قابل نوشتن است؟
+    public bool StoreHistory { get; set; }
 
     // اطلاعات Mapping صنعتی (برای ارتباط با Modbus یا PLC)
     // نوع رجیستر در پروتکل Modbus
@@ -246,7 +249,8 @@ public class Point : BaseEntity<Guid>
     int validationDelayMs,
     bool isWritable,
     LocationReference? location,
-    Guid? commandDefinitionId
+    Guid? commandDefinitionId,
+    bool storeHistory
 )
     {
         Tag = tag;
@@ -272,6 +276,7 @@ public class Point : BaseEntity<Guid>
 
         Location = location;
         CommandDefinitionId = commandDefinitionId;
+        StoreHistory = storeHistory;
         UpdatedAtUtc = DateTime.UtcNow;
     }
 

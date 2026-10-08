@@ -43,6 +43,7 @@ public class GetPointsByDeviceQueryHandler : IRequestHandler<GetPointsByDeviceQu
             Scale = p.Scale,
             Offset = p.Offset,
             IsWritable = p.IsWritable,
+            StoreHistory = p.StoreHistory,
             RegisterType = p.RegisterType,
             BitIndex = p.BitIndex,
             ByteOrder = p.ByteOrder,
