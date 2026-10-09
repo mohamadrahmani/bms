@@ -14,6 +14,7 @@ namespace BMS.Application.Points.Commands;
 public class UpdatePointCommand : IRequest<ApiResponse<bool>>
 {
     public Guid Id { get; set; }
+    public int? PointCategoryId { get; set; }
 
     public string? Tag { get; set; }
     public string Title { get; set; } = default!;

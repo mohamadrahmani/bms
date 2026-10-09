@@ -84,6 +84,7 @@ namespace BMS.Infrastructure.Repositories
                     Length=p.Length,
 
                     DeviceId = p.Device.Id,
+                    PointCategoryId = p.PointCategoryId,
                     DeviceCode = p.Device.Code,
                     DeviceName = p.Device.Name,
 

@@ -32,6 +32,7 @@ public class GetPointsByDeviceQueryHandler : IRequestHandler<GetPointsByDeviceQu
         {
             Id = p.Id,
             DeviceId = p.DeviceId,
+            PointCategoryId = p.PointCategoryId,
             Tag = p.Tag,
             Title = p.Title,
             Kind = p.Kind,

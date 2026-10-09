@@ -104,7 +104,7 @@ namespace BMS.Application.DeviceSchedules.Handlers
 
                 p1 = new Point(schedule.DeviceId, PointKind.AI, (ushort)(pointTimeEnable.Address + schedule.RegisterIndex), "Time_Schedule_Enable_" + schedule.RegisterIndex.ToString(),
                               "Time_Schedule_Enable_" + schedule.RegisterIndex.ToString(),
-                              PointDataType.Boolean, PointType.Command, RegisterType.Coil, isWritable: true);
+                              PointDataType.Boolean, PointType.Command, RegisterType.Coil, isWritable: true, pointCategory: Domain.Enums.PointCategory.Schedule);
 
                 await _pointRepository.AddAsync(p1);
             }
@@ -115,7 +115,7 @@ namespace BMS.Application.DeviceSchedules.Handlers
             {
                 p2 = new Point(schedule.DeviceId, PointKind.AI, (ushort)(schedule.RegisterIndex * 2 + pointTime.Address), "Time_Schedule_Start_" + schedule.RegisterIndex.ToString(),
                               "Time_Schedule_Start_" + schedule.RegisterIndex.ToString(),
-                              PointDataType.Boolean, PointType.Command, RegisterType.Coil, isWritable: true);
+                              PointDataType.Boolean, PointType.Command, RegisterType.Coil, isWritable: true, pointCategory: Domain.Enums.PointCategory.Schedule);
 
                 await _pointRepository.AddAsync(p2);
             }
@@ -126,7 +126,7 @@ namespace BMS.Application.DeviceSchedules.Handlers
             {
                 p3 = new Point(schedule.DeviceId, PointKind.AI, (ushort)(schedule.RegisterIndex * 2 + pointTime.Address + 1), "Time_Schedule_End_" + schedule.RegisterIndex.ToString(),
                               "Time_Schedule_End_" + schedule.RegisterIndex.ToString(),
-                              PointDataType.Boolean, PointType.Command, RegisterType.Coil, isWritable: true);
+                              PointDataType.Boolean, PointType.Command, RegisterType.Coil, isWritable: true, pointCategory: Domain.Enums.PointCategory.Schedule);
 
                 await _pointRepository.AddAsync(p3);
             }

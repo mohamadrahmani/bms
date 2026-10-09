@@ -13,13 +13,19 @@ namespace BMS.Application.Points.Handlers;
 public sealed class UpdatePointCommandHandler : IRequestHandler<UpdatePointCommand, ApiResponse<bool>>
 {
     private readonly IPointRepository _repository;
+    private readonly IPointCategoryRepository _categories;
+    private readonly IDeviceRepository _devices;
     private readonly IMemoryCache _memoryCache;
 
     public UpdatePointCommandHandler(
         IPointRepository repository,
+        IPointCategoryRepository categories,
+        IDeviceRepository devices,
         IMemoryCache memoryCache)
     {
         _repository = repository;
+        _categories = categories;
+        _devices = devices;
         _memoryCache = memoryCache;
     }
 
@@ -29,6 +35,8 @@ public sealed class UpdatePointCommandHandler : IRequestHandler<UpdatePointComma
 
         if (point == null)
             throw new Exception("Point not found");
+        var categoryId = await PointCategoryAssignment.ValidateAsync(
+            request.PointCategoryId ?? point.PointCategoryId, point.DeviceId, _categories, _devices, cancellationToken);
         //************************
         void TrackChange(string field, object? oldVal, object? newVal)
         {
@@ -60,6 +68,7 @@ public sealed class UpdatePointCommandHandler : IRequestHandler<UpdatePointComma
         TrackChange(nameof(point.ValidationDelayMs), point.ValidationDelayMs, request.ValidationDelayMs);
         TrackChange(nameof(point.IsWritable), point.IsWritable, request.IsWritable);
         TrackChange(nameof(point.StoreHistory), point.StoreHistory, storeHistory);
+        TrackChange(nameof(point.PointCategoryId), point.PointCategoryId, categoryId);
 
         //*************************
         //var location = new LocationReference(
@@ -91,6 +100,7 @@ public sealed class UpdatePointCommandHandler : IRequestHandler<UpdatePointComma
             request.CommandDefinitionId,
             storeHistory
         );
+        point.PointCategoryId = categoryId;
 
         //if (request.RegisterType && request.Address)
         {

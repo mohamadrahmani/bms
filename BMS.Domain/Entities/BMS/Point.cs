@@ -8,6 +8,7 @@ using BMS.Domain.Enums;
 using System.Globalization;
 using System.Xml.Linq;
 using BMS.Domain.Entities.Location;
+using PointCategoryCode = BMS.Domain.Enums.PointCategory;
 
 namespace BMS.Domain.Entities.BMS;
 public class Point : BaseEntity<Guid>
@@ -36,15 +37,17 @@ public class Point : BaseEntity<Guid>
     int validationDelayMs = 200,
     bool isWritable = false,
     Guid? commandDefinitionId = null,
-    bool storeHistory = false)      // واحد اندازه‌گیری (اختیاری)
+    bool storeHistory = false,
+    PointCategoryCode pointCategory = PointCategoryCode.General)      // واحد اندازه‌گیری (اختیاری)
     {
         // اعتبارسنجی پارامترها
         if (deviceId == Guid.Empty) throw new ArgumentException("DeviceId is required.");
-        if (address == null) throw new ArgumentException("Address is required.");
+        //if (address == null) throw new ArgumentException("Address is required.");
         //if (string.IsNullOrWhiteSpace(tag)) throw new ArgumentException("Tag is required.");
         if (string.IsNullOrWhiteSpace(title)) throw new ArgumentException("Title is required.");
 
         DeviceId = deviceId;
+        PointCategoryId = (int)pointCategory;
         Kind = kind;
         Address = address;
         Tag = tag.Trim();
@@ -99,6 +102,8 @@ public class Point : BaseEntity<Guid>
     // شناسه کنترلر و شیء کنترلر مرتبط
     public Guid DeviceId { get; set; }
     public Device Device { get; set; } = default!;
+    public int PointCategoryId { get; set; } = (int)PointCategoryCode.General;
+    public PointCategory PointCategory { get; set; } = default!;
     // نوع پوینت در سیستم BMS
     // DI = Digital Input
     // DO = Digital Output

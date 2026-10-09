@@ -10,6 +10,7 @@ namespace BMS.Application.Points.Commands;
 public class CreatePointCommand : IRequest<ApiResponse<Guid>>
 {
     public Guid DeviceId { get; set; }
+    public int? PointCategoryId { get; set; }
 
 
     public string? Tag { get; set; }

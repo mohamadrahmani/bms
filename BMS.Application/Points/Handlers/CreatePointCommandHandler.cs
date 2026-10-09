@@ -4,20 +4,27 @@ using BMS.Application.Points.Commands;
 using BMS.Domain.Entities.BMS;
 using BMS.Domain.Entities.Location;
 using MediatR;
+using PointCategoryCode = BMS.Domain.Enums.PointCategory;
 
 namespace BMS.Application.Points.Handlers;
 
 public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, ApiResponse<Guid>>
 {
     private readonly IPointRepository _repository;
+    private readonly IPointCategoryRepository _categories;
+    private readonly IDeviceRepository _devices;
 
-    public CreatePointCommandHandler(IPointRepository repository)
+    public CreatePointCommandHandler(IPointRepository repository, IPointCategoryRepository categories, IDeviceRepository devices)
     {
         _repository = repository;
+        _categories = categories;
+        _devices = devices;
     }
 
     public async Task<ApiResponse<Guid>> Handle(CreatePointCommand request, CancellationToken cancellationToken)
     {
+        var categoryId = await PointCategoryAssignment.ValidateAsync(
+            request.PointCategoryId, request.DeviceId, _categories, _devices, cancellationToken);
         LocationReference? location = null;
         if (request.SiteId.HasValue)
         {
@@ -49,7 +56,8 @@ public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, Api
         request.ValidationDelayMs,
         request.IsWritable,
         request.CommandDefinitionId,
-        request.StoreHistory
+        request.StoreHistory,
+        (PointCategoryCode)categoryId
        );
         // تنظیم Mapping (رجیستر PLC)
         if (request.RegisterType.HasValue && request.RegisterAddress.HasValue)

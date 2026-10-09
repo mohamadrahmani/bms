@@ -29,6 +29,7 @@ namespace BMS.Infrastructure.Persistence
         public DbSet<Controller> Controllers { get; set; }
         public DbSet<Device> Devices { get; set; }
         public DbSet<Point> Points { get; set; }
+        public DbSet<PointCategory> PointCategories { get; set; }
         public DbSet<CommandDefinition> CommandDefinitions { get; set; }
         public DbSet<Site> Sites { get; set; }
         public DbSet<Building> Buildings { get; set; }

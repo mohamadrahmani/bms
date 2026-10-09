@@ -8,6 +8,7 @@ public class PointDto
     public Guid Id { get; set; }
 
     public Guid DeviceId { get; set; }
+    public int PointCategoryId { get; set; }
     public string DeviceName { get; set; }
 
     public string? Tag { get; set; }

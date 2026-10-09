@@ -19,6 +19,12 @@ public class PointConfiguration : IEntityTypeConfiguration<Point>
             .HasForeignKey(p => p.DeviceId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasOne(p => p.PointCategory)
+            .WithMany(category => category.Points)
+            .HasForeignKey(p => p.PointCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(p => new { p.DeviceId, p.PointCategoryId });
+
         builder.OwnsOne(p => p.Location, location =>
         {
             location.Property(p => p.SiteId).HasColumnName("SiteId");

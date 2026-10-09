@@ -68,6 +68,7 @@ public class GetPointsQueryHandler : IRequestHandler<GetPointsQuery, PagedResult
         {
             Id = p.Id,
             DeviceId = p.DeviceId,
+            PointCategoryId = p.PointCategoryId,
             DeviceName = p.Device.Name,
             Tag = p.Tag,
             Title = p.Title,

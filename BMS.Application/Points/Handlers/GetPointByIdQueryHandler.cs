@@ -35,6 +35,7 @@ public class GetPointByIdQueryHandler : IRequestHandler<GetPointByIdQuery, Point
         {
             Id = point.Id,
             DeviceId = point.DeviceId,
+            PointCategoryId = point.PointCategoryId,
             Tag = point.Tag,
             Title = point.Title,
             Kind = point.Kind,
