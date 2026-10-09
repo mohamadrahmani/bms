@@ -54,16 +54,35 @@ public sealed class CreateDeviceScheduleCommandHandler: IRequestHandler<CreateDe
 
         var pointTime = await _pointRepository.Points.FirstOrDefaultAsync(p => p.DeviceId == request.DeviceId && p.Tag == "Main_Time_Schedule_First_Register");
 
-        if(pointTime == null)
+        if (pointTime == null || pointTime != null && pointTime.Address == null)
         {
-            throw new Exception("آدرس شروع گروه ساعت زمابندی ثبت نشده است");
+
+            if (pointTime == null)
+            {
+                pointTime = new Point(request.DeviceId, PointKind.AI, null, "Main_Time_Schedule_First_Register",
+                              "آدرس شروع گروه ساعت زمانبندی",
+                              PointDataType.UInt16, PointType.SetPoint, RegisterType.HoldingRegister, isWritable: true);
+
+                await _pointRepository.AddAsync(pointTime);
+            }
+
+            throw new Exception("آدرس شروع گروه ساعت زمانبندی ثبت نشده است (مقدار آدرس رجیستر Main_Time_Schedule_First_Register را تعیین کنید).");
         }
 
         var pointTimeEnable = await _pointRepository.Points.FirstOrDefaultAsync(p => p.DeviceId == request.DeviceId && p.Tag == "Main_1St_Time_Schedule_Enable");
 
         if (pointTimeEnable == null)
         {
-            throw new Exception("آدرس شروع گروه تنظیمات فعال/غیرفعال زمابندی ثبت نشده است");
+            if (pointTimeEnable == null)
+            {
+                pointTimeEnable = new Point(request.DeviceId, PointKind.AI, null, "Main_1St_Time_Schedule_Enable",
+                              "آدرس شروع گروه تنظیمات فعال/غیرفعال زمانبندی",
+                              PointDataType.Boolean, PointType.SetPoint, RegisterType.Coil, isWritable: true);
+
+                await _pointRepository.AddAsync(pointTimeEnable);
+            }
+
+            throw new Exception("آدرس شروع گروه تنظیمات فعال/غیرفعال زمانبندی ثبت نشده است (مقدار آدرس رجیستر Main_1St_Time_Schedule_Enable را تعیین کنید)");
         }
 
         await _deviceScheduleRepository.AddAsync(deviceSchedule, cancellationToken);
@@ -188,7 +207,7 @@ public sealed class CreateDeviceScheduleCommandHandler: IRequestHandler<CreateDe
             null,
             DateTime.UtcNow)
         );
-        return ApiResponse<Guid>.SuccessResponse(deviceSchedule.Id, "کنترلر ایجاد شد");
+        return ApiResponse<Guid>.SuccessResponse(deviceSchedule.Id, "زمانبندی ثبت شد");
     }
 
     public static int ConvertToWeekMinutes(int dayId, TimeSpan time)

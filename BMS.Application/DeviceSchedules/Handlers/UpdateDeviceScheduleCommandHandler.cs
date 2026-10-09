@@ -38,16 +38,37 @@ namespace BMS.Application.DeviceSchedules.Handlers
 
             var pointTime = await _pointRepository.Points.FirstOrDefaultAsync(p => p.DeviceId == schedule.DeviceId && p.Tag == "Main_Time_Schedule_First_Register");
 
-            if (pointTime == null)
+            if (pointTime == null || pointTime!= null && pointTime.Address == null)
             {
-                throw new Exception("آدرس شروع گروه ساعت زمابندی ثبت نشده است");
+
+                if (pointTime == null)
+                {
+                    pointTime = new Point(schedule.DeviceId, PointKind.AI, null, "Main_Time_Schedule_First_Register",
+                              "آدرس شروع گروه ساعت زمانبندی",
+                              PointDataType.UInt16, PointType.SetPoint, RegisterType.HoldingRegister, isWritable: true);
+
+                    await _pointRepository.AddAsync(pointTime);
+                }
+
+                throw new Exception("آدرس شروع گروه ساعت زمانبندی ثبت نشده است )مقدار آدرس رجیستر Main_Time_Schedule_First_Register را تعیین کنید.");
             }
+
+
 
             var pointTimeEnable = await _pointRepository.Points.FirstOrDefaultAsync(p => p.DeviceId == schedule.DeviceId && p.Tag == "Main_1St_Time_Schedule_Enable");
 
             if (pointTimeEnable == null)
             {
-                throw new Exception("آدرس شروع گروه تنظیمات فعال/غیرفعال زمابندی ثبت نشده است");
+                if (pointTimeEnable == null)
+                {
+                    pointTimeEnable = new Point(schedule.DeviceId, PointKind.AI, null, "Main_1St_Time_Schedule_Enable",
+                                  "آدرس شروع گروه تنظیمات فعال/غیرفعال زمانبندی",
+                                  PointDataType.Boolean, PointType.SetPoint, RegisterType.Coil, isWritable: true);
+
+                    await _pointRepository.AddAsync(pointTimeEnable);
+                }
+
+                throw new Exception("آدرس شروع گروه تنظیمات فعال/غیرفعال زمانبندی ثبت نشده است (مقدار آدرس رجیستر Main_1St_Time_Schedule_Enable را تعیین کنید)");
             }
 
             // استفاده از متدی که قبلاً در کلاس Entity تعریف کردیم
@@ -175,7 +196,7 @@ namespace BMS.Application.DeviceSchedules.Handlers
                 DateTime.UtcNow)
             );
 
-            return ApiResponse<bool>.SuccessResponse(true, "Schedule updated successfully");
+            return ApiResponse<bool>.SuccessResponse(true, "زمانبندی به روز رسانی شد");
         }
         public static int ConvertToWeekMinutes(int dayId, TimeSpan time)
         {
