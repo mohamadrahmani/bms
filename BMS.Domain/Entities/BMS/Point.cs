@@ -38,7 +38,11 @@ public class Point : BaseEntity<Guid>
     bool isWritable = false,
     Guid? commandDefinitionId = null,
     bool storeHistory = false,
-    PointCategoryCode pointCategory = PointCategoryCode.General)      // واحد اندازه‌گیری (اختیاری)
+    PointCategoryCode pointCategory = PointCategoryCode.General,
+    double? minRawValue = null,
+    double? maxRawValue = null,
+    double? minDisplayValue = null,
+    double? maxDisplayValue = null)      // واحد اندازه‌گیری (اختیاری)
     {
         // اعتبارسنجی پارامترها
         if (deviceId == Guid.Empty) throw new ArgumentException("DeviceId is required.");
@@ -66,6 +70,10 @@ public class Point : BaseEntity<Guid>
         Length = length;
         Scale = scale;
         Offset = offset;
+        MinRawValue = minRawValue;
+        MaxRawValue = maxRawValue;
+        MinDisplayValue = minDisplayValue;
+        MaxDisplayValue = maxDisplayValue;
 
         FeedbackAddress = feedbackAddress;
 
@@ -89,6 +97,10 @@ public class Point : BaseEntity<Guid>
     public double Scale { get; set; } = 1;
     // آفست برای اصلاح مقدار بعد از Scale
     public double Offset { get; set; } = 0;
+    public double? MinRawValue { get; set; }
+    public double? MaxRawValue { get; set; }
+    public double? MinDisplayValue { get; set; }
+    public double? MaxDisplayValue { get; set; }
     // آدرس ارسال فرمان
     // آدرس دریافت فیدبک از PLC (مثلاً وضعیت واقعی خروجی)
     public ushort? FeedbackAddress { get; set; }
@@ -255,7 +267,11 @@ public class Point : BaseEntity<Guid>
     bool isWritable,
     LocationReference? location,
     Guid? commandDefinitionId,
-    bool storeHistory
+    bool storeHistory,
+    double? minRawValue,
+    double? maxRawValue,
+    double? minDisplayValue,
+    double? maxDisplayValue
 )
     {
         Tag = tag;
@@ -271,6 +287,10 @@ public class Point : BaseEntity<Guid>
         Length = length;
         Scale = scale;
         Offset = offset;
+        MinRawValue = minRawValue;
+        MaxRawValue = maxRawValue;
+        MinDisplayValue = minDisplayValue;
+        MaxDisplayValue = maxDisplayValue;
 
         FeedbackAddress = feedbackAddress;
 

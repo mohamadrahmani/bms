@@ -30,6 +30,10 @@ public class UpdatePointCommand : IRequest<ApiResponse<bool>>
     public ushort Length { get; set; }
     public double Scale { get; set; }
     public double Offset { get; set; }
+    public double? MinRawValue { get; set; }
+    public double? MaxRawValue { get; set; }
+    public double? MinDisplayValue { get; set; }
+    public double? MaxDisplayValue { get; set; }
 
     public ushort? FeedbackAddress { get; set; }
 

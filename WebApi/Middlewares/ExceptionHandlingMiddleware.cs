@@ -119,9 +119,11 @@ public class ExceptionHandlingMiddleware
         await context.Response.WriteAsync(JsonSerializer.Serialize(new
         {
             errorId,
-            message = _env.IsDevelopment()
-                ? ex.Message
-                : "خطای غیرمنتظره‌ای در سرور رخ داده است. شناسه خطا را با پشتیبانی در میان بگذارید."
+            // todo: 
+            //message = _env.IsDevelopment()
+            //    ? ex.Message
+            //    : "خطای غیرمنتظره‌ای در سرور رخ داده است. شناسه خطا را با پشتیبانی در میان بگذارید."
+            message = ex.Message
         }));
     }
 

@@ -1,5 +1,6 @@
 ﻿using BMS.Application.Points.Commands;
 using FluentValidation;
+using BMS.Domain.Entities.BMS;
 
 namespace BMS.Application.Points.Validators
 {
@@ -26,6 +27,28 @@ namespace BMS.Application.Points.Validators
 
             RuleFor(x => x.Kind)
                 .IsInEnum();
+
+            RuleFor(x => x.MinRawValue)
+                .NotNull()
+                .When(x => x.DataType != PointDataType.Boolean);
+
+            RuleFor(x => x.MaxRawValue)
+                .NotNull()
+                .When(x => x.DataType != PointDataType.Boolean);
+
+            RuleFor(x => x.MinDisplayValue)
+                .NotNull()
+                .When(x => x.DataType != PointDataType.Boolean);
+
+            RuleFor(x => x.MaxDisplayValue)
+                .NotNull()
+                .When(x => x.DataType != PointDataType.Boolean);
+
+            RuleFor(x => x.MaxRawValue)
+                .Must((command, maxRawValue) => !maxRawValue.HasValue ||
+                    !command.MinRawValue.HasValue || command.MinRawValue.Value != maxRawValue.Value)
+                .When(x => x.DataType != PointDataType.Boolean)
+                .WithMessage("Raw minimum and maximum values must differ.");
         }
     }
 }

@@ -23,6 +23,19 @@ public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, Api
 
     public async Task<ApiResponse<Guid>> Handle(CreatePointCommand request, CancellationToken cancellationToken)
     {
+        var scale = request.Scale;
+        var offset = request.Offset;
+        if (request.DataType != PointDataType.Boolean)
+        {
+            var scaler = new BMS.Application.Common.Settings.LinearScaler(
+                request.MinDisplayValue!.Value,
+                request.MaxDisplayValue!.Value,
+                request.MinRawValue!.Value,
+                request.MaxRawValue!.Value);
+            scale = scaler.Scale;
+            offset = scaler.Offset;
+        }
+
         var categoryId = await PointCategoryAssignment.ValidateAsync(
             request.PointCategoryId, request.DeviceId, _categories, _devices, cancellationToken);
         LocationReference? location = null;
@@ -49,15 +62,19 @@ public class CreatePointCommandHandler : IRequestHandler<CreatePointCommand, Api
            location,
         request.Code,
         request.Length,
-        request.Scale,
-        request.Offset,
+        scale,
+        offset,
         request.FeedbackAddress,
         request.ValidationRetryCount,
         request.ValidationDelayMs,
         request.IsWritable,
         request.CommandDefinitionId,
         request.StoreHistory,
-        (PointCategoryCode)categoryId
+        (PointCategoryCode)categoryId,
+        request.MinRawValue,
+        request.MaxRawValue,
+        request.MinDisplayValue,
+        request.MaxDisplayValue
        );
         // تنظیم Mapping (رجیستر PLC)
         if (request.RegisterType.HasValue && request.RegisterAddress.HasValue)

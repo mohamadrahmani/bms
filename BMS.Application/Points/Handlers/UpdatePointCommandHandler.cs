@@ -51,8 +51,21 @@ public sealed class UpdatePointCommandHandler : IRequestHandler<UpdatePointComma
            request.FloorId,
            request.WardId,
            request.RoomId
-       );
+        );
         var storeHistory = request.StoreHistory ?? point.StoreHistory;
+        var scale = point.Scale;
+        var offset = point.Offset;
+        if (request.DataType != PointDataType.Boolean)
+        {
+            var scaler = new BMS.Application.Common.Settings.LinearScaler(
+                request.MinDisplayValue!.Value,
+                request.MaxDisplayValue!.Value,
+                request.MinRawValue!.Value,
+                request.MaxRawValue!.Value);
+            scale = scaler.Scale;
+            offset = scaler.Offset;
+        }
+
         TrackChange(nameof(point.Tag), point.Tag, request.Tag);
         TrackChange(nameof(point.Title), point.Title, request.Title);
         TrackChange(nameof(point.Kind), point.Kind, request.Kind);
@@ -61,8 +74,12 @@ public sealed class UpdatePointCommandHandler : IRequestHandler<UpdatePointComma
         TrackChange(nameof(point.Unit), point.Unit, request.Unit);
         TrackChange(nameof(point.Code), point.Code, request.Code);
         TrackChange(nameof(point.Length), point.Length, request.Length);
-        TrackChange(nameof(point.Scale), point.Scale, request.Scale);
-        TrackChange(nameof(point.Offset), point.Offset, request.Offset);
+        TrackChange(nameof(point.Scale), point.Scale, scale);
+        TrackChange(nameof(point.Offset), point.Offset, offset);
+        TrackChange(nameof(point.MinRawValue), point.MinRawValue, request.MinRawValue);
+        TrackChange(nameof(point.MaxRawValue), point.MaxRawValue, request.MaxRawValue);
+        TrackChange(nameof(point.MinDisplayValue), point.MinDisplayValue, request.MinDisplayValue);
+        TrackChange(nameof(point.MaxDisplayValue), point.MaxDisplayValue, request.MaxDisplayValue);
         TrackChange(nameof(point.FeedbackAddress), point.FeedbackAddress, request.FeedbackAddress);
         TrackChange(nameof(point.ValidationRetryCount), point.ValidationRetryCount, request.ValidationRetryCount);
         TrackChange(nameof(point.ValidationDelayMs), point.ValidationDelayMs, request.ValidationDelayMs);
@@ -90,15 +107,19 @@ public sealed class UpdatePointCommandHandler : IRequestHandler<UpdatePointComma
             request.Unit,
             request.Code,
             request.Length,
-            request.Scale,
-            request.Offset,
+            scale,
+            offset,
             request.FeedbackAddress,
             request.ValidationRetryCount,
             request.ValidationDelayMs,
             request.IsWritable,
             location,
             request.CommandDefinitionId,
-            storeHistory
+            storeHistory,
+            request.MinRawValue,
+            request.MaxRawValue,
+            request.MinDisplayValue,
+            request.MaxDisplayValue
         );
         point.PointCategoryId = categoryId;
 

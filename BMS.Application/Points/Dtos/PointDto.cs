@@ -41,6 +41,11 @@ public class PointDto
 
     public double Offset { get; set; }
 
+    public double? MinRawValue { get; set; }
+    public double? MaxRawValue { get; set; }
+    public double? MinDisplayValue { get; set; }
+    public double? MaxDisplayValue { get; set; }
+
     public bool IsWritable { get; set; }
 
     public bool StoreHistory { get; set; }

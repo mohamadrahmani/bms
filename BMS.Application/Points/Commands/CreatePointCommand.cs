@@ -39,6 +39,11 @@ public class CreatePointCommand : IRequest<ApiResponse<Guid>>
 
     public double Offset { get; set; } = 0;
 
+    public double? MinRawValue { get; set; }
+    public double? MaxRawValue { get; set; }
+    public double? MinDisplayValue { get; set; }
+    public double? MaxDisplayValue { get; set; }
+
     public ushort? FeedbackAddress { get; set; }
 
     public int ValidationRetryCount { get; set; } = 3;
