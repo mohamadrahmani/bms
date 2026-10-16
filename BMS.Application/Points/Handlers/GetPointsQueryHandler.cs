@@ -94,7 +94,11 @@ public class GetPointsQueryHandler : IRequestHandler<GetPointsQuery, PagedResult
             Value = p.Value,
             Quality = p.Quality.ToString(),
             LastUpdatedAtUtc = p.LastUpdatedAtUtc,
-            CommandDefinitionId = p.CommandDefinitionId
+            CommandDefinitionId = p.CommandDefinitionId,
+            CommandCode = p.CommandDefinition != null ? p.CommandDefinition.Code : null,
+            CommandType = p.CommandDefinition != null ? p.CommandDefinition.CommandType : null,
+            CommandOnState = p.CommandDefinition != null ? p.CommandDefinition.OnState : null,
+            CommandOffState = p.CommandDefinition != null ? p.CommandDefinition.OffState : null
         });
         return await query.ToPagedResultAsync(
             request.PageNumber,

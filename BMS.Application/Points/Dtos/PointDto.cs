@@ -71,5 +71,9 @@ public class PointDto
 
     public string DeviceCode { get; set; }
     public Guid? CommandDefinitionId { get; set; }
+    public string? CommandCode { get; set; }
+    public CommandType? CommandType { get; set; }
+    public string? CommandOnState { get; set; }
+    public string? CommandOffState { get; set; }
 
 }
