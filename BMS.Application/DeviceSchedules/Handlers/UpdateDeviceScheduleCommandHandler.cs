@@ -15,15 +15,17 @@ namespace BMS.Application.DeviceSchedules.Handlers
     {
         private readonly IDeviceScheduleRepository _repository;
         private readonly IPointRepository _pointRepository;
+        private readonly IDeviceRepository _deviceRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ExecuteCommandUseCase _useCase;
         private readonly IEventDispatcher _eventDispatcher;
 
-        public UpdateDeviceScheduleCommandHandler(IDeviceScheduleRepository repository, IPointRepository pointRepository, IUnitOfWork unitOfWork,
+        public UpdateDeviceScheduleCommandHandler(IDeviceScheduleRepository repository, IPointRepository pointRepository, IDeviceRepository deviceRepository, IUnitOfWork unitOfWork,
             ExecuteCommandUseCase useCase, IEventDispatcher eventDispatcher)
         {
             _repository = repository;
             _pointRepository = pointRepository;
+            _deviceRepository = deviceRepository;
             _unitOfWork = unitOfWork;
             _useCase = useCase;
             _eventDispatcher = eventDispatcher;
@@ -35,6 +37,12 @@ namespace BMS.Application.DeviceSchedules.Handlers
 
             if (schedule is null)
                 throw new NotFoundException($"Schedule with id '{request.Id}' not found.");
+
+            var deviceName = await _deviceRepository.Devices
+                .Where(device => device.Id == schedule.DeviceId)
+                .Select(device => device.Name)
+                .FirstOrDefaultAsync(cancellationToken);
+            request.Name = $"{(string.IsNullOrWhiteSpace(deviceName) ? schedule.DeviceId.ToString() : deviceName)} - Schedule {schedule.RegisterIndex}";
 
             var pointTime = await _pointRepository.Points.FirstOrDefaultAsync(p => p.DeviceId == schedule.DeviceId && p.Tag == "Main_Time_Schedule_First_Register");
 
@@ -71,6 +79,11 @@ namespace BMS.Application.DeviceSchedules.Handlers
                 throw new Exception("آدرس شروع گروه تنظیمات فعال/غیرفعال زمانبندی ثبت نشده است (مقدار آدرس رجیستر Main_1St_Time_Schedule_Enable را تعیین کنید)");
             }
 
+            TrackChange(request, nameof(schedule.IsActive), schedule.IsActive, request.IsActive);
+            TrackChange(request, nameof(schedule.StartDay), schedule.StartDay, request.StartDay);
+            TrackChange(request, nameof(schedule.StartTime), schedule.StartTime, request.StartTime);
+            TrackChange(request, nameof(schedule.EndDay), schedule.EndDay, request.EndDay);
+            TrackChange(request, nameof(schedule.EndTime), schedule.EndTime, request.EndTime);
             // استفاده از متدی که قبلاً در کلاس Entity تعریف کردیم
             schedule.Update(
                 schedule.RegisterIndex, // ثابت می‌ماند
@@ -198,6 +211,21 @@ namespace BMS.Application.DeviceSchedules.Handlers
 
             return ApiResponse<bool>.SuccessResponse(true, "زمانبندی به روز رسانی شد");
         }
+        private static void TrackChange(UpdateDeviceScheduleCommand request, string field, object? oldValue, object? newValue)
+        {
+            if (Equals(oldValue, newValue))
+                return;
+
+            request.Changes.Add((field, FormatChangeValue(oldValue), FormatChangeValue(newValue)));
+        }
+
+        private static string? FormatChangeValue(object? value) => value switch
+        {
+            null => null,
+            TimeSpan time => time.ToString("c", System.Globalization.CultureInfo.InvariantCulture),
+            IFormattable formattable => formattable.ToString(null, System.Globalization.CultureInfo.InvariantCulture),
+            _ => value.ToString()
+        };
         public static int ConvertToWeekMinutes(int dayId, TimeSpan time)
         {
             return (dayId * 24 * 60) + (time.Hours * 60) + time.Minutes;

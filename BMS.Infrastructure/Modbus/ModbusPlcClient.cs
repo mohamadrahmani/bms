@@ -1,5 +1,6 @@
 ﻿using BMS.Application.Abstraction;
 using BMS.Application.Abstractions;
+using BMS.Application.Common.Settings;
 using BMS.Application.Enum;
 using BMS.Application.Models;
 using BMS.Application.Points.Dtos;
@@ -385,6 +386,12 @@ public class ModbusPlcClient : IPlcClient
 
         if (!point.IsWritable)
             throw new InvalidOperationException($"Point {point.Code} is not writable.");
+
+        SetPointRangeValidator.Validate(
+            point.PointType,
+            point.MinDisplayValue,
+            point.MaxDisplayValue,
+            engineeringValue);
 
         //var master = await _connectionManager.GetMasterAsync(token);
         var master = await _connectionManager.GetMasterForReadAsync(token);

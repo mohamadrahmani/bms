@@ -1,12 +1,16 @@
 ﻿using BMS.Application.Abstraction;
 using BMS.Application.Common.Interfaces;
+using BMS.Application.Common.Exceptions;
+using BMS.Application.Common.Settings;
 using BMS.Domain.Entities;
 using BMS.Domain.Entities.BMS;
+using System.Globalization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace BMS.Application.UseCases
 {
@@ -30,13 +34,28 @@ namespace BMS.Application.UseCases
             string? value)
         {
 
-            var point = _pointRepository.Points.Where(p => (pointId != null && p.Id == pointId) || (p.DeviceId == deviceId && p.CommandDefinition != null && p.CommandDefinition!.Code == commandName)).SingleOrDefault();
+            var points = await _pointRepository.Points.Where(p => (pointId != null && p.Id == pointId) || (p.DeviceId == deviceId && p.CommandDefinition != null && p.CommandDefinition!.Code == commandName)).ToListAsync();
+            var point = points.SingleOrDefault();
 
             if (point == null)
                 throw new Exception("رجیستر مربوطه ثبت نشده است");
 
             if (!point.IsWritable)
                 throw new Exception("رجیستر مربوطه قابل مقداردهی نیست");
+
+            if (point.PointType == PointType.SetPoint &&
+                point.MinDisplayValue.HasValue &&
+                point.MaxDisplayValue.HasValue)
+            {
+                if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var setPointValue))
+                    throw new BusinessRuleException("مقدار SetPoint باید یک عدد معتبر باشد.");
+
+                SetPointRangeValidator.Validate(
+                    point.PointType,
+                    point.MinDisplayValue,
+                    point.MaxDisplayValue,
+                    setPointValue);
+            }
 
             var command = new DeviceCommand()
             {

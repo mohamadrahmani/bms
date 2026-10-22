@@ -1,6 +1,8 @@
 ﻿using BMS.Application.Attributes;
 using BMS.Application.Models;
 using BMS.Domain.Entities.Logs;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 using MediatR;
 
@@ -16,6 +18,12 @@ namespace BMS.Application.DeviceSchedules.Commands
         public int EndDay { get; init; }
         public TimeSpan? EndTime { get; init; }
         public int RegisterIndex { get; init; }
+
+        [JsonIgnore]
+        public string? Name { get; set; }
+
+        [JsonIgnore]
+        public List<(string Field, string? OldValue, string? NewValue)> Changes { get; set; } = new();
 
     }
 }

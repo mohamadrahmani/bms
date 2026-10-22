@@ -14,6 +14,7 @@ public sealed class CreateDeviceScheduleCommandHandler: IRequestHandler<CreateDe
 {
     private readonly IDeviceScheduleRepository _deviceScheduleRepository;
     private readonly IPointRepository _pointRepository;
+    private readonly IDeviceRepository _deviceRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ExecuteCommandUseCase _useCase;
     private readonly IEventDispatcher _eventDispatcher;
@@ -21,12 +22,14 @@ public sealed class CreateDeviceScheduleCommandHandler: IRequestHandler<CreateDe
     public CreateDeviceScheduleCommandHandler(
         IDeviceScheduleRepository deviceScheduleRepository,
         IPointRepository pointRepository,
+        IDeviceRepository deviceRepository,
         IUnitOfWork unitOfWork,
         ExecuteCommandUseCase useCase,
         IEventDispatcher eventDispatcher)
     {
         _deviceScheduleRepository = deviceScheduleRepository;
         _pointRepository = pointRepository;
+        _deviceRepository = deviceRepository;
         _unitOfWork = unitOfWork;
         _useCase = useCase;
         _eventDispatcher = eventDispatcher;
@@ -38,6 +41,12 @@ public sealed class CreateDeviceScheduleCommandHandler: IRequestHandler<CreateDe
         CreateDeviceScheduleCommand request,
         CancellationToken cancellationToken)
     {
+        var deviceName = await _deviceRepository.Devices
+            .Where(device => device.Id == request.DeviceId)
+            .Select(device => device.Name)
+            .FirstOrDefaultAsync(cancellationToken);
+        request.Name = $"{(string.IsNullOrWhiteSpace(deviceName) ? request.DeviceId.ToString() : deviceName)} - Schedule {request.RegisterIndex}";
+
         var deviceSchedule = new DeviceSchedule()
         {
             Id = Guid.NewGuid(),
@@ -51,6 +60,18 @@ public sealed class CreateDeviceScheduleCommandHandler: IRequestHandler<CreateDe
         };
 
 
+
+        request.Changes.Add((nameof(deviceSchedule.Id), null, deviceSchedule.Id.ToString()));
+        request.Changes.Add((nameof(deviceSchedule.DeviceId), null, deviceSchedule.DeviceId.ToString()));
+        request.Changes.Add((nameof(deviceSchedule.RegisterIndex), null, deviceSchedule.RegisterIndex.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        request.Changes.Add((nameof(deviceSchedule.IsActive), null, deviceSchedule.IsActive.ToString()));
+        request.Changes.Add((nameof(deviceSchedule.StartDay), null, deviceSchedule.StartDay.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        request.Changes.Add((nameof(deviceSchedule.StartTime), null, deviceSchedule.StartTime?.ToString("c", System.Globalization.CultureInfo.InvariantCulture)));
+        request.Changes.Add((nameof(deviceSchedule.EndDay), null, deviceSchedule.EndDay.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        request.Changes.Add((nameof(deviceSchedule.EndTime), null, deviceSchedule.EndTime?.ToString("c", System.Globalization.CultureInfo.InvariantCulture)));
+        request.Changes.Add((nameof(deviceSchedule.IsDeleted), null, deviceSchedule.IsDeleted.ToString()));
+        request.Changes.Add((nameof(deviceSchedule.CreatedAtUtc), null, deviceSchedule.CreatedAtUtc.ToString("O", System.Globalization.CultureInfo.InvariantCulture)));
+        request.Changes.Add((nameof(deviceSchedule.UpdatedAtUtc), null, deviceSchedule.UpdatedAtUtc?.ToString("O", System.Globalization.CultureInfo.InvariantCulture)));
 
         var pointTime = await _pointRepository.Points.FirstOrDefaultAsync(p => p.DeviceId == request.DeviceId && p.Tag == "Main_Time_Schedule_First_Register");
 
