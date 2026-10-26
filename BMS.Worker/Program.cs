@@ -13,6 +13,7 @@ using BMS.Infrastructure.Persistence;
 using BMS.Worker.Abstractions;
 using BMS.Worker.Devices;
 using BMS.Worker.Diagnostics;
+using BMS.Worker.Logging;
 using System.Diagnostics;
 using BMS.Worker.Transport;
 using BMS.Worker.Workers;
@@ -27,6 +28,11 @@ using System.Threading.Channels;
 using static System.Formats.Asn1.AsnWriter;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Keep console output for live monitoring and write all Worker logs to one portable file.
+var logDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
+var logFilePath = Path.Combine(logDirectory, "worker.log");
+builder.Logging.AddProvider(new WorkerFileLoggerProvider(logFilePath));
 
 var configuration = builder.Configuration;
 
