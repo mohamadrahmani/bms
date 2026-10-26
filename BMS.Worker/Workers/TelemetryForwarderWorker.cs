@@ -3,6 +3,8 @@ using BMS.Domain.Entities.BMS;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Channels;
+using System.Diagnostics;
+using BMS.Worker.Diagnostics;
 
 namespace BMS.Worker.Workers;
 
@@ -53,6 +55,11 @@ public sealed class TelemetryForwarderWorker : BackgroundService
                 break;
             }
 
+            var queueAgeMs = TelemetryQueueDiagnostics.TrackDequeuedAndGetAgeMs(msg);
+            _logger.LogDebug(
+                "Telemetry dequeued. Type={MessageType}, PLC={PlcName}, DeviceId={DeviceId}, QueueAgeMs={QueueAgeMs}, QueuePending={QueuePending}",
+                msg.Type, msg.PlcName, msg.DeviceId, queueAgeMs, TelemetryQueueDiagnostics.PendingTracked);
+
             // ذخیره پیام در فایل برای مشاهده سریع
             //try
             //{
@@ -71,34 +78,54 @@ public sealed class TelemetryForwarderWorker : BackgroundService
             //}
 
             var delivered = false;
+            var attempt = 0;
+            var messageTimer = Stopwatch.StartNew();
 
             while (!delivered && !stoppingToken.IsCancellationRequested)
             {
+                attempt++;
+                var sendTimer = Stopwatch.StartNew();
                 try
                 {
-                    //var url = urlTemplate.Replace("{DeviceId}", msg.DeviceId.ToString());
-
                     var response = await http.PostAsJsonAsync(urlTemplate, msg, stoppingToken);
+                    sendTimer.Stop();
 
                     if (response.IsSuccessStatusCode)
                     {
                         delivered = true;
+                        _logger.LogDebug(
+                            "Telemetry delivered. Type={MessageType}, PLC={PlcName}, DeviceId={DeviceId}, Attempt={Attempt}, HttpStatus={StatusCode}, SendDurationMs={SendDurationMs}",
+                            msg.Type, msg.PlcName, msg.DeviceId, attempt, (int)response.StatusCode, sendTimer.ElapsedMilliseconds);
                     }
                     else
                     {
                         _logger.LogWarning(
-                            "UI sink returned {StatusCode} for PLC {Plc}",
-                            (int)response.StatusCode,
-                            msg.PlcName);
+                            "Telemetry delivery failed. Type={MessageType}, PLC={PlcName}, DeviceId={DeviceId}, Attempt={Attempt}, HttpStatus={StatusCode}, SendDurationMs={SendDurationMs}",
+                            msg.Type, msg.PlcName, msg.DeviceId, attempt, (int)response.StatusCode, sendTimer.ElapsedMilliseconds);
 
                         await Task.Delay(2000, stoppingToken);
                     }
                 }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    break;
+                }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Telemetry forwarder failed. Retrying...");
+                    sendTimer.Stop();
+                    _logger.LogError(ex,
+                        "Telemetry send exception. Type={MessageType}, PLC={PlcName}, DeviceId={DeviceId}, Attempt={Attempt}, SendDurationMs={SendDurationMs}. Retrying.",
+                        msg.Type, msg.PlcName, msg.DeviceId, attempt, sendTimer.ElapsedMilliseconds);
                     await Task.Delay(2000, stoppingToken);
                 }
+            }
+
+            messageTimer.Stop();
+            if (delivered)
+            {
+                _logger.LogInformation(
+                    "Telemetry message processing completed. Type={MessageType}, PLC={PlcName}, DeviceId={DeviceId}, QueueAgeMs={QueueAgeMs}, Attempts={Attempts}, TotalDeliveryMs={TotalDeliveryMs}",
+                    msg.Type, msg.PlcName, msg.DeviceId, queueAgeMs, attempt, messageTimer.ElapsedMilliseconds);
             }
         }
     }
