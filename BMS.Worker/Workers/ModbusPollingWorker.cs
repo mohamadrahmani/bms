@@ -53,7 +53,7 @@ namespace BMS.Worker.Workers
                 try
                 {
                     var providerTimer = Stopwatch.StartNew();
-                    var plcClients = await _plcProvider.GetClientsAsync(stoppingToken);
+                    var plcClients = (await _plcProvider.GetClientsAsync(stoppingToken)).ToList();
                     providerTimer.Stop();
 
                     _logger.LogInformation(
