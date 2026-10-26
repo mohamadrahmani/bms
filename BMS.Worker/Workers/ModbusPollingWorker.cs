@@ -165,7 +165,7 @@ namespace BMS.Worker.Workers
                 _logger.LogInformation("PLC {Name} ONLINE", plc.Name);
 
                 var pollTimer = Stopwatch.StartNew();
-                var snapshots = await plc.PollAsync(token);
+                var snapshots = (await plc.PollAsync(token)).ToList();
                 pollTimer.Stop();
                 _logger.LogInformation(
                     "PollingCycle {CycleId} PLC {PlcName} poll completed. DurationMs={DurationMs}, SnapshotCount={SnapshotCount}",
