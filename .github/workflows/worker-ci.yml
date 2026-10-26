@@ -1,0 +1,42 @@
+name: BMS Worker CI
+
+on:
+  push:
+    branches:
+      - "rahmani/**"
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - "BMS.Worker/**"
+      - "BMS.Application/**"
+      - "BMS.Domain/**"
+      - "BMS.Infrastructure/**"
+      - ".github/workflows/worker-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-worker:
+    name: Build BMS.Worker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Display SDK information
+        run: dotnet --info
+
+      - name: Restore Worker project
+        run: dotnet restore BMS.Worker/BMS.Worker.csproj
+
+      - name: Build Worker project
+        run: dotnet build BMS.Worker/BMS.Worker.csproj --configuration Release --no-restore
