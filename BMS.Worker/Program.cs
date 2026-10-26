@@ -12,6 +12,8 @@ using BMS.Infrastructure.Modbus;
 using BMS.Infrastructure.Persistence;
 using BMS.Worker.Abstractions;
 using BMS.Worker.Devices;
+using BMS.Worker.Diagnostics;
+using System.Diagnostics;
 using BMS.Worker.Transport;
 using BMS.Worker.Workers;
 using Microsoft.AspNetCore.Builder;
@@ -167,7 +169,7 @@ builder.Services.AddSingleton(sp =>
         FullMode = BoundedChannelFullMode.DropOldest
     };
 
-    return Channel.CreateBounded<TelemetryMessage>(options);
+    return Channel.CreateBounded<TelemetryMessage>(options, TelemetryQueueDiagnostics.OnDropped);
 });
 builder.Services.AddSingleton(sp => sp.GetRequiredService<Channel<TelemetryMessage>>().Writer);
 builder.Services.AddSingleton(sp => sp.GetRequiredService<Channel<TelemetryMessage>>().Reader);
@@ -206,7 +208,14 @@ app.MapPost("/api/commands/write-point",
         ChannelWriter<TelemetryMessage> telemetryWriter,
         CancellationToken token) =>
     {
+        var commandTimer = Stopwatch.StartNew();
+        var commandId = Guid.NewGuid().ToString("N")[..8];
+        var lookupTimer = Stopwatch.StartNew();
         var point = await pointRepository.GetPointFullInfoAsync(request.PointId);
+        lookupTimer.Stop();
+        app.Logger.LogInformation(
+            "Command {CommandId} received. PointId={PointId}, LookupDurationMs={LookupDurationMs}",
+            commandId, request.PointId, lookupTimer.ElapsedMilliseconds);
 
         var logger = app.Logger;
 
@@ -231,6 +240,7 @@ app.MapPost("/api/commands/write-point",
 
         bool success;
         string? error = null;
+        var writeTimer = Stopwatch.StartNew();
         try
         {
             success = await dispatcher.SendAsync(point, request.Value, token);
@@ -240,9 +250,17 @@ app.MapPost("/api/commands/write-point",
             success = false;
             error = ex.Message;
         }
+        finally
+        {
+            writeTimer.Stop();
+        }
+
+        app.Logger.LogInformation(
+            "Command {CommandId} PLC write completed. PLC={PlcName}, PointId={PointId}, Success={Success}, WriteDurationMs={WriteDurationMs}, Error={Error}",
+            commandId, point.ControllerName, point.Id, success, writeTimer.ElapsedMilliseconds, error);
 
         // Push a commandResult message to UI sink (best-effort)
-        telemetryWriter.TryWrite(new TelemetryMessage
+        var resultMessage = new TelemetryMessage
         {
             Type = "commandResult",
             PlcName = point.ControllerName,
@@ -261,7 +279,18 @@ app.MapPost("/api/commands/write-point",
                     Value = double.Parse(request.Value)
                 }
             }
-        });
+        };
+        TelemetryQueueDiagnostics.TrackEnqueued(resultMessage);
+        if (!telemetryWriter.TryWrite(resultMessage))
+        {
+            TelemetryQueueDiagnostics.TrackWriteFailed(resultMessage);
+            app.Logger.LogWarning("Command {CommandId} result could not be queued for telemetry delivery.", commandId);
+        }
+
+        commandTimer.Stop();
+        app.Logger.LogInformation(
+            "Command {CommandId} completed. TotalDurationMs={TotalDurationMs}, Success={Success}",
+            commandId, commandTimer.ElapsedMilliseconds, success);
 
         return Results.Ok(new
         {
