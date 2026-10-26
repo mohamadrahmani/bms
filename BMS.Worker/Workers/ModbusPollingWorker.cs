@@ -6,6 +6,7 @@ using BMS.Infrastructure.Modbus;
 using BMS.Worker.Abstractions;
 using System.Threading.Channels;
 using System.Diagnostics;
+using BMS.Worker.Diagnostics;
 
 namespace BMS.Worker.Workers
 {
@@ -45,15 +46,31 @@ namespace BMS.Worker.Workers
 
             while (!stoppingToken.IsCancellationRequested)
             {
+                var cycleId = Guid.NewGuid().ToString("N")[..8];
+                var cycleTimer = Stopwatch.StartNew();
+                var cycleStartedUtc = DateTimeOffset.UtcNow;
+
                 try
                 {
-                    // دریافت لیست به‌روز از Provider (از کش یا DB)
+                    var providerTimer = Stopwatch.StartNew();
                     var plcClients = await _plcProvider.GetClientsAsync(stoppingToken);
+                    providerTimer.Stop();
+
+                    _logger.LogInformation(
+                        "PollingCycle {CycleId} started at {StartedUtc}. PlcCount={PlcCount}, ProviderMs={ProviderMs}, QueuePending={QueuePending}, DroppedOldestTotal={DroppedOldestTotal}",
+                        cycleId, cycleStartedUtc, plcClients.Count, providerTimer.ElapsedMilliseconds,
+                        TelemetryQueueDiagnostics.PendingTracked, TelemetryQueueDiagnostics.DroppedOldest);
 
                     var pollingTasks = plcClients.Select(plc =>
-                        PollPlcAsync(plc, stoppingToken));
+                        PollPlcAsync(plc, cycleId, stoppingToken));
 
                     await Task.WhenAll(pollingTasks);
+
+                    cycleTimer.Stop();
+                    _logger.LogInformation(
+                        "PollingCycle {CycleId} completed. DurationMs={DurationMs}, QueuePending={QueuePending}, DroppedOldestTotal={DroppedOldestTotal}",
+                        cycleId, cycleTimer.ElapsedMilliseconds,
+                        TelemetryQueueDiagnostics.PendingTracked, TelemetryQueueDiagnostics.DroppedOldest);
 
                     await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
                 }
@@ -99,15 +116,17 @@ namespace BMS.Worker.Workers
         //    _logger.LogInformation("PLC Polling Worker stopped.");
         //}
 
-        private async Task PollPlcAsync(IPlcClient plc, CancellationToken token)
+        private async Task PollPlcAsync(IPlcClient plc, string cycleId, CancellationToken token)
         {
+            var plcTimer = Stopwatch.StartNew();
             try
             {
-                //var isOnline = await plc.TestConnectionAsync(token);
                 var swTest = Stopwatch.StartNew();
                 var isOnline = await plc.TestConnectionAsync(token);
                 swTest.Stop();
-                Console.WriteLine($"[DIAG] PLC={plc.Name} TestConnection took {swTest.ElapsedMilliseconds} ms, Online={isOnline}");
+                _logger.LogInformation(
+                    "PollingCycle {CycleId} PLC {PlcName} connection test completed. DurationMs={DurationMs}, Online={Online}",
+                    cycleId, plc.Name, swTest.ElapsedMilliseconds, isOnline);
                 //var statusMsg = new TelemetryMessage
                 //{
                 //    Type = "plcStatus",
@@ -124,14 +143,20 @@ namespace BMS.Worker.Workers
                 if (!isOnline)
                 {
                     //_logger.LogWarning("PLC {Name} OFFLINE", plc.Name);
-                    _telemetryWriter.TryWrite(new TelemetryMessage
+                    var offlineMessage = new TelemetryMessage
                     {
                         Type = "telemetry",
                         PlcName = plc.Name,
                         IsOnline = false,
                         TimestampUtc = DateTime.UtcNow,
                         Points = new()
-                    });
+                    };
+                    TelemetryQueueDiagnostics.TrackEnqueued(offlineMessage);
+                    if (!_telemetryWriter.TryWrite(offlineMessage))
+                    {
+                        TelemetryQueueDiagnostics.TrackWriteFailed(offlineMessage);
+                        _logger.LogWarning("Telemetry queue write failed for offline PLC {PlcName}. CycleId={CycleId}", plc.Name, cycleId);
+                    }
 
                     return;
                 }
@@ -139,7 +164,13 @@ namespace BMS.Worker.Workers
 
                 _logger.LogInformation("PLC {Name} ONLINE", plc.Name);
 
+                var pollTimer = Stopwatch.StartNew();
                 var snapshots = await plc.PollAsync(token);
+                pollTimer.Stop();
+                _logger.LogInformation(
+                    "PollingCycle {CycleId} PLC {PlcName} poll completed. DurationMs={DurationMs}, SnapshotCount={SnapshotCount}",
+                    cycleId, plc.Name, pollTimer.ElapsedMilliseconds, snapshots.Count);
+
                 foreach (var snapshot in snapshots)
                 {
                     var msg = new TelemetryMessage
@@ -159,8 +190,12 @@ namespace BMS.Worker.Workers
 
                     };
                     //await _sender.SendAsync(snapshot, token);
+                    TelemetryQueueDiagnostics.TrackEnqueued(msg);
                     if (!_telemetryWriter.TryWrite(msg))
-                        _logger.LogWarning("Telemetry queue is full. Dropped message for PLC {Plc}", plc.Name);
+                    {
+                        TelemetryQueueDiagnostics.TrackWriteFailed(msg);
+                        _logger.LogWarning("Telemetry queue write failed for PLC {PlcName}, Device {DeviceId}. CycleId={CycleId}", plc.Name, snapshot.DeviceId, cycleId);
+                    }
                 }
                 //foreach (var snapshot in snapshots)
                 //{
@@ -177,12 +212,20 @@ namespace BMS.Worker.Workers
 
                 //}
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
             {
+                _logger.LogDebug("PollingCycle {CycleId} PLC {PlcName} cancelled.", cycleId, plc.Name);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "PLC {Name} polling failed.", plc.Name);
+                _logger.LogError(ex, "PollingCycle {CycleId} PLC {PlcName} polling failed.", cycleId, plc.Name);
+            }
+            finally
+            {
+                plcTimer.Stop();
+                _logger.LogInformation(
+                    "PollingCycle {CycleId} PLC {PlcName} finished. TotalDurationMs={DurationMs}",
+                    cycleId, plc.Name, plcTimer.ElapsedMilliseconds);
             }
         }
 
